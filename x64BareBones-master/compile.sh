@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Compilando..."
 sudo docker start TPE_2024_2
 sudo docker exec -it TPE_2024_2 make clean -C /root/Toolchain
 sudo docker exec -it TPE_2024_2 make clean -C /root/
