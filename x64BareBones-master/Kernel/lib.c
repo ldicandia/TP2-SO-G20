@@ -9,6 +9,7 @@ void * memset(void * destination, int32_t c, uint64_t length)
 		dst[length] = chr;
 
 	return destination;
+
 }
 
 void * memcpy(void * destination, const void * source, uint64_t length)
