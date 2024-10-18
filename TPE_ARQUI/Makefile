@@ -18,5 +18,6 @@ clean:
 	cd Image; make clean
 	cd Kernel; make clean
 	cd Userland; make clean
+	find . -type f -name "*.Zone.Identifier" -exec rm -f {} +
 
 .PHONY: bootloader image collections kernel userland all clean
