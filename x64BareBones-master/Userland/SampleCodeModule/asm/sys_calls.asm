@@ -14,6 +14,7 @@ GLOBAL sys_pixelMinus
 GLOBAL sys_pixelPlus
 GLOBAL sys_playSound
 GLOBAL sys_mute
+GLOBAL sys_write_color
 section .text
 
 ; Pasaje de parametros en C:
@@ -106,5 +107,10 @@ sys_playSound:
 
 sys_mute: 
     mov rax, 0x0F
+    int 80h
+    ret
+
+sys_write_color:
+    mov rax, 0x11
     int 80h
     ret

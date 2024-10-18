@@ -2,6 +2,7 @@
 #include "keyboard.h"
 #include "lib.h"
 #include <time.h>
+#include <stdio.h>
 
 
 #define STDIN  0
@@ -14,6 +15,7 @@ extern int _hlt();
 
 extern Color RED;
 extern Color WHITE;
+extern Color GREEN;
 extern Color BLACK;
 
 int size = 0;
@@ -117,7 +119,13 @@ static uint64_t sys_pixelMinus(){
     return 1;
 }
 
-
+static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt){
+    if (fd != 1){
+        return -1;
+    }
+    dv_print(buffer,fnt,BLACK);
+    return 1;
+}
 
 
 // static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) = {
@@ -127,13 +135,26 @@ static uint64_t sys_pixelMinus(){
 
 //los void los pongo sino me tira warning
 static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
-    (void*)sys_read, (void*)sys_write, (void*)sys_clear, (void*)sys_getHours, (void*)sys_getMinutes, (void*)sys_getSeconds, (void*)sys_getScrHeight, (void*)sys_getScrWidth, (void*)sys_fillRect,
-    (void*)sys_wait, (void*)sys_inforeg, (void*)sys_printmem, (void*)sys_pixelPlus, (void*)sys_pixelMinus
+    (void*)sys_read, 
+    (void*)sys_write, 
+    (void*)sys_clear, 
+    (void*)sys_getHours, 
+    (void*)sys_getMinutes, 
+    (void*)sys_getSeconds, 
+    (void*)sys_getScrHeight, 
+    (void*)sys_getScrWidth, 
+    (void*)sys_fillRect,
+    (void*)sys_wait, 
+    (void*)sys_inforeg, 
+    (void*)sys_printmem, 
+    (void*)sys_pixelPlus, 
+    (void*)sys_pixelMinus, 
+    (void*)sys_write_color
 };
 
 
 // Devuelve la syscall correspondiente
-//                                rdi           rsi           rdx           rd10          r8           r9
+//                           rdi           rsi           rdx           rd10          r8           r9
 uint64_t syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {
     if (rax < SYS_CALLS_QTY && syscall_handlers[rax] != 0){
         return syscall_handlers[rax](rdi, rsi, rdx, r10, r8);

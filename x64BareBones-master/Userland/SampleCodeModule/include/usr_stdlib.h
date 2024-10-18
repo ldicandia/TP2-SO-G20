@@ -6,9 +6,11 @@
 
 /* Prints a char in screen */
 void printc (char c);
+void printc_color (char c, Color color);
 
 /* Prints a string in screen */
 void prints (const char * str, int lenght);
+void prints_color (const char * str, int lenght, Color color);
 
 /* Gets a single char from keyboard */
 char getChar();

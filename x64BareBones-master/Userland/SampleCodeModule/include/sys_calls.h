@@ -15,6 +15,8 @@ uint64_t sys_read(uint64_t fd, char* buf);
 
 uint64_t sys_write(uint64_t fd, const char buf);
 
+uint64_t sys_write_color(uint64_t fd, const char buf, Color color);
+
 uint64_t sys_clear();
 
 uint64_t sys_getHours();

@@ -15,13 +15,25 @@ int scr_width;
 
 static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
-void printc (char c){
+void printc(char c){
 	sys_write(STDOUT, c);
 }
+
+void printc_color(char c, Color color){
+	sys_write_color(STDOUT, c, color);
+}
+
+
 
 void prints (const char * str, int lenght){
 	for (int i = 0 ; i < lenght && str[i] != 0 ; i++){
 		printc(str[i]);
+	}
+}
+
+void prints_color (const char * str, int lenght, Color color){
+	for (int i = 0 ; i < lenght && str[i] != 0 ; i++){
+		printc_color(str[i], color);
 	}
 }
 
