@@ -1,8 +1,6 @@
 #Binary Files
 *.bin
 *.sys
-compile.sh
-run.sh
 
 #The images
 *.img
