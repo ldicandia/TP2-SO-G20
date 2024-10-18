@@ -1,10 +1,10 @@
 #include <usr_stdlib.h>
 #include <stdio.h>
-//#include <time.h>
+#include <time.h>
 #include <sys_calls.h>
-//#include <colores.h>
-//#include "snake.h"
-
+#include <colores.h>
+#include "snake.h"
+#include "shell.h"
 
 #define MAX_BUFFER 254
 #define MAX_COMMANDS 10
@@ -59,7 +59,7 @@ static void (*commands_ptr[MAX_COMMANDS])() = {cmd_undefined, cmd_help, cmd_time
 
 void shell (){
 	char c;
-	prints("$ User> ",9);
+	prints("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$ "));
 
 	while(1){
 		c = getChar();
@@ -98,9 +98,9 @@ static void newLine(){
 	linePos = 0;
 
 	if (i != 3 ){
-		prints("\n$ User> ",9);
+		prints("\nUser@x64BareBones:~$",strlen("User@x64BareBones:~$"));
 	} else {
-		prints("$ User> ",9);
+		prints("User@x64BareBones:~$",strlen("User@x64BareBones:~$"));
 	}
 }
 

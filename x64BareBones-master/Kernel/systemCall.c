@@ -2,7 +2,7 @@
 #include "keyboard.h"
 #include "lib.h"
 #include <time.h>
-//#include "sound.h"
+
 
 #define STDIN  0
 #define STDOUT 1
@@ -46,7 +46,6 @@ static uint64_t sys_clear(){
     return 1;
 }
 
-/*
 static uint64_t sys_getHours(){
     return getHours();
 }
@@ -58,7 +57,6 @@ static uint64_t sys_getMinutes(){
 static uint64_t sys_getSeconds(){
     return getSeconds();
 } 
-*/
 
 static uint64_t sys_getScrHeight(){
     return dv_getHeight();
@@ -119,15 +117,6 @@ static uint64_t sys_pixelMinus(){
     return 1;
 }
 
-static uint64_t sys_playSound(uint32_t frequnce){
-    startSound(frequnce);
-    return 1;
-}
-
-static uint64_t sys_mute(){
-    stopSound();
-    return 1;
-}
 
 
 
@@ -138,8 +127,8 @@ static uint64_t sys_mute(){
 
 //los void los pongo sino me tira warning
 static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
-    (void*)sys_read, (void*)sys_write, (void*)sys_clear, /*(void*)sys_getHours, (void*)sys_getMinutes, (void*)sys_getSeconds,*/ (void*)sys_getScrHeight, (void*)sys_getScrWidth, (void*)sys_fillRect,
-    (void*)sys_wait, (void*)sys_inforeg, (void*)sys_printmem, (void*)sys_pixelPlus, (void*)sys_pixelMinus, (void*)sys_playSound, (void*)sys_mute
+    (void*)sys_read, (void*)sys_write, (void*)sys_clear, (void*)sys_getHours, (void*)sys_getMinutes, (void*)sys_getSeconds, (void*)sys_getScrHeight, (void*)sys_getScrWidth, (void*)sys_fillRect,
+    (void*)sys_wait, (void*)sys_inforeg, (void*)sys_printmem, (void*)sys_pixelPlus, (void*)sys_pixelMinus
 };
 
 
