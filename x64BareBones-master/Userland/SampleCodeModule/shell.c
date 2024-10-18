@@ -17,14 +17,16 @@ char lastc;
 const char * commands[] = {"undefined","help","time","clear","snake","inforeg","zerodiv","invopcode","sizeplus","sizeminus"};
 
 void showCommands(){
-	prints("\n-time-               muestra la hora actual en pantalla",MAX_BUFFER);
-	prints("\n-clear-              limpia la pantalla",MAX_BUFFER);
-	prints("\n-snake-              inicia el juego de snake",MAX_BUFFER);
-	prints("\n-inforeg-            imprime los valores de los registros",MAX_BUFFER);
-	prints("\n-zerodiv-            testeo de excepcion de division por cero",MAX_BUFFER);
-	prints("\n-invopcode-          testeo codigo de operacion invalido",MAX_BUFFER);
-	prints("\n-sizeplus-           aumenta el tamanio de letra",MAX_BUFFER);
-	prints("\n-sizeminus-          disminuye el tamanio de letra",MAX_BUFFER);
+	prints("\n----------------------------| MANUAL |----------------------------",MAX_BUFFER);
+	prints("\n time                     muestra la hora actual en pantalla",MAX_BUFFER);
+	prints("\n clear                    limpia la pantalla",MAX_BUFFER);
+	prints("\n snake [cant jugadores]   inicia el juego de snake",MAX_BUFFER);
+	prints("\n inforeg                  imprime los valores de los registros",MAX_BUFFER);
+	prints("\n zerodiv                  testeo de excepcion de division por cero",MAX_BUFFER);
+	prints("\n invopcode                testeo codigo de operacion invalido",MAX_BUFFER);
+	prints("\n sizeplus                 aumenta el tamanio de letra",MAX_BUFFER);
+	prints("\n sizeminus                disminuye el tamanio de letra",MAX_BUFFER);
+	prints("\n-------------------------------------------------------------------",MAX_BUFFER);
 	printc('\n');
 }
 
@@ -37,7 +39,7 @@ void showCommands(){
 // static Color YELLOW = {30,224,255};
 // static Color PURPLE = {255,32,160};
 // static Color PINK = {100,0,244};
-static Color GREEN = {0,255,0};
+//static Color GREEN = {0,255,0};
 static Color BLUE = {255,0,0};
 static Color WHITE = {255,255,255};
 static Color LIGHTPURPLE = {255,0,255};

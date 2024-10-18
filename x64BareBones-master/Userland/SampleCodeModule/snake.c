@@ -16,14 +16,16 @@ int rand() {
 #define MAXDIM 100
 
 static Color BLACK = {0,0,0};
-static Color WHITE = {255,255,255};
+//static Color WHITE = {255,255,255};
 static Color RED = {0,0,255};
 //static Color LIGHT_BLUE = {255,255,255};
 //static Color BLUE = {255,0,0};
-static Color ORANGE = {16,160,255};
+//static Color ORANGE = {16,160,255};
 //static Color YELLOW = {30,224,255};
 static Color PURPLE = {255,32,160};
 //static Color PINK = {100,0,244};
+static Color BLUE = {255,0,0};
+static Color GREEN = {0,100,0};
 
 #define PIXELWIDTH (get_scrWidht() / WIDTH)
 #define PIXELHEIGHT (get_scrHeight() / HEIGHT)
@@ -78,7 +80,7 @@ void drawBoard(char game[HEIGHT][WIDTH], struct Player *player) {
     for (i = 0; i < HEIGHT; i++) {
         for (j = 0; j < WIDTH; j++) {
             if (game[i][j] == ' ') {
-                currentColor = WHITE;
+                currentColor = GREEN;
             } else if (game[i][j] == player->symbol) {
                 currentColor = player->playerColor;
             } else if (game[i][j] == '*') {
@@ -95,7 +97,7 @@ void startGame(char game[HEIGHT][WIDTH], struct Player *player) {
     player->directionToGo = PLAYER1_RIGHT;
     player->alive = 1;
     player->symbol = '#';
-    player->playerColor = ORANGE;
+    player->playerColor = BLUE;
     player->length = 2;
 
     game[player->actualY][player->actualX] = player->symbol;
@@ -227,7 +229,7 @@ void startGame2Players(char game[HEIGHT][WIDTH], struct Player *player1, struct 
     player1->directionToGo = PLAYER1_RIGHT;
     player1->alive = 1;
     player1->symbol = '#';
-    player1->playerColor = ORANGE;
+    player1->playerColor = BLUE;
     player1->length = 2;
 
     player2->actualX = 3 * WIDTH / 4;
@@ -269,7 +271,7 @@ void drawBoard2(char game[HEIGHT][WIDTH], struct Player *player1, struct Player 
     for (i = 0; i < HEIGHT; i++) {
         for (j = 0; j < WIDTH; j++) {
             if (game[i][j] == ' ') {
-                currentColor = WHITE;
+                currentColor = GREEN;
             } else if (game[i][j] == player1->symbol) {
                 currentColor = player1->playerColor;
             } else if (game[i][j] == player2->symbol) {
