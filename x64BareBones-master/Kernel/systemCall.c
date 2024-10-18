@@ -135,21 +135,21 @@ static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt){
 
 //los void los pongo sino me tira warning
 static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
-    (void*)sys_read, 
-    (void*)sys_write, 
-    (void*)sys_clear, 
-    (void*)sys_getHours, 
-    (void*)sys_getMinutes, 
-    (void*)sys_getSeconds, 
-    (void*)sys_getScrHeight, 
-    (void*)sys_getScrWidth, 
-    (void*)sys_fillRect,
-    (void*)sys_wait, 
-    (void*)sys_inforeg, 
-    (void*)sys_printmem, 
-    (void*)sys_pixelPlus, 
-    (void*)sys_pixelMinus, 
-    (void*)sys_write_color
+    (void*)sys_read, //0                                                                      
+    (void*)sys_write, //1
+    (void*)sys_clear, //2
+    (void*)sys_getHours, //3
+    (void*)sys_getMinutes, //4
+    (void*)sys_getSeconds, //5
+    (void*)sys_getScrHeight, //6
+    (void*)sys_getScrWidth,  //7
+    (void*)sys_fillRect,   //8
+    (void*)sys_wait,    //9
+    (void*)sys_inforeg,    //10
+    (void*)sys_printmem,    //11
+    (void*)sys_pixelPlus,  //12
+    (void*)sys_pixelMinus, //13
+    (void*)sys_write_color //14
 };
 
 

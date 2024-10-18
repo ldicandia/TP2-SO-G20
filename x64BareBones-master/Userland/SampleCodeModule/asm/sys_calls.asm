@@ -111,6 +111,6 @@ sys_mute:
     ret
 
 sys_write_color:
-    mov rax, 0x11
+    mov rax, 0x0E
     int 80h
     ret

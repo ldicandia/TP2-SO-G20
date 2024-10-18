@@ -38,6 +38,9 @@ void showCommands(){
 // static Color PURPLE = {255,32,160};
 // static Color PINK = {100,0,244};
 static Color GREEN = {0,255,0};
+static Color BLUE = {255,0,0};
+static Color WHITE = {255,255,255};
+static Color LIGHTPURPLE = {255,0,255};
 
 static void newLine();
 static void printLine(char c);
@@ -60,8 +63,11 @@ static void (*commands_ptr[MAX_COMMANDS])() = {cmd_undefined, cmd_help, cmd_time
 
 void shell (){
 	char c;
-	prints("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$ "));
-	//prints_color("User@x64BareBones:~$",strlen("User@x64BareBones:~$"),GREEN);
+	//prints("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$ "));
+	prints_color("User@x64BareBones",strlen("User@x64BareBones"),LIGHTPURPLE);
+	printc_color(':', WHITE);
+	printc_color('~', BLUE);
+	prints_color("$ ",strlen("$ "),WHITE);
 
 	while(1){
 		c = getChar();
@@ -100,11 +106,17 @@ static void newLine(){
 	linePos = 0;
 
 	if (i != 3 ){
-		prints("\nUser@x64BareBones:~$",strlen("User@x64BareBones:~$"));
-		//prints_color("nUser@x64BareBones:~$ ",strlen("User@x64BareBones:~$  "),GREEN);
+		//prints("\nUser@x64BareBones:~$",strlen("User@x64BareBones:~$"));
+		prints_color("User@x64BareBones",strlen("User@x64BareBones"),LIGHTPURPLE);
+		printc_color(':', WHITE);
+		printc_color('~', BLUE);
+		prints_color("$ ",strlen("$ "),WHITE);
 	} else {
-		prints("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$"));
-		//prints_color("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$"),GREEN);
+		//prints("User@x64BareBones:~$ ",strlen("User@x64BareBones:~$"));
+		prints_color("User@x64BareBones",strlen("User@x64BareBones"),LIGHTPURPLE);
+		printc_color(':', WHITE);
+		printc_color('~', BLUE);
+		prints_color("$ ",strlen("$ "),WHITE);
 	}
 }
 
