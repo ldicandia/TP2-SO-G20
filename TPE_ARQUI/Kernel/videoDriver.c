@@ -64,7 +64,7 @@ void driver_printChar(char c, Color color){
             driver_newLine();
         break;
         case '\b':
-            //dv_backspace(fnt, bgd);
+            //driver_backspace();
         break;
         case '\0':
             /* nada, no imprime nada */
@@ -74,6 +74,18 @@ void driver_printChar(char c, Color color){
         break;
     }
 }
+/*IMPLEMENTAR
+void driver_backspace(){
+    Color BLACK = {0,0,0};
+    if(cursorX == 0){
+        cursorX = VBE_mode_info->width - 8*charSize*SCALE;
+        cursorY -= 16*charSize*SCALE;
+    } else {
+        cursorX -= 8*charSize*SCALE;
+    }
+    drawChar(' ', BLACK);
+}
+*/
 
 
 void drawChar(char letter, Color color){

@@ -15,9 +15,9 @@ void shell(){
     char c;
 
     while(1){
-		  c = getChar();
-      printLine(c);
-	  }
+		c = getChar();
+      	printLine(c);
+	}
     
 }
 
@@ -30,9 +30,12 @@ static void printLine(char c){
 			printChar(c);
 			line[--linePos] = 0;
 		} else if (c == '\n'){
-			//newLine();
+			printStr("\n>");
 		}
 	}
 	lastc = c;
 }
+
+//make the newline function
+
 

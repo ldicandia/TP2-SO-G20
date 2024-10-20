@@ -1,6 +1,7 @@
 #include "keyboard.h"
 #include "time.h"
 #include <stdint.h>
+#include "videoDriver.h"
 
 unsigned char scanCode = 0;
 static char retChar = 0;

@@ -1,4 +1,3 @@
-
 GLOBAL _cli
 GLOBAL _sti
 GLOBAL picMasterMask
@@ -190,6 +189,3 @@ SECTION .bss
 	hasInforeg 		resb 	1 	; reserve 1 byte for a boolean on whether a regdump has already occurred.
 	left_shift  	resb 	1   ; shift presionado
 
-
-section .data
-key_press_msg db 'Key Pressed!', 0

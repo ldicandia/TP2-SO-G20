@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/TPE_ARQUI/Kernel/include",
+                "${workspaceFolder}/TPE_ARQUI/Userland/SampleCodeModule/include",
+                "${workspaceFolder}/TPE_ARQUI/Userland/SampleCodeModule"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

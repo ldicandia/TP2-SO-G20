@@ -42,9 +42,6 @@ static const char hexMapPressed[256] = {
 void keyboard_handler(uint8_t keyPressed) {
     scanCode = keyPressed;
     
-    Color WHITE = {255,255,255};
-    driver_printStr("ENTRE ", WHITE);
-    
     //shift pressed
     if (scanCode == 0x2A || scanCode == 0x36){
         shift = 1;
