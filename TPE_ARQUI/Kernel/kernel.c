@@ -1,9 +1,12 @@
 #include <stdint.h>
-#include <string.h>
+//#include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>
 #include <videoDriver.h>
+#include <time.h>
+#include <keyboard.h>
+#include <idtLoader.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -11,6 +14,8 @@ extern uint8_t data;
 extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
+
+extern void _hlt();
 
 static const uint64_t PageSize = 0x1000;
 
@@ -49,12 +54,14 @@ void * initializeKernelBinary()
 }
 
 int main(){	
-	/*TEST VIDEO DRIVER
-	for(int i = 0; i < 20 ; i++){
-		for(int j = 0; j < 20 ; j++){
-			putPixel(0x00FF0000, i, j);
-		}
-	}
-	*/
+	load_idt();
+	
+	
+	clearScanCode();
+    ((EntryPoint)sampleCodeModuleAddress)();
+
+    while(1) _hlt();
+
+
 	return 0;
 }

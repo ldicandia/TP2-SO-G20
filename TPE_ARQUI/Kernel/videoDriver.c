@@ -1,5 +1,7 @@
 #include <videoDriver.h>
 
+#define SCALE 1
+
 struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
@@ -38,6 +40,11 @@ struct vbe_mode_info_structure {
 	uint8_t reserved1[206];
 } __attribute__ ((packed));
 
+//donde arranca la pantalla
+uint16_t cursorX = 0;
+uint16_t cursorY = 0;
+uint8_t charSize = 1;
+
 typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
 VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
@@ -48,4 +55,88 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     framebuffer[offset]     =  (hexColor) & 0xFF;
     framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF; 
     framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
+}
+
+
+void driver_printChar(char c, Color color){
+	switch (c) {
+        case '\n':
+            driver_newLine();
+        break;
+        case '\b':
+            //dv_backspace(fnt, bgd);
+        break;
+        case '\0':
+            /* nada, no imprime nada */
+        break;
+        default:
+            drawChar(c, color);
+        break;
+    }
+}
+
+
+void drawChar(char letter, Color color){
+	if(cursorX == VBE_mode_info->width ){
+		//pasa a la siguiente linea desde la primera pos a la izquierda
+		cursorX = 0;
+		driver_newLine();
+	}
+	if(cursorY == VBE_mode_info->height){
+		scroll();
+	}
+
+	uint8_t *pos = getFontChar(letter);
+    for(int x = 0; x < 8; x++){
+        for(int y = 0; y < 16; y++){
+            if (pos[y] & (1 << (7 - x))) {
+                for(int sx = 0; sx < SCALE; sx++) {
+                    for(int sy = 0; sy < SCALE; sy++) {
+                        putPixel(rgbToHex(color.r, color.g, color.b), cursorX + x * SCALE + sx, cursorY + y * SCALE + sy);
+                    }
+                }
+            }
+        }
+    }
+    cursorX += 8 * charSize * SCALE;
+}
+
+void driver_newLine(){
+	cursorX = 0;
+	cursorY += 16*charSize*SCALE;
+}
+
+uint32_t rgbToHex(uint8_t r, uint8_t g, uint8_t b) {
+    return (r << 16) | (g << 8) | b;
+}
+
+
+void driver_printStr(char * str, Color color){
+	for(int i=0; str[i]; i++){
+		driver_printChar(str[i], color);
+	}
+}
+
+void scroll(){
+	int nextX, nextY;
+    for(int x = 0; x < VBE_mode_info->width; x++){
+        for(int y = 0; y < VBE_mode_info->height - 16 * charSize; y++){
+            //Obtiene el color del píxel de la siguiente línea.
+            uint8_t *framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
+            uint64_t nextOffset = x * (VBE_mode_info->bpp/8) + (y + 16 * charSize) * VBE_mode_info->pitch;
+            uint32_t nextPixelColor = framebuffer[nextOffset] |
+                                      (framebuffer[nextOffset + 1] << 8) |
+                                      (framebuffer[nextOffset + 2] << 16);
+
+            // Pone el color en la posición actual.
+            putPixel(nextPixelColor, x, y);
+        }
+    }
+
+    // Borra la última línea (deja en negro)
+    for(int x = 0; x < VBE_mode_info->width; x++){
+        for(int y = VBE_mode_info->height - 16 * charSize; y < VBE_mode_info->height; y++){
+            putPixel(0x000000, x, y); // Borra con color negro (RGB: 0,0,0).
+        }
+    }
 }
