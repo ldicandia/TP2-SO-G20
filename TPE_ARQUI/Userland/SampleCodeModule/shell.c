@@ -1,6 +1,5 @@
 
-//#include <usr_stdlib.h>
-//#include "userLibrary.h"
+#include "userLibrary.h"
 #include "shell.h"
 #include <stdlib.h>
 #define MAX_BUFFER 254
@@ -15,7 +14,7 @@ char line[MAX_BUFFER+1] = {0};
 char command[MAX_BUFFER+1] = {0};
 char parameter[MAX_BUFFER+1] = {0};
 
-const char *commands[MAX_COMMANDS] = {"undefined", "help", "time", "clear", "snake", "inforeg", "zerodiv", "invopcode", "sizeplus", "sizeminus"};
+const char *commands[MAX_COMMANDS] = {"undefined", "help", "time", "clear", "snake", "inforeg", "zerodiv", "invOpCode", "sizeplus", "sizeminus"};
 
 
 
@@ -35,23 +34,19 @@ void shell(){
 }
 
 static void printLine(char c){
-	if(c == '\b'){
-		if(lastEnter == 0){
-			//solo actualiza sin borrar nada
-			lastc = c;
-			return;
-		}else{
-			//caso en que hubieron caracteres, lo descuenta
-			lastEnter--;
-		}
-	}
-	if(c != '\n'){
-		//todos los caracteres suman uno a la distancia al ultimo enter
+	if(isChar(c) || isDigit(c)){
 		lastEnter++;
-	}else{
-		//en enter vuelve a empezar el contador
-		lastEnter = 0;
 	}
+	if(c == '\n'){
+		lastEnter=0;
+	}
+	if(c == '\b' && lastEnter > 0){
+		lastEnter--;
+	}else if (c == '\b' && lastEnter == 0){
+		lastc = c;
+		return;
+	}
+	
 	//salvo el caso de querer borrar despues de un enter, todos los caracteres se imprimen
 	printChar(c);
 	lastc = c;
@@ -68,17 +63,17 @@ void commandMenu(){
 	printStr("\n snake [cant jugadores]		starts de Snake game");
 	printStr("\n inforeg 					prints the regsiter's values");
 	printStr("\n zerodiv					division by cero exception");
-	printStr("\n invopcode					tests the invalid operation code");
+	printStr("\n invOpCode					tests the invalid operation code");
 	printStr("\n sizeplus					increase letter size");
 	printStr("\n sizeminus					decrease letter size");
 	printStr("\n---------------------------------------------------");
 	printChar('\n');
 }
 
-/*
 
 
-// funcion para leer comando de parametro
+
+//funcion para leer comando de parametro
 // static void readCommand(){
 // 	int i;
 // 	int j=0;
@@ -123,16 +118,38 @@ void commandMenu(){
 // 
 //}
 
-static void clear(){
-	clear_screen();
-}//
-static void cmd_inforeg(){
-	inforeg();
-}
+// static void snake(){
+// 	if( !startSnake(charToInt(parameter)) ){
+// 		printStr("\nIngrese un parametro valido '1' o '2' jugadores \n");
+// 	}
+// }
 
 
+// static void clear(){
+// 	clear_scr();
+// }//
+// static void inforeg(){
+// 	inforeg();
+// }
 
-*/
+
+// static void zerodiv(){
+// 	test_zerodiv();
+// }
+
+// static void invopcode(){
+// 	test_invopcode();
+// }
+
+
+// static void sizeplus(){
+// 	increaseScale();
+// }
+
+// static void sizeminus(){
+// 	decreaseScale();
+// }
+
 
 
 

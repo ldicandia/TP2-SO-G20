@@ -80,7 +80,8 @@ void driver_backspace(){
     }
     else{
         //paso al final de la linea anterior
-        cursorX = VBE_mode_info->width;
+        //la idea es ver cuantas letras entraron con este tamanio e ir a la ultima de ellas
+        cursorX = (VBE_mode_info->width%(8*charSize))*8;
         cursorY -= 16*charSize;
     }
 
@@ -99,8 +100,9 @@ void drawChar(char letter, Color color){
 		cursorX = 0;
 	    cursorY += 16*charSize;
 	}
-	if(cursorY == VBE_mode_info->height){
-		scroll();
+	if(cursorY > VBE_mode_info->height){
+		cursorY -= 16*charSize;
+        scroll();
 	}
 	uint8_t *pos = getFontChar(letter);
     for(int x = 0; x < 8; x++){
