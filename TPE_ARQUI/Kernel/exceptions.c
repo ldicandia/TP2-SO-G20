@@ -56,7 +56,5 @@ void exception_handler(int exception, const uint64_t register_data[17]) {
             driver_printStr("   ",white);
     }
 
-    driver_printStr("Calling reset...\n", red);
-
     reset();
 }

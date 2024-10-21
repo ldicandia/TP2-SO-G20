@@ -15,5 +15,5 @@ hang:
 
 reset:
 	call getStackBase
-	mov rsp, rax
+	mov rsp, rax				
 	call main
