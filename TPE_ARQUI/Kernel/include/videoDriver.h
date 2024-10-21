@@ -15,6 +15,7 @@ void driver_printChar(char letter, Color color);
 void driver_printStr(char * str, Color color);
 void scroll();
 void driver_newLine();
+void driver_newLine_noChar();
 
 
 
