@@ -80,8 +80,8 @@ void driver_backspace(){
     }
     else{
         //paso al final de la linea anterior
-        //la idea es ver cuantas letras entraron con este tamanio e ir a la ultima de ellas
-        cursorX = (VBE_mode_info->width%(8*charSize))*8;
+        //la idea es restarle al tootal, el sobrante
+        cursorX = VBE_mode_info->width - (VBE_mode_info->width%(8*charSize));
         cursorY -= 16*charSize;
     }
 
@@ -95,7 +95,7 @@ void driver_backspace(){
 
 
 void drawChar(char letter, Color color){
-	if(cursorX >= VBE_mode_info->width ){
+	if(cursorX >= VBE_mode_info->width - (VBE_mode_info->width%(8*charSize))){
 		//pasa a la siguiente linea desde la primera pos a la izquierda
 		cursorX = 0;
 	    cursorY += 16*charSize;
@@ -144,9 +144,7 @@ void scroll(){
             //Obtiene el color del píxel de la siguiente línea.
             uint8_t *framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
             uint64_t nextOffset = x * (VBE_mode_info->bpp/8) + (y + 16 * charSize) * VBE_mode_info->pitch;
-            uint32_t nextPixelColor = framebuffer[nextOffset] |
-                                      (framebuffer[nextOffset + 1] << 8) |
-                                      (framebuffer[nextOffset + 2] << 16);
+            uint32_t nextPixelColor = framebuffer[nextOffset] | (framebuffer[nextOffset + 1] << 8) | (framebuffer[nextOffset + 2] << 16);
 
             // Pone el color en la posición actual.
             putPixel(nextPixelColor, x, y);
@@ -156,7 +154,28 @@ void scroll(){
     // Borra la última línea (deja en negro)
     for(int x = 0; x < VBE_mode_info->width; x++){
         for(int y = VBE_mode_info->height - 16 * charSize; y < VBE_mode_info->height; y++){
-            putPixel(0x000000, x, y); // Borra con color negro (RGB: 0,0,0).
+            putPixel(0x000000, x, y);
         }
     }
 }
+
+
+void driver_clear(){
+    for(int x = 0; x < VBE_mode_info->width; x++){
+        for(int y = 0; y < VBE_mode_info->height; y++){
+            putPixel(0x000000, x, y);
+        }
+    }
+}
+
+void driver_increment_size(){
+    charSize++;
+}
+
+void driver_decrement_size(){
+    if(charSize > 1){
+        charSize--;
+    }
+}
+
+

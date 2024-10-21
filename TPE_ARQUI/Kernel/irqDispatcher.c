@@ -49,11 +49,31 @@ static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt) {
 	return 1;
 }
 
+static uint64_t sys_clear(){
+	driver_clear();
+	return 1;
+}
+
+static uint64_t sys_increment_size(){
+	driver_increment_size();
+	return 1;
+}
+
+static uint64_t sys_decrement_size(){
+	driver_decrement_size();
+	return 1;
+}
 
 static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
     (void*)sys_read, //0                                                                     
     (void*)sys_write, //1
-	(void*)sys_write_color//2
+	(void*)sys_write_color,//2
+	(void*)sys_clear, //3
+	(void*)sys_increment_size, //4
+	(void*)sys_decrement_size //5
+	//(void*)sys_getHours,//6
+	//(void*)sys_getMinutes,//7
+	//(void*)sys_getSeconds//8
 };
 
 

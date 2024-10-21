@@ -22,4 +22,9 @@ int isChar(char c);
 
 int isDigit(char c);
 
-#endif // USER_LIBRARY_H
+void increment_size_char();
+
+void decrement_size_char();
+
+
+#endif// USER_LIBRARY_H

@@ -1,30 +1,30 @@
-#include <sys_calls.h>
-#include <userLibrary.h>
+// #include <sys_calls.h>
+// #include <userLibrary.h>
 
-int getHours(){
-    return sys_getHours();
-}
+// int getHours(){
+//     return u_sys_getHours();
+// }
 
-int getMinutes(){
-    return sys_getMinutes();
-}
+// int getMinutes(){
+//     return u_sys_getMinutes();
+// }
 
-int getSeconds(){
-    return sys_getSeconds();
-}
+// int getSeconds(){
+//     return u_sys_getSeconds();
+// }
 
-void display_time(){
-    int hours, minutes, seconds;
+// void display_time(){
+//     int hours, minutes, seconds;
 
-    hours = getHours();
-    minutes = getMinutes();
-    seconds = getSeconds();
+//     hours = getHours();
+//     minutes = getMinutes();
+//     seconds = getSeconds();
 
-    printc('\n');
-    printHex(hours);
-    printc(':');
-    printHex(minutes);
-    printc(':');
-    printHex(seconds);
+//     printc('\n');
+//     printHex(hours);
+//     printc(':');
+//     printHex(minutes);
+//     printc(':');
+//     printHex(seconds);
 
-}
+// }

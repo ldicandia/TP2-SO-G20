@@ -16,14 +16,16 @@ extern uint64_t u_sys_write(uint64_t fd, const char buf);
 
 extern uint64_t u_sys_write_color(uint64_t fd, const char buf, Color color);
 
-extern uint64_t sys_clear();
+extern uint64_t u_sys_clear();
 
-extern uint64_t sys_getHours();
+//extern uint64_t sys_getHours();
 
-extern uint64_t sys_getMinutes();
+//extern uint64_t sys_getMinutes();
 
-extern uint64_t sys_getSeconds();
+//extern uint64_t sys_getSeconds();
 
+extern uint64_t u_sys_increment_size();
 
+extern uint64_t u_sys_decrement_size();
 
 #endif

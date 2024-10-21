@@ -36,6 +36,18 @@ char getChar(){
 	return c;
 }
 
+void clear(){
+	u_sys_clear();
+}
+
+void increment_size_char(){
+	u_sys_increment_size();
+}
+
+void decrement_size_char(){
+	u_sys_decrement_size();
+}
+
 void printCharColor(char c, Color fnt){
 	u_sys_write_color(STDOUT, c, fnt);
 }
