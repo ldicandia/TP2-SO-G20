@@ -59,3 +59,11 @@ int isDigit(char c){
 	}
 	return 0;
 }
+
+void exc_invopcode(){
+	u_exc_invopcode();
+}
+
+void exc_zerodiv(){
+	u_exc_zerodiv();
+}

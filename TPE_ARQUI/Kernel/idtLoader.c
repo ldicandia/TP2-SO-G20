@@ -19,7 +19,8 @@ typedef struct {
 extern void _interrupt_syscall();
 extern void _interrupt_keyboardHandler();
 extern void _interrupt_timerTick();
-
+extern void _exception_divideByZero();
+extern void _exception_invalidOpCode();
 
 DESCR_INT * idt = (DESCR_INT *) 0;	// IDT de 255 entradas
 
@@ -31,6 +32,9 @@ void load_idt() {
   setup_IDT_entry(0x21, (uint64_t)&_interrupt_keyboardHandler);
   setup_IDT_entry(0x20, (uint64_t)&_interrupt_timerTick);
   setup_IDT_entry(0x80, (uint64_t)&_interrupt_syscall);
+
+  setup_IDT_entry (0x00, (uint64_t)&_exception_divideByZero);
+  setup_IDT_entry (0x06, (uint64_t)&_exception_invalidOpCode);
 
 
 	picMasterMask(0xFC); 

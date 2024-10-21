@@ -8,10 +8,13 @@ GLOBAL _hlt
 GLOBAL _interrupt_syscall
 GLOBAL _interrupt_timerTick
 GLOBAL _interrupt_keyboardHandler
+GLOBAL _exception_divideByZero
+GLOBAL _exception_invalidOpCode
 
 EXTERN keyboard_handler
 EXTERN timer_handler
 EXTERN syscall_handler
+EXTERN exception_handler
 
 SECTION .text
 
@@ -57,6 +60,34 @@ SECTION .text
     out 20h, al
 %endmacro
 
+%macro saveRegistersException 0
+	mov [regdata_exc+0], 	rax ;0
+	mov [regdata_exc+8], 	rbx ;1
+	mov [regdata_exc+16], 	rcx ;2
+	mov [regdata_exc+24], 	rdx ;3
+	mov [regdata_exc+32], 	rsi ;4
+	mov [regdata_exc+40], 	rdi ;5
+	mov [regdata_exc+48], 	rbp ;6
+	mov [regdata_exc+64], 	r8  ;8
+	mov [regdata_exc+72], 	r9  ;9
+	mov [regdata_exc+80], 	r10 ;10
+	mov [regdata_exc+88], 	r11	;11
+	mov [regdata_exc+96], 	r12 ;12
+	mov [regdata_exc+104], 	r13 ;13
+	mov [regdata_exc+112], 	r14 ;14
+	mov [regdata_exc+120], 	r15 ;15
+
+
+	mov rax, rsp ; We get the value of RSP when the exception ocurred by adding the amount of pushed bytes to the current value of RSP.
+	add rax, 40
+	mov [regdata_exc+56], rax ;7
+
+	mov rax, [rsp] ; We get the value of RIP when the exception ocurred by taking the interruption's return address.
+	mov [regdata_exc+128], rax ;16
+
+	mov rax, [rsp+8] ; We get the value of RFLAGS the same way (it is pushed when an interrupt occurs).
+	mov [regdata_exc+136], rax ;17
+%endmacro
 
 %macro exceptionHandler 1
 	pushState
@@ -167,6 +198,26 @@ _interrupt_timerTick:
 	popState
 	iretq
 
+
+_exception_divideByZero:
+	saveRegistersException
+
+	mov rdi, 00h
+	mov rsi, regdata_exc
+	call exception_handler
+
+
+;ESTO HAY QUE MODIFICARLO
+_exception_invalidOpCode:
+	saveRegistersException
+
+	mov rdi, 06h
+	mov rsi, regdata_exc
+	call exception_handler
+
+
+
+
 ; syscalls params:	RDI	RSI	RDX	R10	R8	R9
 ; C 	params   :	RDI RSI RDX RCX R8  R9
 _interrupt_syscall:
@@ -179,6 +230,8 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+
 
 
 
