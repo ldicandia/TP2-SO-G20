@@ -1,7 +1,5 @@
 #include <videoDriver.h>
 
-#define SCALE 1
-
 struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
@@ -43,7 +41,7 @@ struct vbe_mode_info_structure {
 //donde arranca la pantalla
 uint16_t cursorX = 0;
 uint16_t cursorY = 0;
-uint8_t charSize = 1;
+uint8_t charSize = 3;
 
 typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
@@ -64,7 +62,7 @@ void driver_printChar(char c, Color color){
             driver_newLine();
         break;
         case '\b':
-            //driver_backspace();
+            driver_backspace();
         break;
         case '\0':
             /* nada, no imprime nada */
@@ -74,48 +72,56 @@ void driver_printChar(char c, Color color){
         break;
     }
 }
-/*IMPLEMENTAR
+
 void driver_backspace(){
     Color BLACK = {0,0,0};
-    if(cursorX == 0){
-        cursorX = VBE_mode_info->width - 8*charSize*SCALE;
-        cursorY -= 16*charSize*SCALE;
-    } else {
-        cursorX -= 8*charSize*SCALE;
+    if(cursorX > 0){
+        cursorX -= 8*charSize;
     }
-    drawChar(' ', BLACK);
+    else{
+        //paso al final de la linea anterior
+        cursorX = VBE_mode_info->width;
+        cursorY -= 16*charSize;
+    }
+
+    for(int x= 0; x< 8*charSize; x++){
+        for(int y= 0; y<16*charSize; y++){
+            putPixel(0x000000,cursorX + x, cursorY + y);
+        }
+    }
 }
-*/
+
 
 
 void drawChar(char letter, Color color){
-	if(cursorX == VBE_mode_info->width ){
+	if(cursorX >= VBE_mode_info->width ){
 		//pasa a la siguiente linea desde la primera pos a la izquierda
 		cursorX = 0;
-		driver_newLine();
+	    cursorY += 16*charSize;
 	}
 	if(cursorY == VBE_mode_info->height){
 		scroll();
 	}
-
 	uint8_t *pos = getFontChar(letter);
     for(int x = 0; x < 8; x++){
         for(int y = 0; y < 16; y++){
             if (pos[y] & (1 << (7 - x))) {
-                for(int sx = 0; sx < SCALE; sx++) {
-                    for(int sy = 0; sy < SCALE; sy++) {
-                        putPixel(rgbToHex(color.r, color.g, color.b), cursorX + x * SCALE + sx, cursorY + y * SCALE + sy);
+                for(int sx = 0; sx < charSize; sx++) {
+                    for(int sy = 0; sy < charSize; sy++) {
+                        putPixel(rgbToHex(color.r, color.g, color.b), cursorX + x * charSize + sx, cursorY + y * charSize + sy);
                     }
                 }
             }
         }
     }
-    cursorX += 8 * charSize * SCALE;
+    cursorX += 8 * charSize;
 }
 
 void driver_newLine(){
+    Color WHITE = {255,255,255};
 	cursorX = 0;
-	cursorY += 16*charSize*SCALE;
+	cursorY += 16*charSize;
+    drawChar('>', WHITE);
 }
 
 uint32_t rgbToHex(uint8_t r, uint8_t g, uint8_t b) {
