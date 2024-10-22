@@ -1,7 +1,6 @@
 #include "sys_calls.h"
 #include <stdio.h>
 
-
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -23,59 +22,70 @@ const Color LIGHT_YELLOW = {0, 224, 255};
 const Color LIGHT_PINK = {0, 100, 244};
 const Color LIGHT_GREEN = {0, 255, 0};
 
-static char buffer[64] = { '0' };
-
-
-void printChar(char c){
+void printChar(char c)
+{
 	u_sys_write(STDOUT, c);
 }
 
-char getChar(){
+char getChar()
+{
 	char c;
 	u_sys_read(STDIN, &c);
 	return c;
 }
 
-void clear(){
+void clear()
+{
 	u_sys_clear();
 }
 
-void increment_size_char(){
+void increment_size_char()
+{
 	u_sys_increment_size();
 }
 
-void decrement_size_char(){
+void decrement_size_char()
+{
 	u_sys_decrement_size();
 }
 
-void printCharColor(char c, Color fnt){
+void printCharColor(char c, Color fnt)
+{
 	u_sys_write_color(STDOUT, c, fnt);
 }
 
-void printStr(char * str){
-	for(int i=0; str[i]; i++){
+void printStr(char *str)
+{
+	for (int i = 0; str[i]; i++)
+	{
 		u_sys_write(STDOUT, str[i]);
 	}
 }
 
-int isChar(char c){
-	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
+int isChar(char c)
+{
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+	{
 		return 1;
 	}
 	return 0;
 }
 
-int isDigit(char c){
-		if (c >= '0' && c <= '9'){
+int isDigit(char c)
+{
+	if (c >= '0' && c <= '9')
+	{
 		return 1;
 	}
 	return 0;
 }
 
-void exc_invopcode(){
+void exc_invopcode()
+{
 	u_exc_invopcode();
 }
 
-void exc_zerodiv(){
+void exc_zerodiv()
+{
 	u_exc_zerodiv();
 }

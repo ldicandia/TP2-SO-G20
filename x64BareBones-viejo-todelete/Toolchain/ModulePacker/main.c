@@ -8,7 +8,7 @@
 #include "modulePacker.h"
 
 //Parser elements
-const char *argp_program_version =
+const char *	argp_program_version =
   "x64BareBones ModulePacker (C) v0.2";
 const char *argp_program_bug_address =
   "arq-catedra@googlegroups.com";
