@@ -4,6 +4,6 @@
 int getHours();
 int getMinutes();
 int getSeconds();
-void display_time();
+void user_time();
 
 #endif // TIME_H

@@ -2,13 +2,7 @@
 #define USER_LIBRARY_H
 
 #include <stdint.h>
-
-typedef struct {
-    uint8_t b;
-    uint8_t g;
-    uint8_t r;
-} Color;
-
+#include <color.h>
 
 void printChar(char c);
 
@@ -16,7 +10,7 @@ char getChar();
 
 void printCharColor(char c, Color fnt);
 
-void printStr(char * str);
+void printStr(char *str);
 
 int isChar(char c);
 
@@ -32,5 +26,10 @@ void exc_zerodiv();
 
 void clear();
 
+void inforeg();
 
-#endif// USER_LIBRARY_H
+void printHex(uint64_t n);
+
+void uint64ToHex(uint64_t n, char buf[16]);
+
+#endif // USER_LIBRARY_H

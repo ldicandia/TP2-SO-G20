@@ -4,8 +4,10 @@ GLOBAL u_sys_write_color
 GLOBAL u_sys_clear
 GLOBAL u_sys_getHours
 GLOBAL u_sys_getMinutes
+GLOBAL u_sys_getSeconds
 GLOBAL u_sys_increment_size
 GLOBAL u_sys_decrement_size
+GLOBAL u_sys_infoReg
 
 section .text
 
@@ -47,4 +49,15 @@ u_sys_getMinutes:
     mov rax, 0x07
     int 0x80
     ret
+u_sys_getSeconds:
+    mov rax, 0x08
+    int 0x80
+    ret
+
+u_sys_infoReg:
+    mov rax, 0x09
+    int 0x80
+    ret
+
+
     

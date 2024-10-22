@@ -3,10 +3,10 @@
 #include "shell.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <user_time.h>
 #include <string.h>
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE (sizeof(command_names) / sizeof(command_names[0]))
+#define COMMANDS_SIZE 10
 
 static void printLine(char c);
 int linePos = 0;
@@ -23,19 +23,15 @@ char *command_names[] = {"help", "time", "clear", "snake 1", "snake 2", "inforeg
 
 void (*command_func[COMMANDS_SIZE])() = {
 		help,
-		// display_time,
-		notFound,
+		user_time,
 		clear,
 		shell_snake_1,
 		shell_snake_2,
-		// inforeg,
-		notFound,
+		inforeg,
 		exc_zerodiv,
 		exc_invopcode,
 		increment_size_char,
-		decrement_size_char
-
-};
+		decrement_size_char};
 
 void shell()
 {
@@ -98,11 +94,10 @@ void help()
 	printStr("\n snake [cant jugadores]   starts de Snake game");
 	printStr("\n inforeg                  prints the regsiter's values");
 	printStr("\n zerodiv                  division by cero exception");
-	printStr("\n invOpCode                tests the invalid operation code");
-	printStr("\n sizeplus                 increase letter size");
-	printStr("\n sizeminus                decrease letter size");
+	printStr("\n invopcode                tests the invalid operation code");
+	printStr("\n increment                increase letter size");
+	printStr("\n decrement                decrease letter size");
 	printStr("\n---------------------------------------------------");
-	printChar('\n');
 }
 
 static int strcmp_shell(char *str1, char *str2)
@@ -138,7 +133,7 @@ void readCommand()
 
 void notFound()
 {
-	printStr("\n command not found. Try using 'help'\n");
+	printStr("\n command not found. Try using 'help'");
 	return;
 }
 

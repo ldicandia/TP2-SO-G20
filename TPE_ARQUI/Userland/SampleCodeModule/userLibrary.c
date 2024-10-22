@@ -1,5 +1,7 @@
 #include "sys_calls.h"
 #include <stdio.h>
+#include <userLibrary.h>
+#include <user_time.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -21,6 +23,9 @@ const Color LIGHT_ORANGE = {0, 160, 255};
 const Color LIGHT_YELLOW = {0, 224, 255};
 const Color LIGHT_PINK = {0, 100, 244};
 const Color LIGHT_GREEN = {0, 255, 0};
+
+static char *register_names[17] = {
+		"RIP", "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15"};
 
 void printChar(char c)
 {
@@ -80,6 +85,37 @@ int isDigit(char c)
 	return 0;
 }
 
+void inforeg()
+{
+	char hexbuf[19];
+	hexbuf[0] = '0';
+	hexbuf[1] = 'x';
+	hexbuf[18] = '\0';
+
+	uint64_t registers[17];
+	int i = u_sys_infoReg(registers);
+
+	printChar('\n');
+	if (i == 1)
+	{
+		for (int i = 0; i < 17; i++)
+		{
+			printStr(register_names[i]);
+			printStr(": ");
+			uint64ToHex(registers[i], hexbuf + 2);
+			printStr(hexbuf);
+			if (i % 4 == 3)
+				printChar('\n');
+			else
+				printStr("   ");
+		}
+	}
+	else
+	{
+		printStr("\nTodavia no hay un snapshot de los registros, presione SHIFT + S para sacar una foto\n");
+	}
+}
+
 void exc_invopcode()
 {
 	u_exc_invopcode();
@@ -88,4 +124,25 @@ void exc_invopcode()
 void exc_zerodiv()
 {
 	u_exc_zerodiv();
+}
+
+void printHex(uint64_t n)
+{
+	char hexbuf[19];
+	hexbuf[0] = '0';
+	hexbuf[1] = 'x';
+	hexbuf[18] = '\0';
+	uint64ToHex(n, hexbuf + 2);
+	printStr(hexbuf);
+}
+
+void uint64ToHex(uint64_t n, char buf[16])
+{
+	int i = 15;
+	do
+	{
+		int digit = n % 16;
+		buf[i] = (digit < 10 ? '0' : ('A' - 10)) + digit;
+		n /= 16;
+	} while (i-- != 0);
 }

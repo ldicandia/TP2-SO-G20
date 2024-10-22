@@ -5,6 +5,12 @@
 
 #define SYS_CALLS_QTY 3
 
+extern uint8_t hasInforeg;
+extern const uint64_t inforeg[17];
+extern uint64_t getSeconds();
+extern uint64_t getMinutes();
+extern uint64_t getHours();
+
 static Color WHITE = {255, 255, 255};
 static void int_20();
 
@@ -64,6 +70,21 @@ static uint64_t sys_clear()
 	return 1;
 }
 
+static uint64_t sys_getSeconds()
+{
+	return getSeconds();
+}
+
+static uint64_t sys_getMinutes()
+{
+	return getMinutes();
+}
+
+static uint64_t sys_getHours()
+{
+	return getHours();
+}
+
 static uint64_t sys_increment_size()
 {
 	driver_increment_size();
@@ -76,16 +97,29 @@ static uint64_t sys_decrement_size()
 	return 1;
 }
 
+static uint64_t sys_inforeg(uint64_t registers[17])
+{
+	if (hasInforeg)
+	{
+		for (uint8_t i = 0; i < 17; i++)
+		{
+			registers[i] = inforeg[i];
+		}
+	}
+	return hasInforeg;
+}
+
 static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
 		(void *)sys_read,						// 0
 		(void *)sys_write,					// 1
 		(void *)sys_write_color,		// 2
 		(void *)sys_clear,					// 3
 		(void *)sys_increment_size, // 4
-		(void *)sys_decrement_size	// 5
-		//(void*)sys_getHours,//6
-		//(void*)sys_getMinutes,//7
-		//(void*)sys_getSeconds//8
+		(void *)sys_decrement_size, // 5
+		(void *)sys_getHours,				// 6
+		(void *)sys_getMinutes,			// 7
+		(void *)sys_getSeconds,			// 8
+		(void *)sys_inforeg,				// 9
 };
 
 // Devuelve la syscall correspondiente

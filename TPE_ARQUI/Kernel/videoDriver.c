@@ -194,7 +194,6 @@ void driver_clear()
     // mueve el los cursores al principio de la pantalla
     cursorX = 0;
     cursorY = 0;
-    driver_printChar('>', WHITE);
 }
 
 void driver_increment_size()

@@ -2,13 +2,7 @@
 #define _SYS_CALLS_H_
 
 #include <stdint.h>
-
-typedef struct
-{
-    uint8_t b;
-    uint8_t g;
-    uint8_t r;
-} Color;
+#include <color.h>
 
 extern uint64_t u_sys_read(uint64_t fd, char *buf);
 
@@ -18,15 +12,17 @@ extern uint64_t u_sys_write_color(uint64_t fd, const char buf, Color color);
 
 extern uint64_t u_sys_clear();
 
-// extern uint64_t sys_getHours();
+extern uint64_t u_sys_getHours();
 
-// extern uint64_t sys_getMinutes();
+extern uint64_t u_sys_getMinutes();
 
-// extern uint64_t sys_getSeconds();
+extern uint64_t u_sys_getSeconds();
 
 extern uint64_t u_sys_increment_size();
 
 extern uint64_t u_sys_decrement_size();
+
+extern uint64_t u_sys_infoReg(uint64_t *registers);
 
 extern uint64_t u_exc_invopcode();
 

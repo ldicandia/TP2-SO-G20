@@ -16,6 +16,10 @@ EXTERN timer_handler
 EXTERN syscall_handler
 EXTERN exception_handler
 
+GLOBAL regdata_exc
+GLOBAL hasInforeg
+GLOBAL inforeg
+
 SECTION .text
 
 %macro pushState 0
@@ -160,7 +164,6 @@ _interrupt_keyboardHandler:
 	mov [inforeg+5*8], rsi
 	mov [inforeg+6*8], rdi
 	mov [inforeg+7*8], rbp
-	;ov [inforeg+8*8], rsp
 	mov [inforeg+9*8], r8
 	mov [inforeg+10*8], r9
 	mov [inforeg+11*8], r10
