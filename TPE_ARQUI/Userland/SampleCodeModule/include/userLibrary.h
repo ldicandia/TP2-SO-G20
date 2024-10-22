@@ -26,5 +26,11 @@ void increment_size_char();
 
 void decrement_size_char();
 
+void exc_invopcode();
+
+void exc_zerodiv();
+
+void clear();
+
 
 #endif// USER_LIBRARY_H

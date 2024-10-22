@@ -19,12 +19,11 @@ const char *commands[MAX_COMMANDS] = {"undefined", "help", "time", "clear", "sna
 
 
 void shell(){
-	increment_size_char();
-	increment_size_char();
+	//increment_size_char();
+	//increment_size_char();
 
     printStr("Bienvenido al shell\n");
     printStr("Ingrese un caracter\n");
-    printStr(">");
     char c;
 	
 
@@ -44,6 +43,7 @@ static void printLine(char c){
 	if(c == '\n'){
 		lastEnter=0;
 	}
+
 	if(c == '\b' && lastEnter > 0){
 		lastEnter--;
 	}else if (c == '\b' && lastEnter == 0){

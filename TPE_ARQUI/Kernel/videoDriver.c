@@ -1,5 +1,7 @@
 #include <videoDriver.h>
 
+Color WHITE = {255,255,255};
+
 struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
@@ -166,6 +168,10 @@ void driver_clear(){
             putPixel(0x000000, x, y);
         }
     }
+    //mueve el los cursores al principio de la pantalla
+    cursorX = 0;
+    cursorY = 0;
+    driver_printChar('>', WHITE);
 }
 
 void driver_increment_size(){
