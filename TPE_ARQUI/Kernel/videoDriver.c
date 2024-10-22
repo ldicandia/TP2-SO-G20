@@ -44,7 +44,7 @@ struct vbe_mode_info_structure
 // donde arranca la pantalla
 uint16_t cursorX = 0;
 uint16_t cursorY = 0;
-uint8_t charSize = 1;
+uint8_t charSize = 2;
 
 typedef struct vbe_mode_info_structure *VBEInfoPtr;
 
@@ -112,7 +112,7 @@ void drawChar(char letter, Color color)
     if (cursorY > VBE_mode_info->height)
     {
         cursorY -= 16 * charSize;
-        scroll();
+        driver_clear();
     }
     uint8_t *pos = getFontChar(letter);
     for (int x = 0; x < 8; x++)
