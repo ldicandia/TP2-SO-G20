@@ -26,7 +26,7 @@ static void uint64ToHex(uint64_t n, char buf[16])
     } while (i-- != 0);
 }
 
-void exception_handler(int exception, const uint64_t register_data[17])
+void exception_master(int exception, const uint64_t register_data[17])
 {
     driver_printStr("\nERROR: ", red);
     char hexbuf[19];

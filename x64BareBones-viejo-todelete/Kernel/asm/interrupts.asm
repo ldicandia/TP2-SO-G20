@@ -15,10 +15,10 @@ GLOBAL regdata_exc
 GLOBAL inforeg
 GLOBAL hasInforeg
 
-EXTERN timer_handler
-EXTERN keyboard_handler
-EXTERN syscall_handler
-EXTERN exception_handler
+EXTERN timer_master
+EXTERN keyboard_master
+EXTERN sys_master
+EXTERN exception_master
 EXTERN dv_newline
 
 SECTION .text
@@ -181,7 +181,7 @@ interrupt_keyboard:
 	mov byte [hasInforeg], 1
 
 .continue3:
-    call keyboard_handler
+    call keyboard_master
 
     endOfHardwareInterrupt
     popState
@@ -192,7 +192,7 @@ interrupt_keyboard:
 interrupt_timerTick:
 	pushState
 
-	call timer_handler
+	call timer_master
 
 	endOfHardwareInterrupt
 	popState
@@ -204,7 +204,7 @@ exception_divideByZero:
 
 	mov rdi, 00h
 	mov rsi, regdata_exc
-	call exception_handler
+	call exception_master
 
 
 ;ESTO HAY QUE MODIFICARLO
@@ -213,7 +213,7 @@ exception_invalidOpCode:
 
 	mov rdi, 06h
 	mov rsi, regdata_exc
-	call exception_handler
+	call exception_master
 
 
 ; syscalls params:	RDI	RSI	RDX	R10	R8	R9
@@ -221,7 +221,7 @@ exception_invalidOpCode:
 interrupt_syscall:
 	mov rcx, r10
 	mov r9, rax
-	call syscall_handler
+	call sys_master
 	iretq
 
 

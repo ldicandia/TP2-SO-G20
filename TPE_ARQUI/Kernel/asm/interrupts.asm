@@ -11,10 +11,10 @@ GLOBAL _interrupt_keyboardHandler
 GLOBAL _exception_divideByZero
 GLOBAL _exception_invalidOpCode
 
-EXTERN keyboard_handler
-EXTERN timer_handler
-EXTERN syscall_handler
-EXTERN exception_handler
+EXTERN keyboard_master
+EXTERN timer_master
+EXTERN sys_master
+EXTERN exception_master
 
 GLOBAL regdata_exc
 GLOBAL hasInforeg
@@ -186,7 +186,7 @@ _interrupt_keyboardHandler:
 	mov byte [hasInforeg], 1
 
 .continue3:
-    call keyboard_handler
+    call keyboard_master
 
     endOfHardwareInterrupt
     popState
@@ -195,7 +195,7 @@ _interrupt_keyboardHandler:
 _interrupt_timerTick:
 	pushState
 
-	call timer_handler
+	call timer_master
 
 	endOfHardwareInterrupt
 	popState
@@ -207,7 +207,7 @@ _exception_divideByZero:
 
 	mov rdi, 00h
 	mov rsi, regdata_exc
-	call exception_handler
+	call exception_master
 
 
 ;ESTO HAY QUE MODIFICARLO
@@ -216,7 +216,7 @@ _exception_invalidOpCode:
 
 	mov rdi, 06h
 	mov rsi, regdata_exc
-	call exception_handler
+	call exception_master
 
 
 
@@ -226,7 +226,7 @@ _exception_invalidOpCode:
 _interrupt_syscall:
 	mov rcx, r10
 	mov r9, rax
-	call syscall_handler
+	call sys_master
 	iretq
 
 haltcpu:

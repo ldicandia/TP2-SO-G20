@@ -4,8 +4,7 @@
 #include <time.h>
 #include <stdio.h>
 
-
-#define STDIN  0
+#define STDIN 0
 #define STDOUT 1
 #define STDERR 2
 
@@ -23,9 +22,11 @@ int size = 0;
 // #define SYS_CALLS_QTY 14
 #define SYS_CALLS_QTY 16
 
-//llena buff con el caracter leido del teclado
-static uint64_t sys_read(uint64_t fd, char * buff){
-    if (fd != 0){
+// llena buff con el caracter leido del teclado
+static uint64_t sys_read(uint64_t fd, char *buff)
+{
+    if (fd != 0)
+    {
         return -1;
     }
 
@@ -33,70 +34,89 @@ static uint64_t sys_read(uint64_t fd, char * buff){
     return 0;
 }
 
-
-static uint64_t sys_write(uint64_t fd, char buffer) {
-    if (fd != 1){
+static uint64_t sys_write(uint64_t fd, char buffer)
+{
+    if (fd != 1)
+    {
         return -1;
     }
 
-    dv_print(buffer,WHITE,BLACK);
+    dv_print(buffer, WHITE, BLACK);
     return 1;
 }
 
-static uint64_t sys_clear(){
+static uint64_t sys_clear()
+{
     dv_clear(BLACK);
     return 1;
 }
 
-static uint64_t sys_getHours(){
+static uint64_t sys_getHours()
+{
     return getHours();
 }
 
-static uint64_t sys_getMinutes(){
+static uint64_t sys_getMinutes()
+{
     return getMinutes();
 }
 
-static uint64_t sys_getSeconds(){
+static uint64_t sys_getSeconds()
+{
     return getSeconds();
-} 
+}
 
-static uint64_t sys_getScrHeight(){
+static uint64_t sys_getScrHeight()
+{
     return dv_getHeight();
 }
 
-static uint64_t sys_getScrWidth(){
+static uint64_t sys_getScrWidth()
+{
     return dv_getWidth();
 }
 
-static void sys_fillRect (int x, int y, int x2, int y2, Color color){
-    dv_fillRect (x,y,x2,y2,color);
+static void sys_fillRect(int x, int y, int x2, int y2, Color color)
+{
+    dv_fillRect(x, y, x2, y2, color);
 }
 
-static void sys_wait (int ms){
-    if (ms > 0){
+static void sys_wait(int ms)
+{
+    if (ms > 0)
+    {
         int start_ms = ms_elapsed();
-        do { _hlt(); } while (ms_elapsed() - start_ms < ms);
+        do
+        {
+            _hlt();
+        } while (ms_elapsed() - start_ms < ms);
     }
 }
 
-static uint64_t sys_inforeg (uint64_t registers[17]){
-    if(hasInforeg){
-        for(uint8_t i=0; i<17; i++){
+static uint64_t sys_inforeg(uint64_t registers[17])
+{
+    if (hasInforeg)
+    {
+        for (uint8_t i = 0; i < 17; i++)
+        {
             registers[i] = inforeg[i];
         }
     }
     return hasInforeg;
 }
 
-static uint64_t sys_printmem ( uint64_t * address ){
-    if((uint64_t) address > (0x20000000 - 32)){
-      return -1;
+static uint64_t sys_printmem(uint64_t *address)
+{
+    if ((uint64_t)address > (0x20000000 - 32))
+    {
+        return -1;
     }
 
-    uint8_t * aux = (uint8_t *) address;
-        dv_prints("\n",WHITE,BLACK);
-    for(int i=0; i < 32 ; i++){
-        dv_printHex((uint64_t) aux, WHITE, BLACK);
+    uint8_t *aux = (uint8_t *)address;
+    dv_prints("\n", WHITE, BLACK);
+    for (int i = 0; i < 32; i++)
+    {
+        dv_printHex((uint64_t)aux, WHITE, BLACK);
         dv_prints(" = ", WHITE, BLACK);
         dv_printHex(*aux, WHITE, BLACK);
         dv_newline();
@@ -106,58 +126,61 @@ static uint64_t sys_printmem ( uint64_t * address ){
     return 0;
 }
 
-
-static uint64_t sys_pixelPlus(){
+static uint64_t sys_pixelPlus()
+{
     increasePixelScale();
     sys_clear();
     return 1;
 }
 
-static uint64_t sys_pixelMinus(){
+static uint64_t sys_pixelMinus()
+{
     decreasePixelScale();
     sys_clear();
     return 1;
 }
 
-static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt){
-    if (fd != 1){
+static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt)
+{
+    if (fd != 1)
+    {
         return -1;
     }
-    dv_print(buffer,fnt,BLACK);
+    dv_print(buffer, fnt, BLACK);
     return 1;
 }
 
-
-// static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) = {
+// static uint64_t (*sys_masters[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) = {
 //     sys_read, sys_write, sys_clear, sys_getHours, sys_getMinutes, sys_getSeconds,sys_getScrHeight, sys_getScrWidth, sys_fillRect,
 //     sys_wait, sys_inforeg,sys_printmem, sys_pixelPlus, sys_pixelMinus
 // };
 
-//los void los pongo sino me tira warning
-static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
-    (void*)sys_read, //0                                                                      
-    (void*)sys_write, //1
-    (void*)sys_clear, //2
-    (void*)sys_getHours, //3
-    (void*)sys_getMinutes, //4
-    (void*)sys_getSeconds, //5
-    (void*)sys_getScrHeight, //6
-    (void*)sys_getScrWidth,  //7
-    (void*)sys_fillRect,   //8
-    (void*)sys_wait,    //9
-    (void*)sys_inforeg,    //10
-    (void*)sys_printmem,    //11
-    (void*)sys_pixelPlus,  //12
-    (void*)sys_pixelMinus, //13
-    (void*)sys_write_color //14
+// los void los pongo sino me tira warning
+static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
+    (void *)sys_read,         // 0
+    (void *)sys_write,        // 1
+    (void *)sys_clear,        // 2
+    (void *)sys_getHours,     // 3
+    (void *)sys_getMinutes,   // 4
+    (void *)sys_getSeconds,   // 5
+    (void *)sys_getScrHeight, // 6
+    (void *)sys_getScrWidth,  // 7
+    (void *)sys_fillRect,     // 8
+    (void *)sys_wait,         // 9
+    (void *)sys_inforeg,      // 10
+    (void *)sys_printmem,     // 11
+    (void *)sys_pixelPlus,    // 12
+    (void *)sys_pixelMinus,   // 13
+    (void *)sys_write_color   // 14
 };
-
 
 // Devuelve la syscall correspondiente
 //                           rdi           rsi           rdx           rd10          r8           r9
-uint64_t syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {
-    if (rax < SYS_CALLS_QTY && syscall_handlers[rax] != 0){
-        return syscall_handlers[rax](rdi, rsi, rdx, r10, r8);
+uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax)
+{
+    if (rax < SYS_CALLS_QTY && sys_masters[rax] != 0)
+    {
+        return sys_masters[rax](rdi, rsi, rdx, r10, r8);
     }
 
     return 0;

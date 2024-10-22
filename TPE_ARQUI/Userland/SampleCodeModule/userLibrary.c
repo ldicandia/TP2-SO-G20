@@ -128,11 +128,8 @@ void exc_zerodiv()
 
 void printHex(uint64_t n)
 {
-	char hexbuf[19];
-	hexbuf[0] = '0';
-	hexbuf[1] = 'x';
-	hexbuf[18] = '\0';
-	uint64ToHex(n, hexbuf + 2);
+	char hexbuf[2];
+	uint64ToHex(n, hexbuf);
 	printStr(hexbuf);
 }
 

@@ -27,7 +27,7 @@ void irqDispatcher(uint64_t irq)
 
 void int_20()
 {
-	timer_handler();
+	timer_master();
 }
 
 static uint64_t sys_read(uint64_t fd, char *buff)
@@ -109,7 +109,7 @@ static uint64_t sys_inforeg(uint64_t registers[17])
 	return hasInforeg;
 }
 
-static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
+static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
 		(void *)sys_read,						// 0
 		(void *)sys_write,					// 1
 		(void *)sys_write_color,		// 2
@@ -124,11 +124,11 @@ static uint64_t (*syscall_handlers[])(uint64_t, uint64_t, uint64_t, uint64_t, ui
 
 // Devuelve la syscall correspondiente
 //                           rdi           rsi           rdx           rd10          r8           r9
-uint64_t syscall_handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax)
+uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax)
 {
-	if (rax < sizeof(syscall_handlers) / sizeof(syscall_handlers[0]) && syscall_handlers[rax] != 0)
+	if (rax < sizeof(sys_masters) / sizeof(sys_masters[0]) && sys_masters[rax] != 0)
 	{
-		return syscall_handlers[rax](rdi, rsi, rdx, r10, r8);
+		return sys_masters[rax](rdi, rsi, rdx, r10, r8);
 	}
 
 	return 0;

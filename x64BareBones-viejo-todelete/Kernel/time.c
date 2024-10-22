@@ -4,26 +4,31 @@
 static unsigned long ticks = 0;
 extern int _hlt();
 
-void timer_handler() {
+void timer_master()
+{
 	ticks++;
 }
 
-int ticks_elapsed() {
+int ticks_elapsed()
+{
 	return ticks;
 }
 
-int seconds_elapsed() {
+int seconds_elapsed()
+{
 	return ticks / 18;
 }
 
-
-int ms_elapsed() {
-    return ticks*5000/91;
+int ms_elapsed()
+{
+	return ticks * 5000 / 91;
 }
 
-void timer_wait(int delta) { 
+void timer_wait(int delta)
+{
 	int initialTicks = ticks;
-	while(ticks - initialTicks < delta) {
+	while (ticks - initialTicks < delta)
+	{
 		_hlt();
 	}
 }

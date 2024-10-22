@@ -3,7 +3,7 @@
 
 #include "lib.h"
 
-void keyboard_handler(uint8_t keyPressed);
+void keyboard_master(uint8_t keyPressed);
 
 /* Returns character detected from keyboard, Scancodes without ascii symbols will return 0 */
 char getCharFromKeyboard();
