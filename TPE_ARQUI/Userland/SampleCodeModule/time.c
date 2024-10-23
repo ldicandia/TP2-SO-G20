@@ -32,19 +32,33 @@ void user_time()
   // Printing hours
   if (hours < 10)
     printChar('0');
-  printChar(hours + '0');
+  printChar(hours - 3 + '0');
 
   printChar(':');
 
   // Printing minutes
-  if (minutes < 10)
+  if (minutes < 10){
     printChar('0');
-  printChar(minutes + '0');
-
+    printChar(minutes + '0');
+  }
+  else{
+    printChar(minutes/10 + '0');
+    printChar(minutes%10 + '0');
+  }
+  
   printChar(':');
 
   // Printing seconds
-  if (seconds < 10)
+  if (seconds < 10){
     printChar('0');
-  printChar(seconds + '0');
+    printChar(seconds + '0');
+  }
+    else{
+    printChar(minutes/10 + '0');
+    printChar(minutes%10 + '0');
+  }
+  
 }
+
+
+
