@@ -37,6 +37,8 @@ getSeconds:
 	out 70h, al
 	in al, 71h
 
+	movzx rax, al
+
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -49,6 +51,8 @@ getMinutes:
 	out 70h, al
 	in al, 71h
 
+	movzx rax, al
+
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -60,6 +64,8 @@ getHours:
 	mov al, 0x04
 	out 70h, al
 	in al, 71h
+
+	movzx rax, al
 
 	mov rsp, rbp
 	pop rbp

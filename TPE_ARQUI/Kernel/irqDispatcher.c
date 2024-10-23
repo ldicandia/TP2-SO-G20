@@ -72,17 +72,27 @@ static uint64_t sys_clear()
 
 static uint64_t sys_getSeconds()
 {
-	return getSeconds();
+	uint64_t seconds = getSeconds();
+    
+    // Convert from BCD to binary if necessary
+    return ((seconds / 16) * 10) + (seconds % 16);
 }
 
 static uint64_t sys_getMinutes()
 {
-	return getMinutes();
+	uint64_t minutes = getMinutes();
+		
+		// Convert from BCD to binary if necessary
+	return ((minutes / 16) * 10) + (minutes % 16);
+	
 }
 
 static uint64_t sys_getHours()
 {
-	return getHours();
+	uint64_t hours = getHours();
+	
+	// Convert from BCD to binary if necessary
+	return ((hours / 16) * 10) + (hours % 16);
 }
 
 static uint64_t sys_increment_size()
