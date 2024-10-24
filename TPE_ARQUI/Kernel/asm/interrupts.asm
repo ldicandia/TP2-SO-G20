@@ -11,6 +11,8 @@ GLOBAL _interrupt_keyboardHandler
 GLOBAL _exception_divideByZero
 GLOBAL _exception_invalidOpCode
 
+
+EXTERN getStackBase
 EXTERN keyboard_master
 EXTERN timer_master
 EXTERN sys_master
@@ -211,6 +213,8 @@ _exception_divideByZero:
 	
 	mov rax, QWORD codeModule
 	mov [rsp], rax 
+	call getStackBase
+	mov [rsp+24], rax
 	iretq
 
 _exception_invalidOpCode:
@@ -222,6 +226,8 @@ _exception_invalidOpCode:
 
 	mov rax, QWORD codeModule
 	mov [rsp], rax 
+	call getStackBase
+	mov [rsp+24], rax
 	iretq
 
 
