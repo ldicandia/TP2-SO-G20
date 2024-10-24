@@ -115,7 +115,7 @@ void exc_zerodiv(){
 }
 
 void printHex(uint64_t n){
-	char hexbuf[2];
+	char hexbuf[16];
 	uint64ToHex(n, hexbuf);
 	printStr(hexbuf);
 }
