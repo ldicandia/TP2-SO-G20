@@ -5,7 +5,6 @@
 #define ZERO_ID 0
 #define INVAL_OPCODE_ID 6
 
-extern void reset();
 extern int _hlt(void);
 
 Color red = {30, 30, 255};
@@ -55,5 +54,5 @@ void exception_master(int exception, const uint64_t register_data[17])
             driver_printStr("   ", white);
     }
 
-    reset();
+    return;
 }

@@ -204,13 +204,15 @@ _interrupt_timerTick:
 
 _exception_divideByZero:
 	saveRegistersException
-
+	
 	mov rdi, 00h
 	mov rsi, regdata_exc
 	call exception_master
+	
+	mov rax, QWORD codeModule
+	mov [rsp], rax 
+	iretq
 
-
-;ESTO HAY QUE MODIFICARLO
 _exception_invalidOpCode:
 	saveRegistersException
 
@@ -218,6 +220,9 @@ _exception_invalidOpCode:
 	mov rsi, regdata_exc
 	call exception_master
 
+	mov rax, QWORD codeModule
+	mov [rsp], rax 
+	iretq
 
 
 
@@ -244,4 +249,5 @@ SECTION .bss
 	inforeg	resq	17	; reserve space for 17 qwords (one for each register we want to show on inforeg).
 	hasInforeg 		resb 	1 	; reserve 1 byte for a boolean on whether a regdump has already occurred.
 	left_shift  	resb 	1   ; shift presionado
+	codeModule equ 0x400000 ;user
 

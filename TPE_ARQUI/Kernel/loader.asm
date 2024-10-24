@@ -12,9 +12,7 @@ hang:
 	cli
 	hlt	; halt machine should kernel return
 	jmp hang
-
-reset:
-	call getStackBase
-	mov rsp, rax				
-	call main
 	
+
+section .data
+codeModule equ 0x400000
