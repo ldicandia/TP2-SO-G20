@@ -44,8 +44,8 @@ void exception_master(int exception, const uint64_t register_data[17])
 
     for (int i = 0; i < 16; i++)
     {
-        driver_printStr(registers[i], white);
-        driver_printStr(": ", white);
+        driver_printStr(registers[i], red);
+        driver_printStr(": ", red);
         uint64ToHex(register_data[i], hexbuf + 2);
         driver_printStr(hexbuf, white);
         if (i % 4 == 3)

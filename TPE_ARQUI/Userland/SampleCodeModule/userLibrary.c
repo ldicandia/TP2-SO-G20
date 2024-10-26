@@ -53,6 +53,13 @@ void printCharColor(char c, Color fnt){
 	u_sys_write_color(STDOUT, c, fnt);
 }
 
+void printStrColor(char *str, Color fnt){
+	for (int i = 0; str[i]; i++)
+	{
+		u_sys_write_color(STDOUT, str[i], fnt);
+	}
+}
+
 void printStr(char *str){
 	for (int i = 0; str[i]; i++)
 {
@@ -85,13 +92,15 @@ void inforeg(){
 	uint64_t registers[17];
 	int i = u_sys_infoReg(registers);
 
+	static Color red = {30, 30, 255};
+
 	printChar('\n');
 	if (i == 1)
 {
 		for (int i = 0; i < 17; i++)
 	{
-			printStr(register_names[i]);
-			printStr(": ");
+			printStrColor(register_names[i], red);
+			printStrColor(": ", red);
 			uint64ToHex(registers[i], hexbuf + 2);
 			printStr(hexbuf);
 			if (i % 4 == 3)
@@ -102,7 +111,7 @@ void inforeg(){
 	}
 	else
 {
-		printStr("\nTodavia no hay un snapshot de los registros, presione SHIFT + S para sacar una foto\n");
+		printStr("\nPress 'SHIFT + TAB' to save registers and then inforeg");
 	}
 }
 

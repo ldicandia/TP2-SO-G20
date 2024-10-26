@@ -44,7 +44,7 @@ struct vbe_mode_info_structure
 // donde arranca la pantalla
 uint16_t cursorX = 0;
 uint16_t cursorY = 0;
-uint8_t charSize = 2;
+uint8_t charSize = 1;
 
 typedef struct vbe_mode_info_structure *VBEInfoPtr;
 

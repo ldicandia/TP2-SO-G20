@@ -35,13 +35,7 @@ void (*command_func[COMMANDS_SIZE])() = {
 
 void shell()
 {
-	// increment_size_char();
-	// increment_size_char();
-
-	printStr("Bienvenido al shell\n");
-	printStr("Ingrese un caracter\n");
 	char c;
-
 	while (1)
 	{
 		c = getChar();
@@ -88,16 +82,17 @@ static void printLine(char c)
 
 void help()
 {
-	printStr("\n--------------------| MANUAL |--------------------");
-	printStr("\n time                     shows actual time");
-	printStr("\n clear                    clears the screen");
-	printStr("\n snake [cant jugadores]   starts de Snake game");
-	printStr("\n inforeg                  prints the regsiter's values");
-	printStr("\n zerodiv                  division by cero exception");
-	printStr("\n invopcode                tests the invalid operation code");
-	printStr("\n increment                increase letter size");
-	printStr("\n decrement                decrease letter size");
-	printStr("\n---------------------------------------------------");
+    static Color WHITE = {0xFF, 0xFF, 0xFF};
+    printStrColor("\n--------------------| MANUAL |--------------------", WHITE);
+    printStrColor("\n time                     shows actual time", WHITE);
+    printStrColor("\n clear                    clears the screen", WHITE);
+    printStrColor("\n snake [qty players]      starts de Snake game", WHITE);
+    printStrColor("\n inforeg                  after SHIFT + TAB prints regsiter's", WHITE);
+    printStrColor("\n zerodiv                  division by zero exception test",	WHITE);
+    printStrColor("\n invopcode                tests the invalid operation code", WHITE);
+    printStrColor("\n increment                increase letter size", WHITE);
+    printStrColor("\n decrement                decrease letter size", WHITE);
+    printStrColor("\n---------------------------------------------------", WHITE);
 }
 
 static int strcmp_shell(char *str1, char *str2)

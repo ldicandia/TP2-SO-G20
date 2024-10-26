@@ -10,6 +10,8 @@ char getChar();
 
 void printCharColor(char c, Color fnt);
 
+void printStrColor(char *str, Color fnt);
+
 void printStr(char *str);
 
 int isChar(char c);

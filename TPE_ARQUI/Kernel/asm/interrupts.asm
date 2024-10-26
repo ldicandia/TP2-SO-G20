@@ -155,9 +155,9 @@ _interrupt_keyboardHandler:
 	;si estan apretados SHIFT+S se copian los registros en el vector regdataDump
 	;mover RSP a donde estaba antes de ser llamada la excepcion
 .continue2:
-	cmp byte [left_shift], 1 	; 's' pressed
+	cmp byte [left_shift], 1 
 	jne .continue3
-	cmp al, 0x1F
+	cmp al, 0x0F     ;'TAB' pressed
 	jne .continue3
 
 	mov [inforeg+2*8], rbx
