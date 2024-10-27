@@ -3,6 +3,7 @@
 #include <user_time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 
 
@@ -20,6 +21,11 @@ int getSeconds()
 {
   return u_sys_getSeconds(); // returns u_int64_t
 }
+
+void sleep(int ms){
+  u_sys_sleep(ms);
+}
+
 
 
 static void print_time(int time)

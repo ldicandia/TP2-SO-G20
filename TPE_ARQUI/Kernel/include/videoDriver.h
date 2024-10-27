@@ -22,5 +22,6 @@ void driver_increment_size();
 void driver_decrement_size();
 void driver_backspace();
 void drawChar(char letter, Color color);
+void drawSquare(int x, int y, uint32_t fillColor);
 
 #endif

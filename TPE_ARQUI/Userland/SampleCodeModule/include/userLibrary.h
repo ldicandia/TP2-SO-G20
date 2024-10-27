@@ -34,4 +34,8 @@ void printHex(uint64_t n);
 
 void uint64ToHex(uint64_t n, char buf[16]);
 
+void drawSquare(int x, int y, uint32_t fillColor);
+
+void sleep_miliseconds(int miliseconds);
+
 #endif // USER_LIBRARY_H

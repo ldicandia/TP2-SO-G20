@@ -26,4 +26,8 @@ static uint64_t sys_getMinutes();
 
 static uint64_t sys_getHours();
 
+static uint64_t sys_drawSquare(int x, int y, uint32_t fillColor);
+
+static uint64_t sys_sleep(uint64_t ms);
+
 #endif // IRQ_DISPATCHER_H

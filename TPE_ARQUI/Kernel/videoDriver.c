@@ -195,6 +195,27 @@ void driver_clear()
     cursorX = 0;
     cursorY = 0;
 }
+void drawSquare(int x, int y, uint32_t fillColor) {
+    int squareSize = 40; // Define the size of the square
+
+    // Draw top and bottom borders
+    for (int i = 0; i < squareSize; i++) {
+        putPixel(0x000000, x + i, y); // Top border
+        putPixel(0x000000, x + i, y + squareSize - 1); // Bottom border
+    }
+
+    // Draw left and right borders and fill the inside
+    for (int j = 1; j < squareSize - 1; j++) {
+        putPixel(0x000000, x, y + j); // Left border
+        putPixel(0x000000, x + squareSize - 1, y + j); // Right border
+
+        // Fill the inside
+        for (int i = 1; i < squareSize - 1; i++) {
+            putPixel(fillColor, x + i, y + j);
+        }
+    }
+}
+
 
 void driver_increment_size()
 {

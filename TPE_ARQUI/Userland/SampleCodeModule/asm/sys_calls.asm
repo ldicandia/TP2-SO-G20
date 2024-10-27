@@ -8,6 +8,8 @@ GLOBAL u_sys_getSeconds
 GLOBAL u_sys_increment_size
 GLOBAL u_sys_decrement_size
 GLOBAL u_sys_infoReg
+GLOBAL u_sys_drawSquare
+GLOBAL u_sys_sleep
 
 section .text
 
@@ -59,5 +61,13 @@ u_sys_infoReg:
     int 0x80
     ret
 
+u_sys_drawSquare:
+    mov rax, 0x0A
+    int 0x80
+    ret
 
+u_sys_sleep: 
+    mov rax, 0x0B
+    int 0x80
+    ret
     

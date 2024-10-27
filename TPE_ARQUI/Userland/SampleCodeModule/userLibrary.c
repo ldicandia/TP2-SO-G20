@@ -31,6 +31,10 @@ void printChar(char c){
 	u_sys_write(STDOUT, c);
 }
 
+void drawSquare(int x, int y, uint32_t fillColor){
+	u_sys_drawSquare(x, y, fillColor);
+}
+
 char getChar(){
 	char c;
 	u_sys_read(STDIN, &c);
@@ -137,4 +141,14 @@ void uint64ToHex(uint64_t n, char buf[16]){
 		buf[i] = (digit < 10 ? '0' : ('A' - 10)) + digit;
 		n /= 16;
 	} while (i-- != 0);
+}
+
+
+int secondsToMiliseconds(int seconds){
+	return seconds * 1000;
+}
+
+void sleep_miliseconds(int miliseconds){
+	int start = secondsToMiliseconds(getSeconds());
+	while (secondsToMiliseconds(getSeconds()) - start < miliseconds);
 }

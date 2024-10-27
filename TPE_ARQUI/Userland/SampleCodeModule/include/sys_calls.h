@@ -28,4 +28,8 @@ extern uint64_t u_exc_invopcode();
 
 extern uint64_t u_exc_zerodiv();
 
+extern uint64_t u_sys_drawSquare(int x, int y, uint32_t fillColor);
+
+extern uint64_t u_sys_sleep(int ms);
+
 #endif

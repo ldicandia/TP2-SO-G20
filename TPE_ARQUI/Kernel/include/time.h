@@ -4,5 +4,6 @@
 void timer_master();
 int ticks_elapsed();
 int seconds_elapsed();
+int ms_elapsed();
 
 #endif

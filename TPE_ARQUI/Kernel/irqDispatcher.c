@@ -10,6 +10,7 @@ extern const uint64_t inforeg[17];
 extern uint64_t getSeconds();
 extern uint64_t getMinutes();
 extern uint64_t getHours();
+extern int _hlt();
 
 static Color WHITE = {255, 255, 255};
 static void int_20();
@@ -107,6 +108,11 @@ static uint64_t sys_decrement_size()
 	return 1;
 }
 
+static uint64_t sys_drawSquare(int x, int y, uint32_t fillColor){
+	drawSquare(x, y, fillColor);
+	return 1;
+}
+
 static uint64_t sys_inforeg(uint64_t registers[17])
 {
 	if (hasInforeg)
@@ -117,6 +123,19 @@ static uint64_t sys_inforeg(uint64_t registers[17])
 		}
 	}
 	return hasInforeg;
+}
+
+static uint64_t sys_sleep(uint64_t ms)
+{
+	if (ms > 0)
+    {
+        int start_ms = ms_elapsed();
+        do
+        {
+            _hlt();
+        } while (ms_elapsed() - start_ms < ms);
+	}
+	return 1;
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
@@ -130,6 +149,8 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_
 		(void *)sys_getMinutes,			// 7
 		(void *)sys_getSeconds,			// 8
 		(void *)sys_inforeg,				// 9
+		(void *)sys_drawSquare,			// 10
+		(void *)sys_sleep						// 11
 };
 
 // Devuelve la syscall correspondiente

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <user_time.h>
 #include <string.h>
+#include <snake.h>
 #define MAX_BUFFER 254
 #define COMMANDS_SIZE 10
 
@@ -48,7 +49,7 @@ void shell()
 
 static void printLine(char c)
 {
-	if (isChar(c) || isDigit(c))
+	if (isChar(c) || isDigit(c) || c ==' ')
 	{
 		buffer[lastEnter] = c;
 		lastEnter++;
@@ -134,10 +135,10 @@ void notFound()
 
 void shell_snake_1()
 {
-	// snake(1);
+			snake(1);
 }
 
 void shell_snake_2()
 {
-	// snake(2);
+			snake(2);
 }

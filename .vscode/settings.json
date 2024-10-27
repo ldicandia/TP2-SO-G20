@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "sys_calls.h": "c"
+    "sys_calls.h": "c",
+    "userlibrary.h": "c",
+    "stdlib.h": "c"
   }
 }
