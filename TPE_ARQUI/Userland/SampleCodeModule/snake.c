@@ -4,12 +4,14 @@
 #include <userLibrary.h>
 #include <time.h>
 #include <snake.h>
+#include <string.h>
 
 #define LCG_A 1664525
 #define LCG_C 1013904223
 #define LCG_M 0xFFFFFFFF
 
 static unsigned int lcg_seed = 1;
+static int score = 0;
 
 void lcg_srand() {
     unsigned int seconds = getSeconds();
@@ -106,6 +108,7 @@ void updateGame(GameState *game) {
         game->snake.length++;
         game->food.x = lcg_rand() % WIDTH;
         game->food.y = lcg_rand() % HEIGHT;
+        score++;
     }
 }
 
@@ -134,6 +137,8 @@ void snake(int players) {
         GameState game = {0};
         initGame(&game);
         printStr("                                                                                                                Use WASD to move\n");
+        printStr("                                                                                                     Score: ");
+        printChar(score + '0');
 
         while (!game.gameOver) {
             if (getChar() != 0) {
@@ -154,6 +159,7 @@ void snake(int players) {
         decrement_size_char();
         decrement_size_char();
         sleep(1500);
+        score = 0;
         clear();
     }else if(players == 2){//esta ultra lento esto
         GameState game1 = {0};
@@ -165,6 +171,7 @@ void snake(int players) {
         printStr("                                                                                                     Player 1 'W-A-S-D' to move\n");
         printStr("                                                                                                     Player 2 'I-J-K-L' to move\n");
 
+
         while (!game1.gameOver && !game2.gameOver) {
             if (getChar() != 0) {
                 char input = getChar();
@@ -175,7 +182,7 @@ void snake(int players) {
             updateGame(&game2);
             redrawBoard(&game1, 0x00FF00);
             redrawBoard(&game2, 0xFF00FF);
-            sleep(150);
+            sleep(250);
         }
 
         clear();
@@ -185,6 +192,7 @@ void snake(int players) {
         decrement_size_char();
         decrement_size_char();
         sleep(1500);
+        score = 0;
         clear();
 
     }else{

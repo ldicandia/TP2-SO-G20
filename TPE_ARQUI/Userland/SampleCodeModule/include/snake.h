@@ -12,7 +12,7 @@
 #define HEIGHT 19
 #define INITIAL_SNAKE_LENGTH 3
 #define SQUARE_SIZE 40
-#define MAX_SNAKE_LENGTH 100
+#define MAX_SNAKE_LENGTH WIDTH*HEIGHT-1
 
 typedef enum { UP, DOWN, LEFT, RIGHT } Direction;
 
