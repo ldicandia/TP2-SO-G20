@@ -1,6 +1,7 @@
 /* sampleCodeModule.c */
 #include <userLibrary.h>
 #include <shell.h>
+#include <time.h>
 
 char *v = (char *)0xB8000 + 79 * 2;
 int started = 0;
@@ -14,7 +15,6 @@ int main()
 {
 	printStrColor("\nITBA Shell Group 14\n", CYAN);
 	printStrColor("ALFIERI - DI CANDIA - GERMANO\n", CYAN);
-
 	shell();
 	return 0;
 }

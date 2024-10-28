@@ -130,6 +130,25 @@ void changeDirection2(GameState *game, char input) {
     }
 }
 
+void scoreUpdate(){
+    if(score < 10){
+                printChar('\b');
+                printChar(score + '0');
+    }else if (score < 100){
+                printChar('\b');
+                printChar('\b');
+                printChar(score/10 + '0');
+                printChar(score%10 + '0');
+    }else if(score < 1000){
+                printChar('\b');
+                printChar('\b');
+                printChar('\b');
+                printChar(score/100 + '0');
+                printChar((score/10)%10 + '0');
+                printChar(score%10 + '0');
+    }
+}
+
 void snake(int players) {
     if(players == 1){
         clear();
@@ -147,6 +166,7 @@ void snake(int players) {
             }
             updateGame(&game);
             redrawBoard(&game, 0x00FF00);
+            scoreUpdate();
             sleep(100);
         }
 
@@ -170,6 +190,8 @@ void snake(int players) {
         initGame(&game2);
         printStr("                                                                                                     Player 1 'W-A-S-D' to move\n");
         printStr("                                                                                                     Player 2 'I-J-K-L' to move\n");
+        printStr("                                                                                                     Score: ");
+        printChar(score + '0');
 
 
         while (!game1.gameOver && !game2.gameOver) {
@@ -182,6 +204,7 @@ void snake(int players) {
             updateGame(&game2);
             redrawBoard(&game1, 0x00FF00);
             redrawBoard(&game2, 0xFF00FF);
+            scoreUpdate();
             sleep(250);
         }
 

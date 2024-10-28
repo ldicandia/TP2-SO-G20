@@ -1,6 +1,5 @@
 #include <sys_calls.h>
 #include <userLibrary.h>
-#include <user_time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -9,7 +8,7 @@
 
 int getHours()
 {
-  return u_sys_getHours()-3; // returns u_int64_t, -3 because of the timezone argentina
+  return (u_sys_getHours() + 21) % 24; //transform to -3 GMT
 }
 
 int getMinutes()
