@@ -7,4 +7,4 @@ int getSeconds();
 void sleep(int ms);
 void user_time();
 
-#endif // TIME_H
+#endif  // TIME_H

@@ -1,47 +1,34 @@
-#include <sys_calls.h>
-#include <userLibrary.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys_calls.h>
 #include <time.h>
+#include <userLibrary.h>
 
-
-
-int getHours()
-{
-  return (u_sys_getHours() + 21) % 24; //transform to -3 GMT
+int getHours() {
+  return (u_sys_getHours() + 21) % 24;  // transform to -3 GMT
 }
 
-int getMinutes()
-{
-  return u_sys_getMinutes(); // returns u_int64_t
+int getMinutes() {
+  return u_sys_getMinutes();  // returns u_int64_t
 }
 
-int getSeconds()
-{
-  return u_sys_getSeconds(); // returns u_int64_t
+int getSeconds() {
+  return u_sys_getSeconds();  // returns u_int64_t
 }
 
-void sleep(int ms){
-  u_sys_sleep(ms);
-}
+void sleep(int ms) { u_sys_sleep(ms); }
 
-
-
-static void print_time(int time)
-{
-  if (time < 10){
+static void print_time(int time) {
+  if (time < 10) {
     printChar('0');
     printChar(time + '0');
-  }
-  else{
-    printChar(time/10 + '0');
-    printChar(time%10 + '0');
+  } else {
+    printChar(time / 10 + '0');
+    printChar(time % 10 + '0');
   }
 }
 
-
-void user_time()
-{
+void user_time() {
   int hours, minutes, seconds;
 
   hours = getHours();
@@ -58,9 +45,4 @@ void user_time()
   printChar(':');
   // Printing seconds
   print_time(seconds);
-
-
 }
-
-
-

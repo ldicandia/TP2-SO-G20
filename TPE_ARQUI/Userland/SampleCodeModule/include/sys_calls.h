@@ -1,8 +1,8 @@
 #ifndef _SYS_CALLS_H_
 #define _SYS_CALLS_H_
 
-#include <stdint.h>
 #include <color.h>
+#include <stdint.h>
 
 extern uint64_t u_sys_read(uint64_t fd, char *buf);
 

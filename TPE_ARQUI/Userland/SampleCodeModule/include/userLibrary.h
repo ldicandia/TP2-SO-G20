@@ -1,8 +1,8 @@
 #ifndef USER_LIBRARY_H
 #define USER_LIBRARY_H
 
-#include <stdint.h>
 #include <color.h>
+#include <stdint.h>
 
 void printChar(char c);
 
@@ -38,4 +38,4 @@ void drawSquare(int x, int y, uint32_t fillColor);
 
 void sleep_miliseconds(int miliseconds);
 
-#endif // USER_LIBRARY_H
+#endif  // USER_LIBRARY_H
