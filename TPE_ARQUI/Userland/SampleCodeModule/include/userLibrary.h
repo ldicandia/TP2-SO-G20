@@ -38,4 +38,8 @@ void drawSquare(int x, int y, uint32_t fillColor);
 
 void sleep_miliseconds(int miliseconds);
 
+void playSound(uint32_t frequence, uint64_t duration);
+
+void stopSound();
+
 #endif  // USER_LIBRARY_H

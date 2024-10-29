@@ -39,6 +39,9 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 
 void shell() {
   char c;
+  /////////////////////////////TEST///////////////////////////////
+  playSound(1000, 100);
+  /////////////////////////////TEST///////////////////////////////
   while (1) {
     c = getChar();
     if (lastc != c) {

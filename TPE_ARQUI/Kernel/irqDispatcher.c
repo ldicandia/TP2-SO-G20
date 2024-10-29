@@ -1,4 +1,7 @@
+#include "irqDispatcher.h"
+
 #include <keyboard.h>
+#include <sound.h>
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>
@@ -104,13 +107,23 @@ static uint64_t sys_inforeg(uint64_t registers[17]) {
   return hasInforeg;
 }
 
-static uint64_t sys_sleep(uint64_t ms) {
+uint64_t sys_sleep(uint64_t ms) {
   if (ms > 0) {
     int start_ms = ms_elapsed();
     do {
       _hlt();
     } while (ms_elapsed() - start_ms < ms);
   }
+  return 1;
+}
+
+static uint64_t sys_playSound(uint32_t freq, uint64_t duration) {
+  beep(freq, duration);
+  return 1;
+}
+
+static uint64_t sys_stopSound() {
+  stopSpeaker();
   return 1;
 }
 
@@ -127,7 +140,9 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
     (void *)sys_getSeconds,      // 8
     (void *)sys_inforeg,         // 9
     (void *)sys_drawSquare,      // 10
-    (void *)sys_sleep            // 11
+    (void *)sys_sleep,           // 11
+    (void *)sys_playSound,       // 12
+    (void *)sys_stopSound,       // 13
 };
 
 // Devuelve la syscall correspondiente

@@ -10,6 +10,8 @@ GLOBAL u_sys_decrement_size
 GLOBAL u_sys_infoReg
 GLOBAL u_sys_drawSquare
 GLOBAL u_sys_sleep
+GLOBAL u_sys_playSound
+GLOBAL u_sys_stopSound
 
 section .text
 
@@ -70,4 +72,13 @@ u_sys_sleep:
     mov rax, 0x0B
     int 0x80
     ret
+
+u_sys_playSound:
+    mov rax, 0x0C
+    int 0x80
+    ret
     
+u_sys_stopSound:
+    mov rax, 0x0D
+    int 0x80
+    ret

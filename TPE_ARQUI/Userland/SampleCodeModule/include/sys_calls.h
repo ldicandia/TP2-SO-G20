@@ -32,4 +32,8 @@ extern uint64_t u_sys_drawSquare(int x, int y, uint32_t fillColor);
 
 extern uint64_t u_sys_sleep(int ms);
 
+extern uint64_t u_sys_playSound(uint32_t frequence, uint64_t duration);
+
+extern uint64_t u_sys_stopSound();
+
 #endif

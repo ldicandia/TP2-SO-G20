@@ -128,3 +128,9 @@ void sleep_miliseconds(int miliseconds) {
   int start = secondsToMiliseconds(getSeconds());
   while (secondsToMiliseconds(getSeconds()) - start < miliseconds);
 }
+
+void playSound(uint32_t frequence, uint64_t duration) {
+  u_sys_playSound(frequence, duration);
+}
+
+void stopSound() { u_sys_stopSound(); }
