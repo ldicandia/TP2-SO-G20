@@ -121,7 +121,10 @@ void updateGame(GameState *game) {
     game->food.x = lcg_rand() % WIDTH;
     game->food.y = lcg_rand() % HEIGHT;
     score++;
-    playSound(1500, 1);
+    playSound(261.63, 2);
+    playSound(329.63, 2);
+    playSound(392.00, 2);
+
   }
 }
 
