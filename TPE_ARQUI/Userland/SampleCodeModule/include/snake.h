@@ -31,7 +31,7 @@ typedef struct {
   Point food;
   Snake snake;
   int gameOver;
-  int board[HEIGHT][WIDTH];  // New field to keep track of the previous state
+  int board[HEIGHT][WIDTH];
 } GameState;
 
 void snake(int players);
@@ -39,4 +39,4 @@ void drawBoard(GameState *game);
 void redrawBoard(GameState *game, uint32_t colorReciever);
 void drawSquare(int x, int y, uint32_t color);
 
-#endif  // SNAKE_H
+#endif

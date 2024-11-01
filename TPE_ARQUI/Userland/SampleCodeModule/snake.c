@@ -25,10 +25,10 @@ unsigned int lcg_rand() {
   return lcg_seed;
 }
 
-void initGame(GameState *game) {
+void initGame(GameState *game, Direction dir) {
   game->gameOver = 0;
   game->snake.length = INITIAL_SNAKE_LENGTH;
-  game->snake.dir = RIGHT;
+  game->snake.dir = dir;
 
   for (int y = 0; y < HEIGHT; y++) {
     for (int x = 0; x < WIDTH; x++) {
@@ -38,7 +38,7 @@ void initGame(GameState *game) {
 
   game->food.x = WIDTH / 2;
   game->food.y = HEIGHT / 2;
-  game->board[game->food.y][game->food.x] = 2;  // Assuming 2 represents food
+  game->board[game->food.y][game->food.x] = 2;  // 2 representa comida
 
   drawBoard(game);
 }
@@ -186,7 +186,7 @@ void snake(int players) {
     clear();
     lcg_srand();  // Initialize the custom random number generator
     GameState game = {0};
-    initGame(&game);
+    initGame(&game, RIGHT);
     printStr(
         "                                                                      "
         "                                          Use WASD to move\n");
@@ -209,7 +209,6 @@ void snake(int players) {
     }
 
     lcg_srand();
-    initGame(&game);
     clear();
     printStr("Game Over!\n");
     decrement_size_char();
@@ -222,8 +221,8 @@ void snake(int players) {
     GameState game2 = {0};
     clear();
     lcg_srand();
-    initGame(&game1);
-    initGame(&game2);
+    initGame(&game1, RIGHT);
+    initGame(&game2, DOWN);
     printStr(
         "                                                                      "
         "                               Player 1 'W-A-S-D' to move\n");
