@@ -39,9 +39,6 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 
 void shell() {
   char c;
-  /////////////////////////////TEST///////////////////////////////
-  playSound(1000, 100);
-  /////////////////////////////TEST///////////////////////////////
   while (1) {
     c = getChar();
     if (lastc != c) {
@@ -58,7 +55,7 @@ static void printLine(char c) {
   if (c == '\n') {
     buffer[lastEnter] = '\0';
     readCommand();
-    buffer[0] = '\0';  // vacio el buffer
+    buffer[0] = '\0';
     printStr(buffer);
     lastEnter = 0;
   }
@@ -71,13 +68,9 @@ static void printLine(char c) {
     return;
   }
 
-  // salvo el caso de querer borrar despues de un enter, todos los caracteres se
-  // imprimen
   printChar(c);
   lastc = c;
 }
-
-// make the newline function
 
 void help() {
   static Color WHITE = {0xFF, 0xFF, 0xFF};

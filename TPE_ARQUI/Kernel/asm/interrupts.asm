@@ -61,7 +61,6 @@ SECTION .text
 %endmacro
 
 %macro endOfHardwareInterrupt 0 ; para el keyboard y el timer tick
-    ; signal pic EOI (End of Interrupt)
     mov al, 20h
     out 20h, al
 %endmacro
@@ -84,21 +83,21 @@ SECTION .text
 	mov [regdata_exc+120], 	r15 ;15
 
 
-	mov rax, rsp ; We get the value of RSP when the exception ocurred by adding the amount of pushed bytes to the current value of RSP.
+	mov rax, rsp 
 	add rax, 40
-	mov [regdata_exc+56], rax ;7
+	mov [regdata_exc+56], rax
 
-	mov rax, [rsp] ; We get the value of RIP when the exception ocurred by taking the interruption's return address.
-	mov [regdata_exc+128], rax ;16
+	mov rax, [rsp]
+	mov [regdata_exc+128], rax
 
-	mov rax, [rsp+8] ; We get the value of RFLAGS the same way (it is pushed when an interrupt occurs).
-	mov [regdata_exc+136], rax ;17
+	mov rax, [rsp+8]
+	mov [regdata_exc+136], rax 
 %endmacro
 
 %macro exceptionHandler 1
 	pushState
 
-	mov rdi, %1 ; pasaje de parametro
+	mov rdi, %1
 	call exceptionDispatcher
 
 	popState
@@ -131,7 +130,7 @@ picMasterMask:
 picSlaveMask:
 	push    rbp
     mov     rbp, rsp
-    mov     ax, di  ; ax = mascara de 16 bits
+    mov     ax, di 
     out	0A1h,al
     pop     rbp
     retn
@@ -140,10 +139,10 @@ _interrupt_keyboardHandler:
 	pushState
 
 	xor rax, rax
-	in al, 60h 		; 60 es el puerto del teclado AL : 8 bits
-	mov rdi, rax 	; recepcion del primer parametro
+	in al, 60h 	
+	mov rdi, rax 
 
-	cmp al, 0x2A 	;left shift pressed
+	cmp al, 0x2A 	;left shift
 	jne .continue1
 	mov byte [left_shift], 1
 
@@ -152,8 +151,6 @@ _interrupt_keyboardHandler:
 	jne .continue2
 	mov byte [left_shift], 0
 
-	;si estan apretados SHIFT+S se copian los registros en el vector regdataDump
-	;mover RSP a donde estaba antes de ser llamada la excepcion
 .continue2:
 	cmp byte [left_shift], 1 
 	jne .continue3
@@ -176,14 +173,14 @@ _interrupt_keyboardHandler:
 	mov [inforeg+16*8], r15
 
 	mov rax, rsp
-	add rax, 160 ;120 del popstate 
-	mov [inforeg+8*8], rax ;RSP
+	add rax, 160 
+	mov [inforeg+8*8], rax 
 
 	mov rax, [rsp+15*8]
-	mov [inforeg], rax ;RIP
+	mov [inforeg], rax 
 	
 	mov rax, [rsp+14*8]
-	mov [inforeg+1*8], rax ;RAX
+	mov [inforeg+1*8], rax 
 
 	mov byte [hasInforeg], 1
 
@@ -232,8 +229,8 @@ _exception_invalidOpCode:
 
 
 
-; syscalls params:	RDI	RSI	RDX	R10	R8	R9
-; C 	params   :	RDI RSI RDX RCX R8  R9
+; RDI	RSI	RDX	R10	R8	R9
+; RDI RSI RDX RCX R8  R9
 _interrupt_syscall:
 	mov rcx, r10
 	mov r9, rax
@@ -251,9 +248,9 @@ haltcpu:
 
 SECTION .bss
 	aux resq 1
-	regdata_exc		resq	18	; reserva 18 bytes para guardar los registros para excepciones
-	inforeg	resq	17	; reserve space for 17 qwords (one for each register we want to show on inforeg).
-	hasInforeg 		resb 	1 	; reserve 1 byte for a boolean on whether a regdump has already occurred.
-	left_shift  	resb 	1   ; shift presionado
-	codeModule equ 0x400000 ;user
+	regdata_exc		resq	18	
+	inforeg	resq	17	
+	hasInforeg 		resb 	1 	
+	left_shift  	resb 	1   
+	codeModule equ 0x400000 
 

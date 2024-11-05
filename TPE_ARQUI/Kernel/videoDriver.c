@@ -101,7 +101,6 @@ void driver_backspace() {
 void drawChar(char letter, Color color) {
   if (cursorX >=
       VBE_mode_info->width - (VBE_mode_info->width % (8 * charSize))) {
-    // pasa a la siguiente linea desde la primera pos a la izquierda
     cursorX = 0;
     cursorY += 16 * charSize;
   }
@@ -143,23 +142,18 @@ void driver_printStr(char *str, Color color) {
 }
 
 void scroll() {
-  // int nextX, nextY;
   for (int x = 0; x < VBE_mode_info->width; x++) {
     for (int y = 0; y < VBE_mode_info->height - 16 * charSize; y++) {
-      // Obtiene el color del píxel de la siguiente línea.
       uint8_t *framebuffer = (uint8_t *)(uintptr_t)VBE_mode_info->framebuffer;
       uint64_t nextOffset = x * (VBE_mode_info->bpp / 8) +
                             (y + 16 * charSize) * VBE_mode_info->pitch;
       uint32_t nextPixelColor = framebuffer[nextOffset] |
                                 (framebuffer[nextOffset + 1] << 8) |
                                 (framebuffer[nextOffset + 2] << 16);
-
-      // Pone el color en la posición actual.
       putPixel(nextPixelColor, x, y);
     }
   }
 
-  // Borra la última línea (deja en negro)
   for (int x = 0; x < VBE_mode_info->width; x++) {
     for (int y = VBE_mode_info->height - 16 * charSize;
          y < VBE_mode_info->height; y++) {
@@ -174,25 +168,21 @@ void driver_clear() {
       putPixel(0x000000, x, y);
     }
   }
-  // mueve el los cursores al principio de la pantalla
   cursorX = 0;
   cursorY = 0;
 }
 void drawSquare(int x, int y, uint32_t fillColor) {
-  int squareSize = 40;  // Define the size of the square
+  int squareSize = 40;
 
-  // Draw top and bottom borders
   for (int i = 0; i < squareSize; i++) {
-    putPixel(0x000000, x + i, y);                   // Top border
-    putPixel(0x000000, x + i, y + squareSize - 1);  // Bottom border
+    putPixel(0x000000, x + i, y);
+    putPixel(0x000000, x + i, y + squareSize - 1);
   }
 
-  // Draw left and right borders and fill the inside
   for (int j = 1; j < squareSize - 1; j++) {
-    putPixel(0x000000, x, y + j);                   // Left border
-    putPixel(0x000000, x + squareSize - 1, y + j);  // Right border
+    putPixel(0x000000, x, y + j);
+    putPixel(0x000000, x + squareSize - 1, y + j);
 
-    // Fill the inside
     for (int i = 1; i < squareSize - 1; i++) {
       putPixel(fillColor, x + i, y + j);
     }

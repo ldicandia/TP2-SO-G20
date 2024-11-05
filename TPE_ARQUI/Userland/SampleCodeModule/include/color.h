@@ -9,4 +9,4 @@ typedef struct {
   uint8_t r;
 } Color;
 
-#endif  // COLOR_H
+#endif

@@ -9,11 +9,11 @@ int getHours() {
 }
 
 int getMinutes() {
-  return u_sys_getMinutes();  // returns u_int64_t
+  return u_sys_getMinutes(); 
 }
 
 int getSeconds() {
-  return u_sys_getSeconds();  // returns u_int64_t
+  return u_sys_getSeconds(); 
 }
 
 void sleep(int ms) { u_sys_sleep(ms); }
@@ -37,12 +37,11 @@ void user_time() {
 
   printChar('\n');
 
-  // Printing hours
   print_time(hours);
   printChar(':');
-  // Printing minutes
+
   print_time(minutes);
   printChar(':');
-  // Printing seconds
+
   print_time(seconds);
 }

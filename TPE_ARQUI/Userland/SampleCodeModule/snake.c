@@ -38,7 +38,7 @@ void initGame(GameState *game, Direction dir) {
 
   game->food.x = WIDTH / 2;
   game->food.y = HEIGHT / 2;
-  game->board[game->food.y][game->food.x] = 2;  // 2 representa comida
+  game->board[game->food.y][game->food.x] = 2;
 
   drawBoard(game);
 }
@@ -46,7 +46,6 @@ void initGame(GameState *game, Direction dir) {
 void drawBoard(GameState *game) {
   for (int y = 0; y < HEIGHT; y++) {
     for (int x = 0; x < WIDTH; x++) {
-      // if its the food square draw in color red
       if (game->board[y][x] == 2) {
         drawSquare(x * SQUARE_SIZE, y * SQUARE_SIZE, 0xFF0000);
       } else {
@@ -124,7 +123,6 @@ void updateGame(GameState *game) {
     playSound(261.63, 2);
     playSound(329.63, 2);
     playSound(392.00, 2);
-
   }
 }
 
@@ -184,7 +182,7 @@ void scoreUpdate() {
 void snake(int players) {
   if (players == 1) {
     clear();
-    lcg_srand();  // Initialize the custom random number generator
+    lcg_srand();
     GameState game = {0};
     initGame(&game, RIGHT);
     printStr(
@@ -216,7 +214,7 @@ void snake(int players) {
     sleep(1500);
     score = 0;
     clear();
-  } else if (players == 2) {  // esta ultra lento esto
+  } else if (players == 2) {
     GameState game1 = {0};
     GameState game2 = {0};
     clear();

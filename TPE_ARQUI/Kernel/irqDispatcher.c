@@ -65,21 +65,18 @@ static uint64_t sys_clear() {
 static uint64_t sys_getSeconds() {
   uint64_t seconds = getSeconds();
 
-  // Convert from BCD to binary if necessary
   return ((seconds / 16) * 10) + (seconds % 16);
 }
 
 static uint64_t sys_getMinutes() {
   uint64_t minutes = getMinutes();
 
-  // Convert from BCD to binary if necessary
   return ((minutes / 16) * 10) + (minutes % 16);
 }
 
 static uint64_t sys_getHours() {
   uint64_t hours = getHours();
 
-  // Convert from BCD to binary if necessary
   return ((hours / 16) * 10) + (hours % 16);
 }
 
@@ -145,9 +142,6 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
     (void *)sys_stopSound,       // 13
 };
 
-// Devuelve la syscall correspondiente
-//                           rdi           rsi           rdx           rd10 r8
-//                           r9
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
                     uint64_t r8, uint64_t rax) {
   if (rax < sizeof(sys_masters) / sizeof(sys_masters[0]) &&

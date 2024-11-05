@@ -8,4 +8,4 @@ void shell_snake_1();
 void shell_snake_2();
 void notFound();
 
-#endif  // SHELL_H
+#endif
