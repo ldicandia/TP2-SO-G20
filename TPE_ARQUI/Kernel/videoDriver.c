@@ -141,27 +141,6 @@ void driver_printStr(char *str, Color color) {
   }
 }
 
-void scroll() {
-  for (int x = 0; x < VBE_mode_info->width; x++) {
-    for (int y = 0; y < VBE_mode_info->height - 16 * charSize; y++) {
-      uint8_t *framebuffer = (uint8_t *)(uintptr_t)VBE_mode_info->framebuffer;
-      uint64_t nextOffset = x * (VBE_mode_info->bpp / 8) +
-                            (y + 16 * charSize) * VBE_mode_info->pitch;
-      uint32_t nextPixelColor = framebuffer[nextOffset] |
-                                (framebuffer[nextOffset + 1] << 8) |
-                                (framebuffer[nextOffset + 2] << 16);
-      putPixel(nextPixelColor, x, y);
-    }
-  }
-
-  for (int x = 0; x < VBE_mode_info->width; x++) {
-    for (int y = VBE_mode_info->height - 16 * charSize;
-         y < VBE_mode_info->height; y++) {
-      putPixel(0x000000, x, y);
-    }
-  }
-}
-
 void driver_clear() {
   for (int x = 0; x < VBE_mode_info->width; x++) {
     for (int y = 0; y < VBE_mode_info->height; y++) {
