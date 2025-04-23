@@ -38,7 +38,7 @@ void exception_master(int exception, const uint64_t register_data[17]) {
     driver_printStr("invalid op code detected\n", white);
   }
 
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 18; i++) {
     driver_printStr(registers[i], red);
     driver_printStr(": ", red);
     uint64ToHex(register_data[i], hexbuf + 2);
