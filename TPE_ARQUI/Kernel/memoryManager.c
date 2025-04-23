@@ -6,6 +6,7 @@
 #else
 #include <lib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef struct Block {
     uint64_t size;

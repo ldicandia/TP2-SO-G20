@@ -1,6 +1,7 @@
 #include "buddyMemoryManager.h"
 #include <lib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // Implementación básica del Buddy Memory Manager
 void initBuddyMemoryManager(void *memoryStart, uint64_t memorySize) {
