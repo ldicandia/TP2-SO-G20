@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>
+#include "memoryManager.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -41,10 +42,16 @@ void* initializeKernelBinary() {
 
   clearBSS(&bss, &endOfKernel - &bss);
 
-  // Inicializar el memory manager
-  initMemoryManager((void *)&endOfKernel, 0x100000); // 1 MiB para el heap
+  initializeKernel();
 
   return getStackBase();
+}
+
+void initializeKernel() {
+    void *heapStart = (void *)&endOfKernel;
+    uint64_t heapSize = 0x100000; // 1 MiB para el heap
+
+    initMemoryManager(heapStart, heapSize);
 }
 
 int main() {

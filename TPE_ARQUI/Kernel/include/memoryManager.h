@@ -4,8 +4,15 @@
 
 #include <stdint.h>
 
+#ifdef USE_BUDDY_MEMORY_MANAGER
+#include "buddyMemoryManager.h"
+#define initMemoryManager initBuddyMemoryManager
+#define malloc buddyMalloc
+#define free buddyFree
+#else
 void initMemoryManager(void *memoryStart, uint64_t memorySize);
 void *malloc(uint64_t size);
 void free(void *ptr);
+#endif
 
 #endif

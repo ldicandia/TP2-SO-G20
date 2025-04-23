@@ -1,8 +1,11 @@
 // filepath: c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
 #include "memoryManager.h"
+
+#ifdef USE_BUDDY_MEMORY_MANAGER
+#include "buddyMemoryManager.h"
+#else
 #include <lib.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 typedef struct Block {
     uint64_t size;
@@ -36,3 +39,4 @@ void free(void *ptr) {
     Block *block = (Block *)ptr - 1;
     block->free = 1;
 }
+#endif
