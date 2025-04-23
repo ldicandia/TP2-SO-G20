@@ -41,6 +41,9 @@ void* initializeKernelBinary() {
 
   clearBSS(&bss, &endOfKernel - &bss);
 
+  // Inicializar el memory manager
+  initMemoryManager((void *)&endOfKernel, 0x100000); // 1 MiB para el heap
+
   return getStackBase();
 }
 
