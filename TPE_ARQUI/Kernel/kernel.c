@@ -35,6 +35,17 @@ void *getStackBase() {
 	);
 }
 
+// void initializeKernel() {
+// 	char memoryForMemoryManager[sizeof(MemoryManagerADT)];
+// 	char managedMemory[1024];
+
+// 	MemoryManagerADT memoryManager =
+// 		createMemoryManager(memoryForMemoryManager, managedMemory);
+// 	if (!memoryManager) {
+// 		exit(1);
+// 	}
+// }
+
 void *initializeKernelBinary() {
 	void *moduleAddresses[] = {sampleCodeModuleAddress,
 							   sampleDataModuleAddress};
@@ -43,16 +54,9 @@ void *initializeKernelBinary() {
 
 	clearBSS(&bss, &endOfKernel - &bss);
 
-	initializeKernel();
+	// initializeKernel();
 
 	return getStackBase();
-}
-
-void initializeKernel() {
-	void *heapStart	  = (void *) &endOfKernel;
-	uint64_t heapSize = 0x100000; // 1 MiB para el heap
-
-	initMemoryManager(heapStart, heapSize);
 }
 
 int main() {

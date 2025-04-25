@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "time.h"
-#include "videoDriver.h"
+#include <time.h>
+#include <videoDriver.h>
 
 #define ZERO_ID 0
 #define INVAL_OPCODE_ID 6

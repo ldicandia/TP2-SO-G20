@@ -2,6 +2,10 @@
   "files.associations": {
     "sys_calls.h": "c",
     "userlibrary.h": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "compare": "c",
+    "buddymemorymanager.h": "c",
+    "initializer_list": "c",
+    "CuTest.C": "cpp"
   }
 }
