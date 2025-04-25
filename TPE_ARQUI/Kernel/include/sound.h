@@ -13,4 +13,4 @@ uint8_t spkIn(uint16_t port);
 
 void spkOut(uint16_t port, uint8_t data);
 
-#endif  // SOUND_H
+#endif // SOUND_H

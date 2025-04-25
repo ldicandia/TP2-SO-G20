@@ -17,21 +17,21 @@
 typedef enum { UP, DOWN, LEFT, RIGHT } Direction;
 
 typedef struct {
-  int x;
-  int y;
+	int x;
+	int y;
 } Point;
 
 typedef struct {
-  Point body[MAX_SNAKE_LENGTH];
-  int length;
-  Direction dir;
+	Point body[MAX_SNAKE_LENGTH];
+	int length;
+	Direction dir;
 } Snake;
 
 typedef struct {
-  Point food;
-  Snake snake;
-  int gameOver;
-  int board[HEIGHT][WIDTH];
+	Point food;
+	Snake snake;
+	int gameOver;
+	int board[HEIGHT][WIDTH];
 } GameState;
 
 void snake(int players);

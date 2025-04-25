@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 typedef struct {
-  uint8_t b;
-  uint8_t g;
-  uint8_t r;
+	uint8_t b;
+	uint8_t g;
+	uint8_t r;
 } Color;
 
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);

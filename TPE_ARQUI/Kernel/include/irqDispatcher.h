@@ -8,4 +8,4 @@ void irqDispatcher(uint64_t irq);
 
 uint64_t sys_sleep(uint64_t ms);
 
-#endif  // IRQ_DISPATCHER_H
+#endif // IRQ_DISPATCHER_H

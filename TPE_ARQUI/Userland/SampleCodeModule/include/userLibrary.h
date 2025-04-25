@@ -42,4 +42,4 @@ void playSound(uint32_t frequence, uint64_t duration);
 
 void stopSound();
 
-#endif  // USER_LIBRARY_H
+#endif // USER_LIBRARY_H

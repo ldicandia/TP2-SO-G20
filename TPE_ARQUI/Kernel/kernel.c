@@ -19,48 +19,50 @@ extern void _hlt();
 
 static const uint64_t PageSize = 0x1000;
 
-static void* const sampleCodeModuleAddress = (void*)0x400000;
-static void* const sampleDataModuleAddress = (void*)0x500000;
+static void *const sampleCodeModuleAddress = (void *) 0x400000;
+static void *const sampleDataModuleAddress = (void *) 0x500000;
 
 typedef int (*EntryPoint)();
 
-void clearBSS(void* bssAddress, uint64_t bssSize) {
-  memset(bssAddress, 0, bssSize);
+void clearBSS(void *bssAddress, uint64_t bssSize) {
+	memset(bssAddress, 0, bssSize);
 }
 
-void* getStackBase() {
-  return (void*)((uint64_t)&endOfKernel +
-                 PageSize * 8        // The size of the stack itself, 32KiB
-                 - sizeof(uint64_t)  // Begin at the top of the stack
-  );
+void *getStackBase() {
+	return (void *) ((uint64_t) &endOfKernel +
+					 PageSize * 8		// The size of the stack itself, 32KiB
+					 - sizeof(uint64_t) // Begin at the top of the stack
+	);
 }
 
-void* initializeKernelBinary() {
-  void* moduleAddresses[] = {sampleCodeModuleAddress, sampleDataModuleAddress};
+void *initializeKernelBinary() {
+	void *moduleAddresses[] = {sampleCodeModuleAddress,
+							   sampleDataModuleAddress};
 
-  loadModules(&endOfKernelBinary, moduleAddresses);
+	loadModules(&endOfKernelBinary, moduleAddresses);
 
-  clearBSS(&bss, &endOfKernel - &bss);
+	clearBSS(&bss, &endOfKernel - &bss);
 
-  initializeKernel();
+	initializeKernel();
 
-  return getStackBase();
+	return getStackBase();
 }
 
 void initializeKernel() {
-    void *heapStart = (void *)&endOfKernel;
-    uint64_t heapSize = 0x100000; // 1 MiB para el heap
+	void *heapStart	  = (void *) &endOfKernel;
+	uint64_t heapSize = 0x100000; // 1 MiB para el heap
 
-    initMemoryManager(heapStart, heapSize);
+	initMemoryManager(heapStart, heapSize);
 }
 
 int main() {
-  load_idt();
+	load_idt();
 
-  clearScanCode();
-  ((EntryPoint)sampleCodeModuleAddress)();
+	clearScanCode();
+	((EntryPoint) sampleCodeModuleAddress)();
 
-  while (1) _hlt();
+	while (1)
+		_hlt();
 
-  return 0;
+	return 0;
 }
