@@ -6,6 +6,8 @@
     "compare": "c",
     "buddymemorymanager.h": "c",
     "initializer_list": "c",
-    "CuTest.C": "cpp"
+    "CuTest.C": "cpp",
+    "memorymanagertest.h": "c",
+    "memorymanager.h": "c"
   }
 }
