@@ -4,7 +4,7 @@
 #include <userLibrary.h>
 #include <user_time.h>
 
-#include "sys_calls.h"
+#include "./include/sys_calls.h"
 
 #define STDIN 0
 #define STDOUT 1

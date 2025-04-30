@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <userLibrary.h>
 #include <unistd.h>
 
 #define MAX_BLOCKS 128
@@ -54,7 +53,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
 		for (i = 0; i < rq; i++)
 			if (mm_rqs[i].address)
 				if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
-					// printf("test_mm ERROR\n");
+					printStr("test_mm ERROR\n");
 					return -1;
 				}
 

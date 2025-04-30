@@ -8,10 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <user_time.h>
+#include <test_mm.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 10
+#define COMMANDS_SIZE 11
 
 static void printLine(char c);
 int linePos = 0;
@@ -24,9 +25,9 @@ char parameter[MAX_BUFFER + 1] = {0};
 
 char buffer[MAX_BUFFER] = {0};
 
-char *command_names[] = {"help",	  "time",	  "clear",	 "snake 1",
-						 "snake 2",	  "inforeg",  "zerodiv", "invopcode",
-						 "increment", "decrement"};
+char *command_names[] = {"help",	  "time",	   "clear",		"snake 1",
+						 "snake 2",	  "inforeg",   "zerodiv",	"invopcode",
+						 "increment", "decrement", "testMemory"};
 
 void (*command_func[COMMANDS_SIZE])() = {help,
 										 user_time,
@@ -37,7 +38,8 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 										 exc_zerodiv,
 										 exc_invopcode,
 										 increment_size_char,
-										 decrement_size_char};
+										 decrement_size_char,
+										 testMemory};
 
 void shell() {
 	char c;
@@ -91,6 +93,8 @@ void help() {
 		"\n invopcode                tests the invalid operation code", WHITE);
 	printStrColor("\n increment                increase letter size", WHITE);
 	printStrColor("\n decrement                decrease letter size", WHITE);
+	printStrColor("\n testMemory [size]          tests memory allocation",
+				  WHITE);
 	printStrColor("\n---------------------------------------------------",
 				  WHITE);
 }
@@ -130,4 +134,10 @@ void shell_snake_1() {
 
 void shell_snake_2() {
 	snake(2);
+}
+
+void testMemory() {
+	uint64_t argc = 1;
+	char *argv[]  = {"1000000"};
+	test_mm(argc, argv);
 }

@@ -8,6 +8,7 @@
     "initializer_list": "c",
     "CuTest.C": "cpp",
     "memorymanagertest.h": "c",
-    "memorymanager.h": "c"
+    "memorymanager.h": "c",
+    "test_util.h": "c"
   }
 }

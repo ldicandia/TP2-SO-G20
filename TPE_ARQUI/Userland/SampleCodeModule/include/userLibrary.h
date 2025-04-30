@@ -3,6 +3,7 @@
 
 #include <color.h>
 #include <stdint.h>
+#include <userLibrary.h>
 
 void printChar(char c);
 
