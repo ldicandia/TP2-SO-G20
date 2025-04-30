@@ -42,4 +42,8 @@ void playSound(uint32_t frequence, uint64_t duration);
 
 void stopSound();
 
+void *allocMemory(uint64_t size);
+
+void freeMemory(uint64_t address);
+
 #endif // USER_LIBRARY_H

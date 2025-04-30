@@ -8,4 +8,6 @@ void *memcpy(void *destination, const void *source, uint64_t length);
 
 char *cpuVendor(char *result);
 
+unsigned int log(uint64_t n, int base);
+
 #endif

@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <stdio.h>
 #include <userLibrary.h>
 #include <user_time.h>
@@ -153,4 +155,12 @@ void playSound(uint32_t frequence, uint64_t duration) {
 
 void stopSound() {
 	u_sys_stopSound();
+}
+
+void *allocMemory(uint64_t size) {
+	return u_sys_malloc(size);
+}
+
+void freeMemory(uint64_t address) {
+	u_sys_free(address);
 }

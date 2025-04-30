@@ -12,6 +12,8 @@ GLOBAL u_sys_drawSquare
 GLOBAL u_sys_sleep
 GLOBAL u_sys_playSound
 GLOBAL u_sys_stopSound
+GLOBAL u_sys_malloc
+GLOBAL u_sys_free
 
 section .text
 
@@ -80,5 +82,15 @@ u_sys_playSound:
     
 u_sys_stopSound:
     mov rax, 0x0D
+    int 0x80
+    ret
+
+u_sys_malloc:
+    mov rax, 0x0E
+    int 0x80
+    ret
+
+u_sys_free:
+    mov rax, 0x0F
     int 0x80
     ret

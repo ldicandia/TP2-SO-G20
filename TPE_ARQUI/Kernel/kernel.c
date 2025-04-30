@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <idtLoader.h>
 #include <keyboard.h>
 #include <lib.h>
@@ -6,7 +8,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>
-#include "memoryManager.h"
+#include <memoryManager.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -21,6 +23,7 @@ static const uint64_t PageSize = 0x1000;
 
 static void *const sampleCodeModuleAddress = (void *) 0x400000;
 static void *const sampleDataModuleAddress = (void *) 0x500000;
+static void *const memAmount			   = (void *) (SYSTEM_VARIABLES + 132);
 
 typedef int (*EntryPoint)();
 
@@ -35,26 +38,22 @@ void *getStackBase() {
 	);
 }
 
-// void initializeKernel() {
-// 	char memoryForMemoryManager[sizeof(MemoryManagerADT)];
-// 	char managedMemory[1024];
-
-// 	MemoryManagerADT memoryManager =
-// 		createMemoryManager(memoryForMemoryManager, managedMemory);
-// 	if (!memoryManager) {
-// 		exit(1);
-// 	}
-// }
-
 void *initializeKernelBinary() {
 	void *moduleAddresses[] = {sampleCodeModuleAddress,
 							   sampleDataModuleAddress};
-
-	loadModules(&endOfKernelBinary, moduleAddresses);
+	uint64_t userlandSize	= loadModules(&endOfKernelBinary, moduleAddresses);
 
 	clearBSS(&bss, &endOfKernel - &bss);
 
-	// initializeKernel();
+	uint64_t memAmountBytes = *((uint32_t *) memAmount) * (1 << 20);
+
+	uint64_t availableMem =
+		1 << log(memAmountBytes -
+					 (uint64_t) (sampleDataModuleAddress + userlandSize),
+				 2);
+
+	createMemoryManager((void *) MEMORY_MANAGER_ADDRESS,
+						sampleDataModuleAddress + userlandSize, availableMem);
 
 	return getStackBase();
 }

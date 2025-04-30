@@ -1,3 +1,4 @@
+#include <lib.h>
 #include <stdint.h>
 
 void *memset(void *destination, int32_t c, uint64_t length) {
@@ -43,4 +44,48 @@ void *memcpy(void *destination, const void *source, uint64_t length) {
 	}
 
 	return destination;
+}
+
+unsigned int log(uint64_t n, int base) {
+	unsigned int count = 0;
+	while (n /= base)
+		count++;
+	return count;
+}
+
+int itoa(uint64_t n, char *buffer, int base) {
+	if (n == 0) {
+		buffer[0] = '0';
+		buffer[1] = '\0';
+		return 1;
+	}
+
+	unsigned int len = 0;
+	int i			 = 0;
+	// Mover a otra funcion si se quiere implementar un itoa que soporte
+	// negativos
+	/*if (n < 0 && base == 10)
+	{
+		n = -n;
+		buffer[i] = '-';
+		len++;
+		i++;
+	}*/
+
+	len += log(n, base) + 1;
+	while (n != 0) {
+		int r				  = n % base;
+		buffer[len - i++ - 1] = (r > 9) ? (r - 10) + 'A' : r + '0';
+		n /= base;
+	}
+	buffer[i] = '\0';
+	return len;
+}
+
+int strtoi(char *s, char **end) {
+	int num = 0;
+	while (*s >= '0' && *s <= '9')
+		num = num * 10 + *(s++) - '0';
+	*end = s;
+	return num;
 }

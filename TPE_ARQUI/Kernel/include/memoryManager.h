@@ -13,13 +13,19 @@
 #define free buddyFree
 #else
 
+#define MEMORY_MANAGER_ADDRESS 0x50000
+#define SYSTEM_VARIABLES 0x5A00
+
 typedef struct MemoryManagerCDT *MemoryManagerADT;
 
-MemoryManagerADT createMemoryManager(void *const restrict managedMemory,
-									 uint64_t memAmount);
-void *allocMemory(MemoryManagerADT const restrict memoryManager,
-				  const size_t memoryToAllocate);
-void freeMemory(void *ptr);
+MemoryManagerADT
+
+createMemoryManager(void *const restrict memoryForMemoryManager,
+					void *const restrict managedMemory, uint64_t memAmount);
+
+void *allocMemory(const size_t memoryToAllocate);
+
+MemoryManagerADT getMemoryManager();
 #endif
 
 #endif

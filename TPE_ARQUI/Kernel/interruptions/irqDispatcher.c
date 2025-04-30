@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "irqDispatcher.h"
 
 #include <keyboard.h>
@@ -5,6 +7,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>
+#include <memoryManager.h>
 
 #define SYS_CALLS_QTY 3
 
@@ -126,6 +129,15 @@ static uint64_t sys_stopSound() {
 	return 1;
 }
 
+// Malloc
+static void *syscall_malloc(uint64_t size) {
+	return allocMemory(size);
+}
+
+// Free
+static void syscall_free(void *ptr) {
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,			 // 0
@@ -142,6 +154,8 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_sleep,			 // 11
 	(void *) sys_playSound,		 // 12
 	(void *) sys_stopSound,		 // 13
+	(void *) syscall_malloc,	 // 14
+	(void *) syscall_free,		 // 15
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
