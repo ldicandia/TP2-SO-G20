@@ -11,30 +11,45 @@
 #include <memoryManager.h>
 #include <stdint.h>
 
+
 typedef struct MemoryManagerCDT {
-	char *nextAddress;
+    char *nextAddress;
+    char *endAddress;
 } MemoryManagerCDT;
 
-MemoryManagerADT
-createMemoryManager(void *const restrict memoryForMemoryManager,
-					void *const restrict managedMemory, uint64_t memAmount) {
-	MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
-	memoryManager->nextAddress	   = managedMemory;
 
-	return memoryManager;
+MemoryManagerADT createMemoryManager(void *const restrict memoryForMemoryManager,
+                                     void *const restrict managedMemory, uint64_t memAmount) {
+    MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
+    memoryManager->nextAddress = managedMemory;
+    memoryManager->endAddress = (char *)managedMemory + memAmount;
+
+    return memoryManager;
 }
+
 
 MemoryManagerADT getMemoryManager() {
-	return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
+    return (MemoryManagerADT)MEMORY_MANAGER_ADDRESS;
 }
 
+
 void *allocMemory(const uint64_t memoryToAllocate) {
-	MemoryManagerADT memoryManager = getMemoryManager();
-	char *allocation			   = memoryManager->nextAddress;
+    MemoryManagerADT memoryManager = getMemoryManager();
 
-	memoryManager->nextAddress += memoryToAllocate;
 
-	return (void *) allocation;
+    if (memoryToAllocate == 0) {
+        return NULL;
+    }
+
+
+    if (memoryManager->nextAddress + memoryToAllocate > memoryManager->endAddress) {
+        return NULL;
+    }
+
+    char *allocation = memoryManager->nextAddress;
+    memoryManager->nextAddress += memoryToAllocate;
+
+    return (void *)allocation;
 }
 
 #endif

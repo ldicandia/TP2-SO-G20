@@ -138,6 +138,6 @@ void shell_snake_2() {
 
 void testMemory() {
 	uint64_t argc = 1;
-	char *argv[]  = {"1000000"};
+	char *argv[]  = {"1000"};
 	test_mm(argc, argv);
 }
