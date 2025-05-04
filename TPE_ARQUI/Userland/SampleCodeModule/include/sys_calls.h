@@ -38,6 +38,6 @@ extern uint64_t u_sys_stopSound();
 
 extern void *u_sys_malloc(uint64_t size);
 
-extern void u_sys_free(uint64_t address);
+extern void u_sys_free(void *address);
 
 #endif

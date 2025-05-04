@@ -45,6 +45,6 @@ void stopSound();
 
 void *allocMemory(uint64_t size);
 
-void freeMemory(uint64_t address);
+void freeMemory(void *address);
 
 #endif // USER_LIBRARY_H

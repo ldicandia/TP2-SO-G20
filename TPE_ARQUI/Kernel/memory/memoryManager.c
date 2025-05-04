@@ -10,46 +10,91 @@
 #include <defs.h>
 #include <memoryManager.h>
 #include <stdint.h>
+#include <stdbool.h>
 
+// Estructura para rastrear bloques de memoria asignados
+typedef struct MemoryBlock {
+	void *address;
+	uint64_t size;
+	struct MemoryBlock *next;
+} MemoryBlock;
 
 typedef struct MemoryManagerCDT {
-    char *nextAddress;
-    char *endAddress;
+	char *nextAddress;
+	char *endAddress;
+	MemoryBlock *allocatedBlocks; // Lista de bloques asignados
 } MemoryManagerCDT;
 
+MemoryManagerADT
+createMemoryManager(void *const restrict memoryForMemoryManager,
+					void *const restrict managedMemory, uint64_t memAmount) {
+	MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
+	memoryManager->nextAddress	   = managedMemory;
+	memoryManager->endAddress	   = (char *) managedMemory + memAmount;
+	memoryManager->allocatedBlocks = NULL;
 
-MemoryManagerADT createMemoryManager(void *const restrict memoryForMemoryManager,
-                                     void *const restrict managedMemory, uint64_t memAmount) {
-    MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
-    memoryManager->nextAddress = managedMemory;
-    memoryManager->endAddress = (char *)managedMemory + memAmount;
-
-    return memoryManager;
+	return memoryManager;
 }
-
 
 MemoryManagerADT getMemoryManager() {
-    return (MemoryManagerADT)MEMORY_MANAGER_ADDRESS;
+	return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
 }
 
+static void addBlock(MemoryManagerADT memoryManager, void *address,
+					 uint64_t size) {
+	MemoryBlock *newBlock = (MemoryBlock *) memoryManager->nextAddress;
+	memoryManager->nextAddress += sizeof(MemoryBlock);
+
+	newBlock->address			   = address;
+	newBlock->size				   = size;
+	newBlock->next				   = memoryManager->allocatedBlocks;
+	memoryManager->allocatedBlocks = newBlock;
+}
+
+static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
+	MemoryBlock **current = &memoryManager->allocatedBlocks;
+
+	while (*current != NULL) {
+		if ((*current)->address == address) {
+			MemoryBlock *toRemove = *current;
+			*current			  = toRemove->next;
+			return true;
+		}
+		current = &(*current)->next;
+	}
+	return false;
+}
 
 void *allocMemory(const uint64_t memoryToAllocate) {
-    MemoryManagerADT memoryManager = getMemoryManager();
+	MemoryManagerADT memoryManager = getMemoryManager();
 
+	if (memoryToAllocate == 0) {
+		return NULL;
+	}
 
-    if (memoryToAllocate == 0) {
-        return NULL;
-    }
+	if (memoryManager->nextAddress + memoryToAllocate >
+		memoryManager->endAddress) {
+		return NULL;
+	}
 
+	char *allocation = memoryManager->nextAddress;
+	memoryManager->nextAddress += memoryToAllocate;
 
-    if (memoryManager->nextAddress + memoryToAllocate > memoryManager->endAddress) {
-        return NULL;
-    }
+	addBlock(memoryManager, allocation, memoryToAllocate);
 
-    char *allocation = memoryManager->nextAddress;
-    memoryManager->nextAddress += memoryToAllocate;
+	return (void *) allocation;
+}
 
-    return (void *)allocation;
+void freeMemory(void *ptr) {
+	if (ptr == NULL) {
+		return;
+	}
+
+	MemoryManagerADT memoryManager = getMemoryManager();
+
+	if (!removeBlock(memoryManager, ptr)) {
+		return;
+	}
 }
 
 #endif

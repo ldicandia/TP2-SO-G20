@@ -161,6 +161,6 @@ void *allocMemory(uint64_t size) {
 	return u_sys_malloc(size);
 }
 
-void freeMemory(uint64_t address) {
+void freeMemory(void *address) {
 	u_sys_free(address);
 }

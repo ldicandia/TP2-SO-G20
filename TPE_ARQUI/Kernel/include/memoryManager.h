@@ -26,6 +26,9 @@ createMemoryManager(void *const restrict memoryForMemoryManager,
 void *allocMemory(const size_t memoryToAllocate);
 
 MemoryManagerADT getMemoryManager();
+
+void freeMemory(void *ptr);
+
 #endif
 
 #endif

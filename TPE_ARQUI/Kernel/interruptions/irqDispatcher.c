@@ -136,6 +136,8 @@ static void *syscall_malloc(uint64_t size) {
 
 // Free
 static void syscall_free(void *ptr) {
+	freeMemory(ptr);
+	return;
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
