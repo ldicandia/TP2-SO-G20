@@ -11,12 +11,16 @@ GLOBAL _interrupt_keyboardHandler
 GLOBAL _exception_divideByZero
 GLOBAL _exception_invalidOpCode
 
+GLOBAL _irq_handler
+GLOBAL _initialize_stack_frame
+
 
 EXTERN getStackBase
 EXTERN keyboard_master
 EXTERN timer_master
 EXTERN sys_master
 EXTERN exception_master
+EXTERN irqDispatcher
 
 GLOBAL regdata_exc
 GLOBAL hasInforeg
@@ -58,6 +62,40 @@ SECTION .text
 	pop rcx
 	pop rbx
 	pop rax
+%endmacro
+
+%macro pushStateNoRax 0
+    push rbx
+    push rcx
+    push rdx
+    push rbp
+    push rdi
+    push rsi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+%endmacro
+
+%macro popStateNoRax 0
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rsi
+	pop rdi
+	pop rbp
+	pop rdx
+	pop rcx
+	pop rbx
 %endmacro
 
 %macro endOfHardwareInterrupt 0 ; para el keyboard y el timer tick
@@ -229,13 +267,48 @@ _exception_invalidOpCode:
 
 
 
-; RDI	RSI	RDX	R10	R8	R9
-; RDI RSI RDX RCX R8  R9
+; RDI	RSI	RDX	R10	R8 R9
+; RDI RSI RDX RCX R8 R9
 _interrupt_syscall:
 	mov rcx, r10
 	mov r9, rax
 	call sys_master
 	iretq
+
+;;;; visto en clase
+_initialize_stack_frame:
+	mov r8, rsp 	
+	mov r9, rbp		
+	mov rsp, rdx 	
+	mov rbp, rdx
+	push 0x0
+	push rdx
+	push 0x202
+	push 0x8
+	push rdi
+	mov rdi, rsi 		
+	mov rsi, rcx		
+	pushState
+	mov rax, rsp
+	mov rsp, r8
+	mov rbp, r9
+	ret
+
+
+_irq_handler:
+	pushState
+	
+	mov rdi, 0
+	call irqDispatcher  ;manejo de interrupciones llama a timer_master
+	
+	mov rdi, rsp
+	call schedule
+	mov rsp, rax
+	mov al, 20h
+	out 20h, al
+	popState
+	iretq
+;;;;
 
 haltcpu:
 	cli
