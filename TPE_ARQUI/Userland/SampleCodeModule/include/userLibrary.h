@@ -47,4 +47,8 @@ void *allocMemory(uint64_t size);
 
 void freeMemory(void *address);
 
+int create_process(char *name, uint64_t argc, char *argv[]);
+
+int kill_process(uint64_t pid);
+
 #endif // USER_LIBRARY_H

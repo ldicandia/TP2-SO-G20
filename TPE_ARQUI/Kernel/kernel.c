@@ -9,6 +9,8 @@
 #include <time.h>
 #include <videoDriver.h>
 #include <memoryManager.h>
+#include <process.h>
+#include <schedule.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -54,6 +56,7 @@ void *initializeKernelBinary() {
 
 	createMemoryManager((void *) MEMORY_MANAGER_ADDRESS,
 						sampleDataModuleAddress + userlandSize, availableMem);
+	createScheduler();
 
 	return getStackBase();
 }

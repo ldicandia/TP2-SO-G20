@@ -17,6 +17,7 @@ typedef struct MM_rq {
 } mm_rq;
 
 uint64_t test_mm(uint64_t argc, char *argv[]) {
+	printStr("Testing Memory...\n");
 	mm_rq mm_rqs[MAX_BLOCKS];
 	uint8_t rq;
 	uint32_t total;

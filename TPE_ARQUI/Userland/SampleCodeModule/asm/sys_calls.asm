@@ -14,6 +14,8 @@ GLOBAL u_sys_playSound
 GLOBAL u_sys_stopSound
 GLOBAL u_sys_malloc
 GLOBAL u_sys_free
+GLOBAL u_sys_create_process
+GLOBAL u_sys_kill_process
 
 section .text
 
@@ -92,5 +94,15 @@ u_sys_malloc:
 
 u_sys_free:
     mov rax, 0x0F
+    int 0x80
+    ret
+
+u_sys_create_process:
+    mov rax, 0x10
+    int 0x80
+    ret
+
+u_sys_kill_process:
+    mov rax, 0x1
     int 0x80
     ret

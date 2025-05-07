@@ -9,6 +9,7 @@
     "CuTest.C": "cpp",
     "memorymanagertest.h": "c",
     "memorymanager.h": "c",
-    "test_util.h": "c"
+    "test_util.h": "c",
+    "typeinfo": "c"
   }
 }

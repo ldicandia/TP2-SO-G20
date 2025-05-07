@@ -8,6 +8,8 @@
 #include <time.h>
 #include <videoDriver.h>
 #include <memoryManager.h>
+#include <process.h>
+#include <schedule.h>
 
 #define SYS_CALLS_QTY 3
 
@@ -130,7 +132,7 @@ static uint64_t sys_stopSound() {
 }
 
 // Malloc
-static void *syscall_malloc(uint64_t size) {
+static uint64_t *syscall_malloc(uint64_t size) {
 	return allocMemory(size);
 }
 
@@ -138,6 +140,20 @@ static void *syscall_malloc(uint64_t size) {
 static void syscall_free(void *ptr) {
 	freeMemory(ptr);
 	return;
+}
+
+// Create process
+static uint64_t sys_create_process(uint64_t code, uint64_t args, uint64_t name,
+								   uint64_t priority,
+								   uint64_t fileDescriptors) {
+	return createProcess((MainFunction) code, (char **) args, (char *) name,
+						 (uint8_t) priority);
+}
+
+// kill process
+static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
+	// return killProcess(pid, retValue);
+	return 0;
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
@@ -158,6 +174,8 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_stopSound,		 // 13
 	(void *) syscall_malloc,	 // 14
 	(void *) syscall_free,		 // 15
+	(void *) sys_create_process, // 16
+	(void *) sys_kill_process,	 // 17
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,

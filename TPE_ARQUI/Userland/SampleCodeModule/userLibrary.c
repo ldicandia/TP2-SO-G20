@@ -164,3 +164,11 @@ void *allocMemory(uint64_t size) {
 void freeMemory(void *address) {
 	u_sys_free(address);
 }
+
+int create_process(char *name, uint64_t argc, char *argv[]) {
+	return u_sys_create_process(name, argc, argv);
+}
+
+int kill_process(uint64_t pid) {
+	return u_sys_kill_process(pid);
+}

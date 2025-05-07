@@ -1,10 +1,12 @@
 #include <stdint.h>
+#include <userLibrary.h>
 
 int64_t my_getpid() {
 	return 0;
 }
 
 int64_t my_create_process(char *name, uint64_t argc, char *argv[]) {
+	create_process(name, argc, argv);
 	return 0;
 }
 
@@ -13,6 +15,7 @@ int64_t my_nice(uint64_t pid, uint64_t newPrio) {
 }
 
 int64_t my_kill(uint64_t pid) {
+	kill_process(pid);
 	return 0;
 }
 

@@ -21,6 +21,7 @@ EXTERN timer_master
 EXTERN sys_master
 EXTERN exception_master
 EXTERN irqDispatcher
+EXTERN schedule
 
 GLOBAL regdata_exc
 GLOBAL hasInforeg
@@ -302,7 +303,7 @@ _irq_handler:
 	call irqDispatcher  ;manejo de interrupciones llama a timer_master
 	
 	mov rdi, rsp
-	;call schedule
+	call schedule
 	mov rsp, rax
 	mov al, 20h
 	out 20h, al

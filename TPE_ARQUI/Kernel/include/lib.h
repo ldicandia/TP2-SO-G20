@@ -10,4 +10,12 @@ char *cpuVendor(char *result);
 
 unsigned int log(uint64_t n, int base);
 
+int stringArrayLen(char **array);
+
+int strcpychar(char *dest, const char *origin, char limit);
+
+int strcpy(char *dest, const char *origin);
+
+int strlen(const char *str);
+
 #endif
