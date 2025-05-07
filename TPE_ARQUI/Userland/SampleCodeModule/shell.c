@@ -46,6 +46,8 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 
 void shell() {
 	char c;
+	// testMemory();
+	// testProcesses();
 	while (1) {
 		c = getChar();
 		if (lastc != c) {
