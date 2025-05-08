@@ -128,13 +128,18 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 	// freeMemory(str); // Free the allocated memory
 
 	SchedulerADT scheduler = getSchedulerADT();
-	if (scheduler->qtyProcesses >= MAX_PROCESSES)
+	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
+		driver_printStr("Error: Too many processes\n",
+						(Color) {0xFF, 0x00, 0x00});
 		return -1;
+	}
 
 	ProcessADT process = (ProcessADT) allocMemory(sizeof(ProcessADT));
-	if (process == NULL)
+	if (process == NULL) {
+		driver_printStr("Error: Memory allocation failed\n",
+						(Color) {0xFF, 0x00, 0x00});
 		return -1;
-
+	}
 	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
 				args, name, priority, fileDescriptors, 0);
 
