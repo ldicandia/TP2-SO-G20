@@ -11,22 +11,28 @@ typedef struct P_rq {
 
 int64_t test_processes(uint64_t argc, char *argv[]) {
 	printStr("\nTesting Processes...\n");
-	uint8_t rq;
-	uint8_t alive = 0;
-	uint8_t action;
-	uint64_t max_processes = 5;
-	// char *argvAux[]		   = {0};
+	uint64_t rq;
+	uint64_t alive = 0;
+	uint64_t action;
+	int64_t max_processes;
+	int debug_mode = 0; // Modo debugging desactivado por defecto
 
-	if (argc != 1)
+	if (argc < 1 || argc > 2) {
 		return -1;
+	}
 
-	if ((max_processes = satoi(argv[0])) <= 0)
+	if ((max_processes = satoi(argv[0])) <= 0) {
 		return -1;
+	}
+
+	if (argc == 2 && satoi(argv[1]) == 1) {
+		debug_mode = 1; // Activar modo debugging si el segundo argumento es 1
+	}
 
 	p_rq p_rqs[max_processes];
 
 	while (1) {
-		// Create max_processes processes
+		// Crear procesos
 		for (rq = 0; rq < max_processes; rq++) {
 			char *args[] = {"endless_loop", NULL};
 			p_rqs[rq].pid =
@@ -37,14 +43,17 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 				return -1;
 			}
 			else {
-				// printStr("\nCreating Processes...\n");
+				if (debug_mode) {
+					printStr("\nCreating Processes...\n");
+					printStr("PID: ");
+					printInteger(p_rqs[rq].pid);
+				}
 				p_rqs[rq].state = RUNNING;
 				alive++;
 			}
 		}
 
-		// Randomly kills, blocks or unblocks processes until every one has been
-		// killed
+		// Manejo de procesos
 		while (alive > 0) {
 			for (rq = 0; rq < max_processes; rq++) {
 				action = GetUniform(100) % 2;
@@ -58,6 +67,11 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 									"test_processes: ERROR killing process\n");
 								return -1;
 							}
+							if (debug_mode) {
+								printStr("\nKilling Processes...\n");
+								printStr("PID: ");
+								printInteger(p_rqs[rq].pid);
+							}
 							p_rqs[rq].state = KILLED;
 							alive--;
 						}
@@ -70,21 +84,32 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 									"test_processes: ERROR blocking process\n");
 								return -1;
 							}
+							if (debug_mode) {
+								printStr("\nBlocking Processes...\n");
+								printStr("PID: ");
+								printInteger(p_rqs[rq].pid);
+							}
 							p_rqs[rq].state = BLOCKED;
 						}
 						break;
 				}
 			}
 
-			// Randomly unblocks processes
-			for (rq = 0; rq < max_processes; rq++)
+			// Desbloquear procesos aleatoriamente
+			for (rq = 0; rq < max_processes; rq++) {
 				if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
 					if (my_unblock(p_rqs[rq].pid) == -1) {
 						printStr("test_processes: ERROR unblocking process\n");
 						return -1;
 					}
+					if (debug_mode) {
+						printStr("\nUnblocking Processes...\n");
+						printStr("PID: ");
+						printInteger(p_rqs[rq].pid);
+					}
 					p_rqs[rq].state = RUNNING;
 				}
+			}
 		}
 	}
 }

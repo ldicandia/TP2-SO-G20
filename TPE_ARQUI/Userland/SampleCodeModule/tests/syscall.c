@@ -14,8 +14,7 @@ int64_t my_nice(uint64_t pid, uint64_t newPrio) {
 }
 
 int64_t my_kill(uint64_t pid) {
-	kill_process(pid);
-	return 0;
+	return kill_process(pid);
 }
 
 int64_t my_block(uint64_t pid) {

@@ -15,6 +15,8 @@ void printStrColor(char *str, Color fnt);
 
 void printStr(char *str);
 
+void printInteger(int n);
+
 int isChar(char c);
 
 int isDigit(char c);

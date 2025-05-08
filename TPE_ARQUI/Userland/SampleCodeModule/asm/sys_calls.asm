@@ -103,6 +103,6 @@ u_sys_create_process:
     ret
 
 u_sys_kill_process:
-    mov rax, 0x1
+    mov rax, 0x11
     int 0x80
     ret

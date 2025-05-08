@@ -35,6 +35,21 @@ void printChar(char c) {
 	u_sys_write(STDOUT, c);
 }
 
+void printInteger(int n) {
+	char buf[16];
+	int i = 0;
+	if (n < 0) {
+		printChar('-');
+		n = -n;
+	}
+	do {
+		buf[i++] = n % 10 + '0';
+	} while ((n /= 10) > 0);
+	while (i-- > 0) {
+		printChar(buf[i]);
+	}
+}
+
 void drawSquare(int x, int y, uint32_t fillColor) {
 	u_sys_drawSquare(x, y, fillColor);
 }
