@@ -17,6 +17,7 @@ GLOBAL _initialize_stack_frame
 
 EXTERN getStackBase
 EXTERN keyboard_master
+EXTERN ctrl_c_handler
 EXTERN timer_master
 EXTERN sys_master
 EXTERN exception_master
@@ -175,60 +176,88 @@ picSlaveMask:
     retn
 
 _interrupt_keyboardHandler:
-	pushState
+    pushState
 
-	xor rax, rax
-	in al, 60h 	
-	mov rdi, rax 
+    xor rax, rax
+    in al, 60h 	
+    mov rdi, rax 
 
-	cmp al, 0x2A 	;left shift
-	jne .continue1
-	mov byte [left_shift], 1
+    ; Detect left shift press
+    cmp al, 0x2A 	; left shift
+    jne .checkLeftShiftRelease
+    mov byte [left_shift], 1
+    jmp .afterShift
 
-.continue1:
-	cmp al, 0xAA 	;left shift realesed
-	jne .continue2
-	mov byte [left_shift], 0
+.checkLeftShiftRelease:
+    cmp al, 0xAA 	; left shift released
+    jne .checkCtrl
+    mov byte [left_shift], 0
+    jmp .afterShift
 
-.continue2:
-	cmp byte [left_shift], 1 
-	jne .continue3
-	cmp al, 0x0F     ;'TAB' pressed
-	jne .continue3
+.checkCtrl:
+    cmp al, 0x1D     ; Ctrl press
+    jne .checkCtrlRelease
+    mov byte [ctrl_pressed], 1
+    jmp .afterShift
 
-	mov [inforeg+2*8], rbx
-	mov [inforeg+3*8], rcx
-	mov [inforeg+4*8], rdx
-	mov [inforeg+5*8], rsi
-	mov [inforeg+6*8], rdi
-	mov [inforeg+7*8], rbp
-	mov [inforeg+9*8], r8
-	mov [inforeg+10*8], r9
-	mov [inforeg+11*8], r10
-	mov [inforeg+12*8], r11
-	mov [inforeg+13*8], r12
-	mov [inforeg+14*8], r13
-	mov [inforeg+15*8], r14
-	mov [inforeg+16*8], r15
+.checkCtrlRelease:
+    cmp al, 0x9D     ; Ctrl release
+    jne .afterShift
+    mov byte [ctrl_pressed], 0
 
-	mov rax, rsp
-	add rax, 160 
-	mov [inforeg+8*8], rax 
+.afterShift:
 
-	mov rax, [rsp+15*8]
-	mov [inforeg], rax 
+    ; Ctrl+C detection
+    cmp al, 0x2E     ; 'C' key
+    jne .checkTab
+    cmp byte [ctrl_pressed], 1
+    jne .checkTab
+
+    ; Call ctrl_c_handler if Ctrl+C is pressed
+    call ctrl_c_handler
+    jmp .keyboardContinue
+
+.checkTab:
+    cmp byte [left_shift], 1 
+    jne .keyboardContinue
+    cmp al, 0x0F     ; 'TAB'
+    jne .keyboardContinue
+
+    ; Save registers to inforeg
+    mov [inforeg+2*8], rbx
+    mov [inforeg+3*8], rcx
+    mov [inforeg+4*8], rdx
+    mov [inforeg+5*8], rsi
+    mov [inforeg+6*8], rdi
+    mov [inforeg+7*8], rbp
+    mov [inforeg+9*8], r8
+    mov [inforeg+10*8], r9
+    mov [inforeg+11*8], r10
+    mov [inforeg+12*8], r11
+    mov [inforeg+13*8], r12
+    mov [inforeg+14*8], r13
+    mov [inforeg+15*8], r14
+    mov [inforeg+16*8], r15
+
+    mov rax, rsp
+    add rax, 160 
+    mov [inforeg+8*8], rax 
+
+    mov rax, [rsp+15*8]
+    mov [inforeg], rax 
 	
-	mov rax, [rsp+14*8]
-	mov [inforeg+1*8], rax 
+    mov rax, [rsp+14*8]
+    mov [inforeg+1*8], rax 
 
-	mov byte [hasInforeg], 1
+    mov byte [hasInforeg], 1
 
-.continue3:
+.keyboardContinue:
     call keyboard_master
 
     endOfHardwareInterrupt
     popState
-	iretq
+    iretq
+
 
 _interrupt_timerTick:
 	pushState
@@ -326,5 +355,6 @@ SECTION .bss
 	inforeg	resq	17	
 	hasInforeg 		resb 	1 	
 	left_shift  	resb 	1   
+	ctrl_pressed resb 1
 	codeModule equ 0x400000 
 

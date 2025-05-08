@@ -6,11 +6,14 @@
 
 #include "time.h"
 #include "videoDriver.h"
+#include <process.h>
+#include <schedule.h>
 
 unsigned char scanCode = 0;
 static char retChar	   = 0;
 static int shift	   = 0;
 static int capsLock	   = 0;
+static int ctrl		   = 0;
 
 static const char hexMapPressed[256] = {
 	0,	  0,   '1',	 '2',  '3', '4', '5', '6', '7', '8', '9',
@@ -34,6 +37,15 @@ void keyboard_master(uint8_t keyPressed) {
 	if (scanCode == 0xAA || scanCode == 0xB6) {
 		shift = 0;
 	}
+	// ctrl pressed
+	if (scanCode == 0x1D) {
+		ctrl = 1;
+	}
+	// ctrl not pressed
+	if (scanCode == 0x9D) {
+		ctrl = 0;
+	}
+
 	// capsLock
 	if (scanCode == 0x3A) {
 		capsLock = (capsLock + 1) % 2;
@@ -52,7 +64,18 @@ char getCharFromKeyboard() {
 		return retChar - ('a' - 'A');
 	}
 
+	if (ctrl == 1 && retChar == 'c') {
+		return 0;
+	}
+
 	return retChar;
+}
+
+void ctrl_c_handler() { // TODO
+	// driver_printChar('a', (Color) {0xFF, 0xFF, 0xFF});  PARA CHEQUEAR Q ANDA
+	// CTRL + C
+	killForegroundProcess();
+	return;
 }
 
 void clearScanCode() {
