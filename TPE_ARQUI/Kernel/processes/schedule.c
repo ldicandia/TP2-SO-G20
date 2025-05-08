@@ -118,11 +118,21 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 	return get_pid(process);
 }
 
+//=======================TODO=======================//
+
 // static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie);
 
 int32_t killCurrentProcess(int32_t retValue);
 
 int32_t killProcess(uint16_t pid, int32_t retValue);
+
+void killForegroundProcess() {
+	SchedulerADT scheduler	 = getSchedulerADT();
+	scheduler->killFgProcess = 1;
+	// forceTimerTick();
+}
+
+//=======================TODO=======================//
 
 //=========== SETTERS AND GETTERS ===========//
 

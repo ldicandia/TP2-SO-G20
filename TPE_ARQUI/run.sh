@@ -1,8 +1,8 @@
 #!/bin/bash
 
-make clean
+sudo make clean
 
-make all
+sudo make all
 
 if [ "$1" = "-d" ]; then
 sudo qemu-system-x86_64 -s -S -hda Image/x64BareBonesImage.qcow2 -m 512

@@ -6,6 +6,8 @@
 
 #include "time.h"
 #include "videoDriver.h"
+#include <process.h>
+#include <schedule.h>
 
 unsigned char scanCode = 0;
 static char retChar	   = 0;
@@ -53,6 +55,12 @@ char getCharFromKeyboard() {
 	}
 
 	return retChar;
+}
+
+void ctrl_c_handler() { // TODO
+	// driver_printChar('a', (Color) {0xFF, 0xFF, 0xFF});
+	killForegroundProcess();
+	return;
 }
 
 void clearScanCode() {

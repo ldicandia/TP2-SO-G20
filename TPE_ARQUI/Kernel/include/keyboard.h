@@ -9,6 +9,8 @@ char getCharFromKeyboard();
 
 unsigned char getScanCode();
 
+void ctrl_c_handler();
+
 void clearScanCode();
 
 #endif
