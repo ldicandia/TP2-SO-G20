@@ -40,7 +40,9 @@ extern void *u_sys_malloc(uint64_t size);
 
 extern uint64_t u_sys_free(void *address);
 
-extern uint64_t u_sys_create_process(char *name, uint64_t argc, char **argv);
+extern uint64_t u_sys_create_process(void *code, char **args, char *name,
+									 uint8_t priority,
+									 int16_t fileDescriptors[]);
 
 extern uint64_t u_sys_kill_process(uint64_t pid);
 

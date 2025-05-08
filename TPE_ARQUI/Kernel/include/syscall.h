@@ -2,6 +2,8 @@
 #define SYSCALL_H
 
 #include <stdint.h>
+#include <process.h>
+#include <schedule.h>
 
 // System call prototypes
 int64_t my_getpid();

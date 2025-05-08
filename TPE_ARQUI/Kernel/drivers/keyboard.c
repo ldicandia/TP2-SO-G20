@@ -74,7 +74,8 @@ char getCharFromKeyboard() {
 void ctrl_c_handler() { // TODO
 	// driver_printChar('a', (Color) {0xFF, 0xFF, 0xFF});  PARA CHEQUEAR Q ANDA
 	// CTRL + C
-	killForegroundProcess();
+	// killForegroundProcess();
+	killCurrentProcess(0);
 	return;
 }
 

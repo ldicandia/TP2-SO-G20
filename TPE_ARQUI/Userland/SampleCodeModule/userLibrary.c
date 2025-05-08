@@ -165,8 +165,9 @@ void freeMemory(void *address) {
 	u_sys_free(address);
 }
 
-int create_process(char *name, uint64_t argc, char *argv[]) {
-	return u_sys_create_process(name, argc, argv);
+int create_process(void *code, char **args, char *name, uint8_t priority) {
+	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
+	return u_sys_create_process(code, args, name, priority, fileDescriptors);
 }
 
 int kill_process(uint64_t pid) {

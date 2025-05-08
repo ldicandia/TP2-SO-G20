@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <stdint.h>
 #include <stdio.h>
-#include <sys_calls.h>
+#include <syscall.h>
 #include "test_util.h"
 
 // Random

@@ -143,11 +143,10 @@ static void syscall_free(void *ptr) {
 }
 
 // Create process
-static uint64_t sys_create_process(uint64_t code, uint64_t args, uint64_t name,
-								   uint64_t priority,
-								   uint64_t fileDescriptors) {
-	return createProcess((MainFunction) code, (char **) args, (char *) name,
-						 (uint8_t) priority);
+static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
+									 uint8_t priority,
+									 int16_t fileDescriptors[]) {
+	return createProcess(code, args, name, priority, fileDescriptors);
 }
 
 // kill process
@@ -158,24 +157,24 @@ static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
-	(void *) sys_read,			 // 0
-	(void *) sys_write,			 // 1
-	(void *) sys_write_color,	 // 2
-	(void *) sys_clear,			 // 3
-	(void *) sys_increment_size, // 4
-	(void *) sys_decrement_size, // 5
-	(void *) sys_getHours,		 // 6
-	(void *) sys_getMinutes,	 // 7
-	(void *) sys_getSeconds,	 // 8
-	(void *) sys_inforeg,		 // 9
-	(void *) sys_drawSquare,	 // 10
-	(void *) sys_sleep,			 // 11
-	(void *) sys_playSound,		 // 12
-	(void *) sys_stopSound,		 // 13
-	(void *) syscall_malloc,	 // 14
-	(void *) syscall_free,		 // 15
-	(void *) sys_create_process, // 16
-	(void *) sys_kill_process,	 // 17
+	(void *) sys_read,				// 0
+	(void *) sys_write,				// 1
+	(void *) sys_write_color,		// 2
+	(void *) sys_clear,				// 3
+	(void *) sys_increment_size,	// 4
+	(void *) sys_decrement_size,	// 5
+	(void *) sys_getHours,			// 6
+	(void *) sys_getMinutes,		// 7
+	(void *) sys_getSeconds,		// 8
+	(void *) sys_inforeg,			// 9
+	(void *) sys_drawSquare,		// 10
+	(void *) sys_sleep,				// 11
+	(void *) sys_playSound,			// 12
+	(void *) sys_stopSound,			// 13
+	(void *) syscall_malloc,		// 14
+	(void *) syscall_free,			// 15
+	(void *) syscall_createProcess, // 16
+	(void *) sys_kill_process,		// 17
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
