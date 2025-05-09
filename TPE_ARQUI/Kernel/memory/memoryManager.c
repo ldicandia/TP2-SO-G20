@@ -2,11 +2,12 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // filepath:
 // c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
+
+#ifndef BUDDY //si no se pide el buddy
+
 #include "memoryManager.h"
 
-#ifdef USE_BUDDY_MEMORY_MANAGER
-#include "buddyMemoryManager.h"
-#else
+
 #include <defs.h>
 #include <memoryManager.h>
 #include <stdint.h>

@@ -6,12 +6,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#ifdef USE_BUDDY_MEMORY_MANAGER
-#include "buddyMemoryManager.h"
-#define initMemoryManager initBuddyMemoryManager
-#define malloc buddyMalloc
-#define free buddyFree
-#else
 
 #define MEMORY_MANAGER_ADDRESS 0x50000
 #define SYSTEM_VARIABLES 0x5A00
@@ -31,4 +25,4 @@ void freeMemory(void *ptr);
 
 #endif
 
-#endif
+
