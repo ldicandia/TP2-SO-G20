@@ -35,6 +35,21 @@ void printChar(char c) {
 	u_sys_write(STDOUT, c);
 }
 
+void printInteger(int n) {
+	char buf[16];
+	int i = 0;
+	if (n < 0) {
+		printChar('-');
+		n = -n;
+	}
+	do {
+		buf[i++] = n % 10 + '0';
+	} while ((n /= 10) > 0);
+	while (i-- > 0) {
+		printChar(buf[i]);
+	}
+}
+
 void drawSquare(int x, int y, uint32_t fillColor) {
 	u_sys_drawSquare(x, y, fillColor);
 }
@@ -165,8 +180,9 @@ void freeMemory(void *address) {
 	u_sys_free(address);
 }
 
-int create_process(char *name, uint64_t argc, char *argv[]) {
-	return u_sys_create_process(name, argc, argv);
+int create_process(void *code, char **args, char *name, uint8_t priority) {
+	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
+	return u_sys_create_process(code, args, name, priority, fileDescriptors);
 }
 
 int kill_process(uint64_t pid) {

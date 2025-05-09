@@ -15,6 +15,8 @@ void printStrColor(char *str, Color fnt);
 
 void printStr(char *str);
 
+void printInteger(int n);
+
 int isChar(char c);
 
 int isDigit(char c);
@@ -47,7 +49,7 @@ void *allocMemory(uint64_t size);
 
 void freeMemory(void *address);
 
-int create_process(char *name, uint64_t argc, char *argv[]);
+int create_process(void *code, char **args, char *name, uint8_t priority);
 
 int kill_process(uint64_t pid);
 

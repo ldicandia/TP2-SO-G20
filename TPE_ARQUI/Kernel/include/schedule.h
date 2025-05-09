@@ -34,7 +34,7 @@ void *schedule(void *prevStackPointer);
 
 // Crea un nuevo proceso
 uint16_t createProcess(MainFunction code, char **args, char *name,
-					   uint8_t priority);
+					   uint8_t priority, int16_t fileDescriptors[]);
 
 // Mata el proceso actual
 int32_t killCurrentProcess(int32_t retValue);

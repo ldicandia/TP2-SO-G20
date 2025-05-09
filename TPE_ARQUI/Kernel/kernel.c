@@ -11,6 +11,8 @@
 #include <memoryManager.h>
 #include <process.h>
 #include <schedule.h>
+#include <test_mm.h>
+#include <test_processes.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -61,9 +63,27 @@ void *initializeKernelBinary() {
 	return getStackBase();
 }
 
-int main() {
-	load_idt();
+int idle(int argc, char **argv) {
+	char *argsShell[2]		  = {"shell", NULL};
+	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
+	int16_t pid = createProcess((MainFunction) sampleCodeModuleAddress,
+								argsShell, "shell", 4, fileDescriptors);
+	if (pid == -1) {
+		driver_printStr("Error creating shell process\n",
+						(Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
 
+	while (1)
+		_hlt();
+	return 0;
+}
+
+int main() {
+	char *argsIdle[3] = {"idle", "Hm?", NULL};
+
+	createProcess((MainFunction) &idle, argsIdle, "init", 4, NULL);
+	load_idt();
 	clearScanCode();
 	((EntryPoint) sampleCodeModuleAddress)();
 

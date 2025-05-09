@@ -91,8 +91,7 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 	void *stackEnd	  = (void *) ((uint64_t) process->stackBase + STACK_SIZE);
 
 	process->stackPos =
-		_initialize_stack_frame(&processWrapper, code, stackEnd,
-								args); // PLACEHOLDER. FALTA IMPLEMENTAR!!!
+		_initialize_stack_frame(&processWrapper, code, stackEnd, args);
 
 	process->status = READY;
 

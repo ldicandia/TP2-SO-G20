@@ -7,7 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <memoryManager.h>
+#include <videoDriver.h>
+
+// #include <unistd.h>
 
 #define MAX_BLOCKS 128
 
@@ -16,8 +19,7 @@ typedef struct MM_rq {
 	uint32_t size;
 } mm_rq;
 
-uint64_t test_mm(uint64_t argc, char *argv[]) {
-	printStr("Testing Memory...\n");
+uint64_t test_mm_kernel(uint64_t argc, char *argv[]) {
 	mm_rq mm_rqs[MAX_BLOCKS];
 	uint8_t rq;
 	uint32_t total;
@@ -54,7 +56,8 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
 		for (i = 0; i < rq; i++)
 			if (mm_rqs[i].address)
 				if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
-					printStr("test_mm ERROR\n");
+					driver_printStr("Error in memory check\n",
+									(Color) {0xFF, 0xFF, 0xFF});
 					return -1;
 				}
 

@@ -37,6 +37,7 @@ SchedulerADT createScheduler() {
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->nextUnusedPid = 0;
 	scheduler->killFgProcess = 0;
+	scheduler->qtyProcesses	 = 0;
 	return scheduler;
 }
 
@@ -96,17 +97,49 @@ void *schedule(void *prevStackPointer) {
 	return get_stackPos(currentProcess);
 }
 
+char *numToString(int number) {
+	int length = (number == 0) ? 1 : 0;
+	int temp   = number;
+	while (temp != 0) {
+		temp /= 10;
+		length++;
+	}
+	char *str = (char *) allocMemory(length + 1);
+	if (str == NULL) {
+		return NULL;
+	}
+	str[length] = '\0';
+	for (int i = length - 1; i >= 0; i--) {
+		str[i] = (number % 10) + '0';
+		number /= 10;
+	}
+	return str;
+}
+
 uint16_t createProcess(MainFunction code, char **args, char *name,
-					   uint8_t priority) {
+					   uint8_t priority, int16_t fileDescriptors[]) {
+	// driver_printStr(name, (Color) {0xFF, 0xFF, 0xFF}); debug
+	// driver_printStr("\nPID: ", (Color) {0xFF, 0xFF, 0xFF});
+	// char *str = numToString(getSchedulerADT()->nextUnusedPid);
+	// if (str == NULL) {
+	// 	return -1;
+	// }
+	// driver_printStr(str, (Color) {0xFF, 0xFF, 0xFF});
+	// freeMemory(str); // Free the allocated memory
+
 	SchedulerADT scheduler = getSchedulerADT();
-	if (scheduler->qtyProcesses >= MAX_PROCESSES)
+	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
+		driver_printStr("Error: Too many processes\n",
+						(Color) {0xFF, 0x00, 0x00});
 		return -1;
+	}
 
 	ProcessADT process = (ProcessADT) allocMemory(sizeof(ProcessADT));
-	if (process == NULL)
+	if (process == NULL) {
+		driver_printStr("Error: Memory allocation failed\n",
+						(Color) {0xFF, 0x00, 0x00});
 		return -1;
-
-	int16_t fileDescriptors[BUILT_IN_DESCRIPTORS] = {STDIN, STDOUT, STDERR};
+	}
 	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
 				args, name, priority, fileDescriptors, 0);
 
@@ -114,7 +147,6 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 	scheduler->processes[scheduler->nextUnusedPid] = node;
 	scheduler->nextUnusedPid++;
 	scheduler->qtyProcesses++;
-
 	return get_pid(process);
 }
 
@@ -122,9 +154,34 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 
 // static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie);
 
-int32_t killCurrentProcess(int32_t retValue);
+int32_t killCurrentProcess(int32_t retValue) {
+	SchedulerADT scheduler	  = getSchedulerADT();
+	Node *currentProcessNode  = scheduler->processes[scheduler->currentPid];
+	ProcessADT currentProcess = currentProcessNode->data;
+	scheduler->processes[scheduler->currentPid] = NULL;
 
-int32_t killProcess(uint16_t pid, int32_t retValue);
+	scheduler->qtyProcesses--;
+	removeNode(scheduler->levels[get_priority(currentProcess)],
+			   currentProcessNode);
+	return 0;
+}
+
+int32_t killProcess(uint16_t pid, int32_t retValue) {
+	SchedulerADT scheduler	  = getSchedulerADT();
+	Node *processToKillNode	  = scheduler->processes[scheduler->currentPid];
+	ProcessADT processToKill  = (ProcessADT) processToKillNode->data;
+	scheduler->processes[pid] = NULL;
+
+	scheduler->qtyProcesses--;
+	removeNode(scheduler->levels[get_priority(processToKill)],
+			   processToKillNode);
+	// TODO: Guardar retValue en PCB para zombie?
+	// TODO: llamar al timer tick si el proceso es el current
+	// TODO: free heap?
+	freeMemory(processToKillNode);
+	freeMemory(processToKill);
+	return retValue;
+}
 
 void killForegroundProcess() {
 	SchedulerADT scheduler	 = getSchedulerADT();
