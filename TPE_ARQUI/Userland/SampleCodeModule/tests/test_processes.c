@@ -25,6 +25,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 		return -1;
 	}
 
+	max_processes = 3;
+
 	if (argc == 2 && satoi(argv[1]) == 1) {
 		debug_mode = 1; // Activar modo debugging si el segundo argumento es 1
 	}

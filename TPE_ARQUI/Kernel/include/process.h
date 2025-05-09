@@ -43,4 +43,8 @@ int16_t get_fileDescriptor(ProcessADT process, uint8_t fdIndex);
 
 void *get_stackPos(ProcessADT process);
 
+int32_t get_retValue(ProcessADT process);
+
+void set_retValue(ProcessADT process, int32_t retValue);
+
 #endif

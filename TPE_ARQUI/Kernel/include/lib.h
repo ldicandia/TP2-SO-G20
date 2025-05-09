@@ -18,4 +18,6 @@ int strcpy(char *dest, const char *origin);
 
 int strlen(const char *str);
 
+void forceTimerTick();
+
 #endif

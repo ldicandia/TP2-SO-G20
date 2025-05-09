@@ -151,8 +151,8 @@ static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 
 // kill process
 static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
-	// return killProcess(pid, retValue);
-	return 0;
+	return killProcess(pid, retValue);
+	// return 0;
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,

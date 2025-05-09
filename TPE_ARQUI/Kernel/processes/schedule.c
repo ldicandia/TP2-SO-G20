@@ -145,7 +145,9 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 
 	Node *node = appendElement(scheduler->levels[priority], process);
 	scheduler->processes[scheduler->nextUnusedPid] = node;
-	scheduler->nextUnusedPid++;
+	while (scheduler->processes[scheduler->nextUnusedPid] != NULL)
+		scheduler->nextUnusedPid =
+			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
 	scheduler->qtyProcesses++;
 	return get_pid(process);
 }
@@ -163,23 +165,47 @@ int32_t killCurrentProcess(int32_t retValue) {
 	scheduler->qtyProcesses--;
 	removeNode(scheduler->levels[get_priority(currentProcess)],
 			   currentProcessNode);
+
 	return 0;
 }
 
 int32_t killProcess(uint16_t pid, int32_t retValue) {
-	SchedulerADT scheduler	  = getSchedulerADT();
-	Node *processToKillNode	  = scheduler->processes[scheduler->currentPid];
+	if (pid == 0) {
+		driver_printStr("Error: Cannot kill idle process\n",
+						(Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
+	SchedulerADT scheduler	= getSchedulerADT();
+	Node *processToKillNode = scheduler->processes[pid];
+	if (processToKillNode == NULL) {
+		driver_printStr("Error: Process not found\n",
+						(Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
 	ProcessADT processToKill  = (ProcessADT) processToKillNode->data;
 	scheduler->processes[pid] = NULL;
 
 	scheduler->qtyProcesses--;
-	removeNode(scheduler->levels[get_priority(processToKill)],
-			   processToKillNode);
+	int aux = get_priority(processToKill);
+	removeNode(scheduler->levels[aux], processToKillNode);
 	// TODO: Guardar retValue en PCB para zombie?
 	// TODO: llamar al timer tick si el proceso es el current
 	// TODO: free heap?
-	freeMemory(processToKillNode);
-	freeMemory(processToKill);
+	// driver_printStr("Freeing processToKillNode\n", (Color) {0xFF, 0xFF,
+	// 0xFF});
+
+	// Liberar el PID eliminado
+	if (pid < scheduler->nextUnusedPid) {
+		scheduler->nextUnusedPid = pid;
+	}
+
+	if (processToKillNode != NULL) {
+		freeMemory(processToKillNode);
+	}
+	// ARREGLAR
+	if (processToKill != NULL) {
+		freeMemory(processToKill);
+	}
 	return retValue;
 }
 

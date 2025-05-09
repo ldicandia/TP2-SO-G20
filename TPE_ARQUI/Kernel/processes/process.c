@@ -163,3 +163,14 @@ void *get_stackPos(ProcessADT process) {
 		return NULL; // Return NULL if the process is NULL
 	return process->stackPos;
 }
+
+int32_t get_retValue(ProcessADT process) {
+	if (process == NULL)
+		return -1; // Return -1 or an appropriate default value if process is
+				   // NULL
+	return process->retValue;
+}
+void set_retValue(ProcessADT process, int32_t retValue) {
+	if (process != NULL)
+		process->retValue = retValue;
+}
