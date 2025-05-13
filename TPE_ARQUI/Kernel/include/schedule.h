@@ -74,4 +74,8 @@ int32_t killProcess(uint16_t pid, int32_t retValue);
 
 uint16_t getPid();
 
+int getQtyProcesses(SchedulerADT scheduler);
+
+int getNextUnusedPid(SchedulerADT scheduler);
+
 #endif // SCHEDULE_H

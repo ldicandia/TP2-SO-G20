@@ -272,6 +272,14 @@ int8_t setStatus(uint16_t pid, uint8_t newStatus) {
 	return newStatus;
 }
 
+int getQtyProcesses(SchedulerADT scheduler) {
+	return scheduler->qtyProcesses;
+}
+
+int getNextUnusedPid(SchedulerADT scheduler) {
+	return scheduler->nextUnusedPid;
+}
+
 void yield() {
 	SchedulerADT scheduler		= getSchedulerADT();
 	scheduler->remainingQuantum = 0;

@@ -13,8 +13,8 @@ typedef struct MemoryManagerCDT *MemoryManagerADT;
 
 MemoryManagerADT
 
-createMemoryManager(void *const restrict memoryForMemoryManager,
-					void *const restrict managedMemory, uint64_t memAmount);
+createMemoryManager(void *const restrict memoryForMemoryManager, void *const restrict managedMemory,
+					uint64_t memAmount);
 
 void *allocMemory(const size_t memoryToAllocate);
 

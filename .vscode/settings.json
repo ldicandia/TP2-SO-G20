@@ -10,6 +10,7 @@
     "memorymanagertest.h": "c",
     "memorymanager.h": "c",
     "test_util.h": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "test_processes.h": "c"
   }
 }
