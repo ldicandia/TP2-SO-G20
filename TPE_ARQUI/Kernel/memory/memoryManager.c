@@ -3,13 +3,16 @@
 // filepath:
 // c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
 
+
+
+//#ifdef USE_BUDDY_MEMORY_MANAGER
+
+//#ifndef BUDDY
+#ifdef OUR
 #include "memoryManager.h"
+//#include "buddyMemoryManager.h"
 
-#ifdef USE_BUDDY_MEMORY_MANAGER
-
-#include "buddyMemoryManager.h"
-
-#else
+//#else
 
 #include <defs.h>
 #include <stdint.h>
