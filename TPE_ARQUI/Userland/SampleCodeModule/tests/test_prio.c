@@ -4,8 +4,9 @@
 #include "test_util.h"
 
 #define MINOR_WAIT                                                             \
-	1000000 // TODO: Change this value to prevent a process from flooding the
-			// screen
+	"500000000" // TODO: Change this value to prevent a process from flooding
+				// the
+				// screen
 #define WAIT                                                                   \
 	10000000 // TODO: Change this value to make the wait long enough to see
 			 // theese processes beeing run at least twice
@@ -19,12 +20,12 @@ int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 void test_prio(void) {
 	int64_t pids[TOTAL_PROCESSES];
-	char *argv[] = {0};
+	char *argv[] = {"endless_loop_print", MINOR_WAIT, 0};
 	uint64_t i;
 
 	for (i = 0; i < TOTAL_PROCESSES; i++) {
-		char *args[] = {"endless_loop", NULL};
-		pids[i]		 = create_process(&endless_loop, args, "endless_loop", 0);
+		pids[i] =
+			create_process(&endless_loop_print, argv, "endless_loop_print", 0);
 	}
 
 	bussy_wait(WAIT);

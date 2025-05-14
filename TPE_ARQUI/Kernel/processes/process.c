@@ -6,6 +6,7 @@
 #include <memoryManager.h>
 #include <process.h>
 #include <stdlib.h>
+#include <videoDriver.h>
 
 #define STACK_SIZE (1 << 12) // 4KB stack size
 

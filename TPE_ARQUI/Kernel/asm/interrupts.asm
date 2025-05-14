@@ -11,7 +11,14 @@ GLOBAL _interrupt_keyboardHandler
 GLOBAL _exception_divideByZero
 GLOBAL _exception_invalidOpCode
 
-GLOBAL _irq_handler
+GLOBAL _irq00handler
+GLOBAL _irq01handler
+GLOBAL _irq02handler
+GLOBAL _irq03handler
+GLOBAL _irq04handler
+GLOBAL _irq05handler
+
+
 GLOBAL _initialize_stack_frame
 
 
@@ -139,6 +146,20 @@ SECTION .text
 
 	mov rdi, %1
 	call exceptionDispatcher
+
+	popState
+	iretq
+%endmacro
+
+%macro irqHandlerMaster 1
+	pushState
+
+	mov rdi, %1 ; pasaje de parametro
+	call irqDispatcher
+
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
 
 	popState
 	iretq
@@ -325,7 +346,7 @@ _initialize_stack_frame:
 	ret
 
 
-_irq_handler:
+_irq00handler:
 	pushState
 	
 	mov rdi, 0
@@ -339,6 +360,26 @@ _irq_handler:
 	popState
 	iretq
 ;;;;
+
+;Keyboard
+_irq01handler:
+	irqHandlerMaster 1
+
+;Cascade pic never called
+_irq02handler:
+	irqHandlerMaster 2
+
+;Serial Port 2 and 4
+_irq03handler:
+	irqHandlerMaster 3
+
+;Serial Port 1 and 3
+_irq04handler:
+	irqHandlerMaster 4
+
+;USB
+_irq05handler:
+	irqHandlerMaster 5
 
 haltcpu:
 	cli

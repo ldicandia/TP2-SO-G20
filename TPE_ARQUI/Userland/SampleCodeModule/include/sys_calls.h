@@ -52,4 +52,8 @@ extern uint64_t u_sys_block_process(uint64_t pid);
 
 extern uint64_t u_sys_set_prio(uint64_t pid, uint64_t newPrio);
 
+extern uint64_t u_sys_get_pid();
+
+extern uint64_t u_sys_yield();
+
 #endif

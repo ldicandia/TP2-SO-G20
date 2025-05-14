@@ -15,7 +15,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 	uint64_t alive = 0;
 	uint64_t action;
 	int64_t max_processes;
-	int debug_mode = 0; // Modo debugging desactivado por defecto
+	int debug_mode = 1; // Modo debugging desactivado por defecto
 
 	if (argc < 1 || argc > 2) {
 		return -1;

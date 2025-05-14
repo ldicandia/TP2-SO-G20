@@ -200,3 +200,11 @@ int block(uint64_t pid) {
 int unblock(uint64_t pid) {
 	return u_sys_unblock_process(pid);
 }
+
+int getpid() {
+	return u_sys_get_pid();
+}
+
+int yield() {
+	return u_sys_yield();
+}

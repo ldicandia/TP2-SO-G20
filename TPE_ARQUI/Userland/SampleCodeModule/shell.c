@@ -49,7 +49,7 @@ void shell() {
 	char c;
 	// testMemory();
 	// testProcesses();
-	test_prio();
+	// test_prio();
 	while (1) {
 		c = getChar();
 		if (lastc != c) {

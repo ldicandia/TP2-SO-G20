@@ -24,6 +24,12 @@ extern void _interrupt_keyboardHandler();
 extern void _interrupt_timerTick();
 extern void _exception_divideByZero();
 extern void _exception_invalidOpCode();
+extern void _irq00handler();
+extern void _irq01handler();
+extern void _irq02handler();
+extern void _irq03handler();
+extern void _irq04handler();
+extern void _irq05handler();
 
 DESCR_INT *idt = (DESCR_INT *) 0; // IDT de 255 entradas
 
@@ -32,8 +38,10 @@ static void setup_IDT_entry(int index, uint64_t offset);
 void load_idt() {
 	_cli();
 
+	// setup_IDT_entry(0x21, (uint64_t) &_interrupt_keyboardHandler);
+
+	setup_IDT_entry(0x20, (uint64_t) &_irq00handler);
 	setup_IDT_entry(0x21, (uint64_t) &_interrupt_keyboardHandler);
-	setup_IDT_entry(0x20, (uint64_t) &_interrupt_timerTick);
 	setup_IDT_entry(0x80, (uint64_t) &_interrupt_syscall);
 
 	setup_IDT_entry(0x00, (uint64_t) &_exception_divideByZero);

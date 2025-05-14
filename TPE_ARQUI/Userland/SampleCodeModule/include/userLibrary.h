@@ -59,4 +59,8 @@ int block(uint64_t pid);
 
 int unblock(uint64_t pid);
 
+int getpid();
+
+int yield();
+
 #endif // USER_LIBRARY_H

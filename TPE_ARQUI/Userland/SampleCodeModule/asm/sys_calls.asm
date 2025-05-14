@@ -19,6 +19,9 @@ GLOBAL u_sys_kill_process
 GLOBAL u_sys_set_prio
 GLOBAL u_sys_block_process
 GLOBAL u_sys_unblock_process
+GLOBAL u_sys_get_pid
+GLOBAL u_sys_yield
+
 section .text
 
 u_sys_read:
@@ -120,5 +123,15 @@ u_sys_unblock_process:
     
 u_sys_block_process:
     mov rax, 0x14
+    int 0x80
+    ret
+
+u_sys_get_pid:
+    mov rax, 0x15
+    int 0x80
+    ret
+
+u_sys_yield:
+    mov rax, 0x16
     int 0x80
     ret

@@ -173,6 +173,15 @@ static uint64_t sys_block(uint16_t pid) {
 	return blockProcess(pid);
 }
 
+static uint64_t sys_getpid() {
+	return getPid();
+}
+
+static uint64_t sys_yield() {
+	yield();
+	return 1;
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,				// 0
@@ -196,6 +205,8 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_set_priority,		// 18
 	(void *) sys_unblock,			// 19
 	(void *) sys_block,				// 20
+	(void *) sys_getpid,			// 21
+	(void *) sys_yield,				// 22
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
