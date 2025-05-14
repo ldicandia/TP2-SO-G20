@@ -21,8 +21,7 @@
 
 typedef struct SchedulerCDT {
 	Node *processes[MAX_PROCESSES];
-	LinkedListADT levels[QTY_READY_LEVELS + 1];
-	uint16_t blocked[MAX_PROCESSES];
+	LinkedListADT levels[QTY_READY_LEVELS];
 	uint16_t currentPid;
 	uint16_t nextUnusedPid;
 	uint16_t qtyProcesses;
@@ -34,7 +33,7 @@ SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
 	for (int i = 0; i < MAX_PROCESSES; i++)
 		scheduler->processes[i] = NULL;
-	for (int i = 0; i < QTY_READY_LEVELS + 1; i++)
+	for (int i = 0; i < MAX_PRIORITY + 1; i++)
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->nextUnusedPid = 0;
 	scheduler->killFgProcess = 0;
@@ -48,7 +47,7 @@ SchedulerADT getSchedulerADT() {
 
 static uint16_t getNextPid(SchedulerADT scheduler) {
 	ProcessADT process = NULL;
-	for (int lvl = QTY_READY_LEVELS - 1; lvl >= 0 && process == NULL; lvl--) {
+	for (int lvl = MAX_PRIORITY; lvl >= 0 && process == NULL; lvl--) {
 		if (!isEmpty(scheduler->levels[lvl]))
 			process = (getFirst(scheduler->levels[lvl]))->data;
 	}
@@ -82,8 +81,8 @@ void *schedule(void *prevStackPointer) {
 		setPriority(get_pid(currentProcess), newPriority);
 	}
 
-	driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});
-	driver_printNum(scheduler->currentPid, (Color) {0xFF, 0xFF, 0xFF});
+	// driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});
+	// driver_printNum(scheduler->currentPid, (Color) {0xFF, 0xFF, 0xFF});
 
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
@@ -235,9 +234,9 @@ int32_t blockProcess(uint16_t pid) {
 
 	set_status(process, BLOCKED);
 	removeNode(scheduler->levels[get_priority(process)], node);
-	appendNode(scheduler->levels[BLOCKED_INDEX], node);
-	driver_printStr("\nBlock process: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+
+	// driver_printStr("\nBlock process: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
 
 	return 0;
 }
@@ -263,8 +262,8 @@ int32_t unblockProcess(uint16_t pid) {
 	set_status(process, READY);
 	scheduler->remainingQuantum = 0;
 
-	driver_printStr("\nUnblock process: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nUnblock process: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
 
 	return 0; // ProcessStatus status);
 }
@@ -295,8 +294,8 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 	}
 	set_priority(process, newPriority);
 
-	driver_printStr("\nSet Priority: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(newPriority, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nSet Priority: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(newPriority, (Color) {0xAA, 0xFF, 0xFF});
 
 	return newPriority;
 }
