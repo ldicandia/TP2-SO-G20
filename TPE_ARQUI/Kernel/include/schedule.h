@@ -68,7 +68,11 @@ void killForegroundProcess();
 
 int32_t killCurrentProcess(int32_t retValue);
 
-int32_t killProcess(uint16_t pid, int32_t retValue);
+// int32_t killProcess(uint16_t pid, int32_t retValue);
+
+int32_t unblockProcess(uint16_t pid);
+
+int32_t blockProcess(uint16_t pid);
 
 //=========== SETTERS AND GETTERS ===========//
 

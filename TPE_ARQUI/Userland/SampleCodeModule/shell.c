@@ -10,6 +10,7 @@
 #include <user_time.h>
 #include <test_mm.h>
 #include <test_processes.h>
+#include <test_prio.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
@@ -47,7 +48,8 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 void shell() {
 	char c;
 	// testMemory();
-	testProcesses();
+	// testProcesses();
+	test_prio();
 	while (1) {
 		c = getChar();
 		if (lastc != c) {

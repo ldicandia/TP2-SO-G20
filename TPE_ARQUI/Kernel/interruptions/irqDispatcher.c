@@ -151,8 +151,26 @@ static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 
 // kill process
 static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
+	if (pid < 0) {
+		return -1;
+	}
 	return killProcess(pid, retValue);
 	// return 0;
+}
+
+static uint64_t sys_unblock(uint16_t pid) {
+	return unblockProcess(pid);
+}
+
+static uint64_t sys_set_priority(uint64_t pid, uint64_t newPriority) {
+	if (newPriority > MAX_PRIORITY) {
+		return -1;
+	}
+	return setPriority(pid, newPriority);
+}
+
+static uint64_t sys_block(uint16_t pid) {
+	return blockProcess(pid);
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
@@ -175,6 +193,9 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) syscall_free,			// 15
 	(void *) syscall_createProcess, // 16
 	(void *) sys_kill_process,		// 17
+	(void *) sys_set_priority,		// 18
+	(void *) sys_unblock,			// 19
+	(void *) sys_block,				// 20
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,

@@ -53,4 +53,10 @@ int create_process(void *code, char **args, char *name, uint8_t priority);
 
 int kill_process(uint64_t pid);
 
+int set_prio(uint64_t pid, uint64_t newPrio);
+
+int block(uint64_t pid);
+
+int unblock(uint64_t pid);
+
 #endif // USER_LIBRARY_H

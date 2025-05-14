@@ -11,6 +11,7 @@
     "memorymanager.h": "c",
     "test_util.h": "c",
     "typeinfo": "c",
-    "test_processes.h": "c"
+    "test_processes.h": "c",
+    "process.h": "c"
   }
 }

@@ -46,4 +46,10 @@ extern uint64_t u_sys_create_process(void *code, char **args, char *name,
 
 extern uint64_t u_sys_kill_process(uint64_t pid);
 
+extern uint64_t u_sys_unblock_process(uint64_t pid);
+
+extern uint64_t u_sys_block_process(uint64_t pid);
+
+extern uint64_t u_sys_set_prio(uint64_t pid, uint64_t newPrio);
+
 #endif

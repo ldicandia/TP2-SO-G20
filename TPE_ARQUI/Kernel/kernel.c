@@ -66,8 +66,9 @@ void *initializeKernelBinary() {
 int idle(int argc, char **argv) {
 	char *argsShell[2]		  = {"shell", NULL};
 	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
-	int16_t pid = createProcess((MainFunction) sampleCodeModuleAddress,
-								argsShell, "shell", 4, fileDescriptors);
+	int16_t pid =
+		createProcess((MainFunction) sampleCodeModuleAddress, argsShell,
+					  "shell", MAX_PRIORITY, fileDescriptors);
 	if (pid == -1) {
 		driver_printStr("Error creating shell process\n",
 						(Color) {0xFF, 0x00, 0x00});

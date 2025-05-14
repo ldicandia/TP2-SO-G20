@@ -16,7 +16,9 @@ GLOBAL u_sys_malloc
 GLOBAL u_sys_free
 GLOBAL u_sys_create_process
 GLOBAL u_sys_kill_process
-
+GLOBAL u_sys_set_prio
+GLOBAL u_sys_block_process
+GLOBAL u_sys_unblock_process
 section .text
 
 u_sys_read:
@@ -104,5 +106,19 @@ u_sys_create_process:
 
 u_sys_kill_process:
     mov rax, 0x11
+    int 0x80
+    ret
+
+u_sys_set_prio:
+    mov rax, 0x12
+    int 0x80
+    ret
+u_sys_unblock_process:
+    mov rax, 0x13
+    int 0x80
+    ret
+    
+u_sys_block_process:
+    mov rax, 0x14
     int 0x80
     ret

@@ -188,3 +188,15 @@ int create_process(void *code, char **args, char *name, uint8_t priority) {
 int kill_process(uint64_t pid) {
 	return u_sys_kill_process(pid);
 }
+
+int set_prio(uint64_t pid, uint64_t newPrio) {
+	return u_sys_set_prio(pid, newPrio);
+}
+
+int block(uint64_t pid) {
+	return u_sys_block_process(pid);
+}
+
+int unblock(uint64_t pid) {
+	return u_sys_unblock_process(pid);
+}

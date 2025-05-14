@@ -83,6 +83,31 @@ void driver_printChar(char c, Color color) {
 	}
 }
 
+void driver_printNum(int num, Color color) {
+	char str[12]; // Enough to hold a 32-bit integer
+	int i = 0;
+
+	if (num < 0) {
+		putPixel(0xFF0000, cursorX, cursorY);
+		cursorX += 8 * charSize;
+		num = -num;
+	}
+
+	if (num == 0) {
+		str[i++] = '0';
+	}
+	else {
+		while (num > 0) {
+			str[i++] = (num % 10) + '0';
+			num /= 10;
+		}
+	}
+
+	for (int j = i - 1; j >= 0; j--) {
+		drawChar(str[j], color);
+	}
+}
+
 void driver_backspace() {
 	if (cursorX > 0) {
 		cursorX -= 8 * charSize;

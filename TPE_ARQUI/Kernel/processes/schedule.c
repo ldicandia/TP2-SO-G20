@@ -22,6 +22,7 @@
 typedef struct SchedulerCDT {
 	Node *processes[MAX_PROCESSES];
 	LinkedListADT levels[QTY_READY_LEVELS + 1];
+	uint16_t blocked[MAX_PROCESSES];
 	uint16_t currentPid;
 	uint16_t nextUnusedPid;
 	uint16_t qtyProcesses;
@@ -80,6 +81,9 @@ void *schedule(void *prevStackPointer) {
 								  get_priority(currentProcess);
 		setPriority(get_pid(currentProcess), newPriority);
 	}
+
+	driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});
+	driver_printNum(scheduler->currentPid, (Color) {0xFF, 0xFF, 0xFF});
 
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
@@ -215,6 +219,56 @@ void killForegroundProcess() {
 	// forceTimerTick();
 }
 
+int32_t blockProcess(uint16_t pid) {
+	SchedulerADT scheduler = getSchedulerADT();
+
+	Node *node = scheduler->processes[pid];
+
+	if (node == NULL)
+		return -1;
+
+	ProcessADT process	 = node->data;
+	ProcessStatus status = get_status(process);
+
+	if (status == BLOCKED || status == ZOMBIE)
+		return 0;
+
+	set_status(process, BLOCKED);
+	removeNode(scheduler->levels[get_priority(process)], node);
+	appendNode(scheduler->levels[BLOCKED_INDEX], node);
+	driver_printStr("\nBlock process: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+
+	return 0;
+}
+
+int32_t unblockProcess(uint16_t pid) {
+	SchedulerADT scheduler = getSchedulerADT();
+	Node *node			   = scheduler->processes[pid];
+
+	if (node == NULL /*|| pid == IDLE_PID*/) {
+		return -1;
+	}
+	ProcessADT process			= node->data;
+	ProcessStatus currentStatus = get_status(process);
+	if (currentStatus == ZOMBIE) {
+		return -1;
+	}
+	if (currentStatus == READY || currentStatus == RUNNING) {
+		return 0;
+	}
+	if (currentStatus != BLOCKED) {
+		return -1;
+	}
+	set_status(process, READY);
+	scheduler->remainingQuantum = 0;
+
+	driver_printStr("\nUnblock process: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+
+	return 0; // ProcessStatus status);
+}
+
 //=======================TODO=======================//
 
 //=========== SETTERS AND GETTERS ===========//
@@ -240,6 +294,10 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 			appendNode(scheduler->levels[newPriority], node);
 	}
 	set_priority(process, newPriority);
+
+	driver_printStr("\nSet Priority: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(newPriority, (Color) {0xAA, 0xFF, 0xFF});
+
 	return newPriority;
 }
 
