@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <videoDriver.h>
 #include <schedule.h>
+#include <linkedListADT.h>
 
 #define STACK_SIZE (1 << 12) // 4KB stack size
 
@@ -26,6 +27,8 @@ typedef struct ProcessCDT {
 	int16_t fileDescriptors[BUILT_IN_DESCRIPTORS];
 	int32_t retValue;
 	int initialized;
+	LinkedListADT zombieChildren;
+
 	// creo q aca nos faltaria una lista de zombieChildren;
 } ProcessCDT;
 
@@ -70,38 +73,16 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 	process->parentPid	   = parentPid;
 	process->waitingForPid = 0;
 	process->stackBase	   = allocMemory(STACK_SIZE);
-	if (process->stackBase == NULL) {
-		process->status = DEAD;
-		return;
-	}
-	process->argv = allocArguments(args);
-	if (process->argv == NULL) {
-		freeMemory(process->stackBase);
-		process->status = DEAD;
-		return;
-	}
+	process->argv		   = allocArguments(args);
+	process->name		   = allocMemory(strlen(name) + 1);
 	strcpy(process->name, name);
-	if (process->name != NULL) {
-		strcpy(process->name, name);
-	}
-	else {
-		freeMemory(process->argv);
-		freeMemory(process->stackBase);
-		process->status = DEAD;
-		return;
-	}
-
 	process->priority = priority;
 	void *stackEnd	  = (void *) ((uint64_t) process->stackBase + STACK_SIZE);
-
 	process->stackPos = _initialize_stack_frame(&processWrapper, code, stackEnd,
 												(void *) process->argv);
-
-	process->status = READY;
-
-	process->unkillable	 = unkillable;
-	process->retValue	 = 0;
-	process->initialized = 0;
+	process->status	  = READY;
+	process->zombieChildren = createLinkedListADT();
+	process->unkillable		= unkillable;
 
 	// assignFileDescriptor(process, STDIN, fileDescriptors[STDIN], READ);
 	// assignFileDescriptor(process, STDOUT, fileDescriptors[STDOUT], WRITE);
@@ -111,7 +92,7 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 void freeProcess(ProcessADT process) {
 	if (process == NULL)
 		return;
-
+	freeLinkedListADT(process->zombieChildren);
 	freeMemory(process->stackBase);
 	freeMemory(process->name);
 	freeMemory(process->argv);
@@ -119,8 +100,10 @@ void freeProcess(ProcessADT process) {
 }
 
 int processIsWaiting(ProcessADT process, uint16_t pidToWait) {
-	return process->status == BLOCKED && process->waitingForPid == pidToWait;
+	return process->waitingForPid == pidToWait && process->status == BLOCKED;
 }
+
+//==============================================================================================================
 
 uint16_t get_pid(ProcessADT process) {
 	if (process == NULL)
@@ -195,4 +178,28 @@ void *get_stackBase(ProcessADT process) {
 
 int64_t sizeofProcess() {
 	return sizeof(ProcessCDT);
+}
+
+char *getName(ProcessADT process) {
+	if (process == NULL)
+		return NULL; // Return NULL if the process is NULL
+	return process->name;
+}
+
+uint8_t isUnkillable(ProcessADT process) {
+	if (process == NULL)
+		return 0; // Return 0 if the process is NULL
+	return process->unkillable;
+}
+
+LinkedListADT getZombieChildren(ProcessADT process) {
+	if (process == NULL)
+		return NULL; // Return NULL if the process is NULL
+	return process->zombieChildren;
+}
+
+uint16_t getParentPid(ProcessADT process) {
+	if (process == NULL)
+		return 0; // Return 0 if the process is NULL
+	return process->parentPid;
 }

@@ -14,5 +14,5 @@ int main() {
 	printStrColor("\nITBA Shell Group 20\n", CYAN);
 	printStrColor("ALFIERI - DI CANDIA - DIAZ VARELA\n", CYAN);
 	shell();
-	return 0;
+	return 0x000CAC71;
 }

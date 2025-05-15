@@ -49,7 +49,8 @@ void shell() {
 	char c;
 	// testMemory();
 	// testProcesses();
-	// test_prio();
+	//  test_prio();
+	printStr("\n--------------------| SHELL |--------------------\n");
 	while (1) {
 		c = getChar();
 		if (lastc != c) {
@@ -152,7 +153,8 @@ void testMemory() {
 void testProcesses() {
 	// MODO DEBUG -> argc = 2, argv[0] = "20", argv[1] = "1"
 	// MODO NORMAL -> argc = 1 argv[0] = "20"
-	uint64_t argc = 1;
-	char *argv[]  = {"20"};
-	test_processes(argc, argv);
+	// uint64_t argc = 1;
+	char *argv[] = {"20"};
+	// test_processes(argc, argv);
+	create_process(test_processes, argv, "test_processes", 1);
 }

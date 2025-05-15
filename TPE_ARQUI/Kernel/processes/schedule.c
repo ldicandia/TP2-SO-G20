@@ -35,11 +35,11 @@ SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
 	for (int i = 0; i < MAX_PROCESSES; i++)
 		scheduler->processes[i] = NULL;
-	for (int i = 0; i < MAX_PRIORITY + 1; i++)
+	for (int i = 0; i < QTY_READY_LEVELS + 1; i++)
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->nextUnusedPid = 0;
 	scheduler->killFgProcess = 0;
-	scheduler->qtyProcesses	 = 0;
+	scheduler->currentPid	 = IDLE_PID;
 	return scheduler;
 }
 
@@ -50,8 +50,12 @@ SchedulerADT getSchedulerADT() {
 static uint16_t getNextPid(SchedulerADT scheduler) {
 	ProcessADT process = NULL;
 	for (int lvl = MAX_PRIORITY; lvl >= 0 && process == NULL; lvl--) {
-		if (!isEmpty(scheduler->levels[lvl]))
+		if (!isEmpty(scheduler->levels[lvl])) {
 			process = (getFirst(scheduler->levels[lvl]))->data;
+		}
+	}
+	if (process == NULL) {
+		driver_printStr("\nNo process found\n", (Color) {0xFF, 0x00, 0x00});
 	}
 	return process == NULL ? IDLE_PID : get_pid(process);
 }
@@ -60,12 +64,26 @@ void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
+	// driver_printStr("\n[Scheduling]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+
+	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+
 	scheduler->remainingQuantum--;
-	if (!scheduler->qtyProcesses || scheduler->remainingQuantum > 0)
+
+	if (!scheduler->qtyProcesses || scheduler->remainingQuantum > 0) {
 		return prevStackPointer;
+	}
 
 	ProcessADT currentProcess;
 	Node *currentProcessNode = scheduler->processes[scheduler->currentPid];
+
+	// driver_printStr("\nnext PID: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
 	if (currentProcessNode != NULL) {
 		currentProcess = currentProcessNode->data;
@@ -98,6 +116,7 @@ void *schedule(void *prevStackPointer) {
 
 	scheduler->remainingQuantum =
 		(MAX_PRIORITY - get_priority(currentProcess)) * QUANTUM_COEF;
+
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);
 }
@@ -122,14 +141,9 @@ char *numToString(int number) {
 
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[]) {
-	driver_printStr(name, (Color) {0xFF, 0xFF, 0xFF});
-	driver_printStr("\nPID: ", (Color) {0xFF, 0xFF, 0xFF});
-	// char *str = numToString(getSchedulerADT()->nextUnusedPid);
-	// if (str == NULL) {
-	// 	return -1;
-	// }
-	// driver_printStr(str, (Color) {0xFF, 0xFF, 0xFF});
-	// freeMemory(str); // Free the allocated memory
+	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
 
 	SchedulerADT scheduler = getSchedulerADT();
 	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
@@ -153,12 +167,19 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 		scheduler->nextUnusedPid =
 			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
 	scheduler->qtyProcesses++;
+	driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
 	return get_pid(process);
 }
 
 //=======================TODO=======================//
 
-// static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie);
+static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie) {
+	Node *zombieNode = scheduler->processes[get_pid(zombie)];
+	scheduler->qtyProcesses--;
+	scheduler->processes[get_pid(zombie)] = NULL;
+	freeProcess(zombie);
+	freeMemory(zombieNode);
+}
 
 int32_t killCurrentProcess(int32_t retValue) {
 	SchedulerADT scheduler	  = getSchedulerADT();
@@ -174,43 +195,45 @@ int32_t killCurrentProcess(int32_t retValue) {
 }
 
 int32_t killProcess(uint16_t pid, int32_t retValue) {
-	if (pid == 0) {
-		driver_printStr("Error: Cannot kill idle process\n",
-						(Color) {0xFF, 0x00, 0x00});
-		return -1;
-	}
 	SchedulerADT scheduler	= getSchedulerADT();
 	Node *processToKillNode = scheduler->processes[pid];
-	if (processToKillNode == NULL) {
-		driver_printStr("Error: Process not found\n",
-						(Color) {0xFF, 0x00, 0x00});
+	if (processToKillNode == NULL)
 		return -1;
-	}
-	ProcessADT processToKill  = (ProcessADT) processToKillNode->data;
-	scheduler->processes[pid] = NULL;
+	ProcessADT processToKill = (ProcessADT) processToKillNode->data;
+	if (get_status(processToKill) == ZOMBIE || isUnkillable(processToKill))
+		return -1;
 
-	scheduler->qtyProcesses--;
-	int aux = get_priority(processToKill);
-	removeNode(scheduler->levels[aux], processToKillNode);
-	// TODO: Guardar retValue en PCB para zombie?
-	// TODO: llamar al timer tick si el proceso es el current
-	// TODO: free heap?
-	// driver_printStr("Freeing processToKillNode\n", (Color) {0xFF, 0xFF,
-	// 0xFF});
+	// closeFileDescriptors(processToKill);
 
-	// Liberar el PID eliminado
-	if (pid < scheduler->nextUnusedPid) {
-		scheduler->nextUnusedPid = pid;
+	uint8_t priorityIndex = get_status(processToKill) != BLOCKED ?
+								get_priority(processToKill) :
+								BLOCKED_INDEX;
+	removeNode(scheduler->levels[priorityIndex], processToKillNode);
+	set_retValue(processToKill, retValue);
+
+	set_status(processToKill, ZOMBIE);
+
+	begin(getZombieChildren(processToKill));
+	while (hasNext(getZombieChildren(processToKill))) {
+		destroyZombie(scheduler,
+					  (ProcessADT) next(getZombieChildren(processToKill)));
 	}
 
-	if (processToKillNode != NULL) {
-		freeMemory(processToKillNode);
+	Node *parentNode = scheduler->processes[getParentPid(processToKill)];
+	if (parentNode != NULL &&
+		get_status((ProcessADT) parentNode->data) != ZOMBIE) {
+		ProcessADT parent = (ProcessADT) parentNode->data;
+		appendNode(getZombieChildren(processToKill), processToKillNode);
+		if (processIsWaiting(parent, get_pid(processToKill))) {
+			setStatus(get_pid(processToKill), READY);
+		}
 	}
-	// ARREGLAR
-	if (processToKill != NULL) {
-		freeMemory(processToKill);
+	else {
+		destroyZombie(scheduler, processToKill);
 	}
-	return retValue;
+	if (pid == scheduler->currentPid)
+		yield();
+	return 0;
 }
 
 void killForegroundProcess() {
@@ -341,10 +364,10 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 void yield() {
 	SchedulerADT scheduler		= getSchedulerADT();
 	scheduler->remainingQuantum = 0;
-	driver_printStr("[DEBUG] Forzando timer tick...\n",
-					(Color) {0xFF, 0x00, 0xFF});
+	// driver_printStr("[DEBUG] Forzando timer tick...\n",
+	// 				(Color) {0xFF, 0x00, 0xFF});
 	forceTimerTick(); // Este llama a int 0x20
-	// Esta línea nunca se ejecutará si forceTimerTick funciona correctamente
-	driver_printStr("[DEBUG] Después de forceTimerTick\n",
-					(Color) {0xFF, 0x00, 0xFF});
+	// Esta línea nunca se ejecutará si forceTimerTick funciona
+	// correctamente driver_printStr("[DEBUG] Después de forceTimerTick\n",
+	// 				(Color) {0xFF, 0x00, 0xFF});
 }

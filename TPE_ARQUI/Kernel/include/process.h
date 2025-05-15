@@ -1,6 +1,7 @@
 #ifndef _PROCESS_H
 #define _PROCESS_H
 #include <stdint.h>
+#include <linkedListADT.h>
 #define BUILT_IN_DESCRIPTORS 3 // stdin, stdout, stderr
 #define STDIN 0
 #define STDOUT 1
@@ -54,5 +55,13 @@ int get_initialized(ProcessADT process);
 void *get_stackBase(ProcessADT process);
 
 int64_t sizeofProcess();
+
+char *getName(ProcessADT process);
+
+uint8_t isUnkillable(ProcessADT process);
+
+LinkedListADT getZombieChildren(ProcessADT process);
+
+uint16_t getParentPid(ProcessADT process);
 
 #endif
