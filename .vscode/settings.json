@@ -12,6 +12,8 @@
     "test_util.h": "c",
     "typeinfo": "c",
     "test_processes.h": "c",
-    "process.h": "c"
+    "process.h": "c",
+    "pcb.h": "c",
+    "linkedlistadt.h": "c"
   }
 }

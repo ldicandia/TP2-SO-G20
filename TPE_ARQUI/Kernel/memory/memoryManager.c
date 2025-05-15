@@ -3,22 +3,24 @@
 // filepath:
 // c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
 
+// #ifdef USE_BUDDY_MEMORY_MANAGER
 
-
-//#ifdef USE_BUDDY_MEMORY_MANAGER
-
-//#ifndef BUDDY
+// #ifndef BUDDY
 #ifdef OUR
 #include "memoryManager.h"
-//#include "buddyMemoryManager.h"
+// #include "buddyMemoryManager.h"
 
-//#else
+// #else
 
 #include <defs.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MAX_BLOCKS 1024 // Máxima cantidad de bloques a trackear
+#define BLOCK_SIZE 0x1000
+#define HEAP_SIZE 0x1000000
+
+#define MAX_BLOCKS                                                             \
+	((HEAP_SIZE) / BLOCK_SIZE) // Máxima cantidad de bloques a trackear
 
 // Estructura de tracking de memoria asignada
 typedef struct MemoryBlock {

@@ -4,6 +4,8 @@ GLOBAL picMasterMask
 GLOBAL picSlaveMask
 GLOBAL haltcpu
 GLOBAL _hlt
+GLOBAL 	forceTimerTick
+
 
 GLOBAL _interrupt_syscall
 GLOBAL _interrupt_timerTick
@@ -25,11 +27,11 @@ GLOBAL _initialize_stack_frame
 EXTERN getStackBase
 EXTERN keyboard_master
 EXTERN ctrl_c_handler
-EXTERN timer_master
+EXTERN timer_handler
 EXTERN sys_master
 EXTERN exception_master
 EXTERN irqDispatcher
-EXTERN schedule
+EXTERN scheduler
 
 GLOBAL regdata_exc
 GLOBAL hasInforeg
@@ -195,9 +197,12 @@ picSlaveMask:
     out	0A1h,al
     pop     rbp
     retn
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 _interrupt_keyboardHandler:
     pushState
+
+		mov rdi, 1
+		call irqDispatcher
 
     xor rax, rax
     in al, 60h 	
@@ -278,12 +283,12 @@ _interrupt_keyboardHandler:
     endOfHardwareInterrupt
     popState
     iretq
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 _interrupt_timerTick:
 	pushState
 
-	call timer_master
+	call timer_handler
 
 	endOfHardwareInterrupt
 	popState
@@ -321,9 +326,12 @@ _exception_invalidOpCode:
 ; RDI	RSI	RDX	R10	R8 R9
 ; RDI RSI RDX RCX R8 R9
 _interrupt_syscall:
+	pushState
 	mov rcx, r10
 	mov r9, rax
 	call sys_master
+	popStateNoRax
+	add rsp, 8
 	iretq
 
 ;;;; visto en clase
@@ -353,7 +361,7 @@ _irq00handler:
 	call irqDispatcher  ;manejo de interrupciones llama a timer_master
 	
 	mov rdi, rsp
-	call schedule
+	call scheduler
 	mov rsp, rax
 	mov al, 20h
 	out 20h, al
@@ -385,6 +393,10 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+forceTimerTick:
+  int 0x20
+  ret
 
 
 

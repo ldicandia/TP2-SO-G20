@@ -14,10 +14,8 @@ int stringArrayLen(char **array);
 
 int strcpychar(char *dest, const char *origin, char limit);
 
-int strcpy(char *dest, const char *origin);
+// int strcpy(char *dest, const char *origin);
 
-int strlen(const char *str);
-
-void forceTimerTick();
+int strlen_lib(const char *str);
 
 #endif

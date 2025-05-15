@@ -91,12 +91,11 @@ int strtoi(char *s, char **end) {
 	return num;
 }
 
-int stringArrayLen(char **array) {
-	int len = 0;
-	while (*(array++) != NULL) {
-		len++;
-	}
-	return len;
+int strlen_lib(const char *str) {
+	const char *s = str;
+	while (*s)
+		++s;
+	return s - str;
 }
 
 int strcpychar(char *dest, const char *origin, char limit) {
@@ -110,13 +109,13 @@ int strcpychar(char *dest, const char *origin, char limit) {
 }
 
 // TODO: Ver de mover a un modulo de strings separado
-int strcpy(char *dest, const char *origin) {
-	return strcpychar(dest, origin, '\0');
-}
+// int strcpy(char *dest, const char *origin) {
+// 	return strcpychar(dest, origin, '\0');
+// }
 
-int strlen(const char *str) {
-	int len = 0;
-	while (*(str++) != '\0')
-		len++;
-	return len;
-}
+// int strlen(const char *str) {
+// 	int len = 0;
+// 	while (*(str++) != '\0')
+// 		len++;
+// 	return len;
+// }

@@ -18,22 +18,31 @@ extern const uint64_t inforeg[17];
 extern uint64_t getSeconds();
 extern uint64_t getMinutes();
 extern uint64_t getHours();
-extern int _hlt();
+extern void _hlt();
+extern void _interrupt_keyboardHandler();
 
 static Color WHITE = {255, 255, 255};
 static void int_20();
+static void int_21();
 
 void irqDispatcher(uint64_t irq) {
 	switch (irq) {
 		case 0:
 			int_20();
 			break;
+		case 1:
+			int_21();
+			break;
 	}
 	return;
 }
 
 void int_20() {
-	timer_master();
+	timer_handler();
+}
+
+void int_21() {
+	_interrupt_keyboardHandler();
 }
 
 static uint64_t sys_read(uint64_t fd, char *buff) {
@@ -111,14 +120,8 @@ static uint64_t sys_inforeg(uint64_t registers[17]) {
 	return hasInforeg;
 }
 
-uint64_t sys_sleep(uint64_t ms) {
-	if (ms > 0) {
-		int start_ms = ms_elapsed();
-		do {
-			_hlt();
-		} while (ms_elapsed() - start_ms < ms);
-	}
-	return 1;
+uint64_t sys_sleep(uint64_t ns) {
+	return ticks_sleep(ns);
 }
 
 static uint64_t sys_playSound(uint32_t freq, uint64_t duration) {
@@ -143,43 +146,36 @@ static void syscall_free(void *ptr) {
 }
 
 // Create process
-static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
-									 uint8_t priority,
-									 int16_t fileDescriptors[]) {
-	return createProcess(code, args, name, priority, fileDescriptors);
+static int16_t syscall_createProcess(main_function rip, priority_t priority,
+									 char **argv, uint64_t argc, fd_t fds[]) {
+	return (int64_t) new_process(rip, priority, 1, argv, argc, fds);
 }
 
 // kill process
 static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
-	if (pid < 0) {
-		return -1;
-	}
-	return killProcess(pid, retValue);
-	// return 0;
+	return kill_process(pid);
 }
 
 static uint64_t sys_unblock(uint16_t pid) {
-	return unblockProcess(pid);
+	return unblock_arbitrary(pid);
 }
 
 static uint64_t sys_set_priority(uint64_t pid, uint64_t newPriority) {
-	if (newPriority > MAX_PRIORITY) {
-		return -1;
-	}
-	return setPriority(pid, newPriority);
+	return nice(pid, newPriority);
 }
 
 static uint64_t sys_block(uint16_t pid) {
-	return blockProcess(pid);
+	// return blockProcess(pid);
+	return block_arbitrary(pid);
 }
 
 static uint64_t sys_getpid() {
-	return getPid();
+	return get_pid();
 }
 
 static uint64_t sys_yield() {
-	yield();
-	return 1;
+	scheduler_yield();
+	return 0;
 }
 
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,

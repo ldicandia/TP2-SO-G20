@@ -40,4 +40,6 @@ void haltcpu(void);
 
 void *_initialize_stack_frame(void *wrapper, void *rip, void *rsp, void *args);
 
+void forceTimerTick(void);
+
 #endif /* INTERRUPS_H_ */

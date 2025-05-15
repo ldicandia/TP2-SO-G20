@@ -15,12 +15,11 @@ uint64_t loadModules(void *payloadStart, void **targetModuleAddress) {
 
 	for (i = 0; i < moduleCount; i++)
 		loadModule(&currentModule, targetModuleAddress[i]);
-	return (uint64_t) ((void *) currentModule - payloadStart);
+	// return (uint64_t) ((void *) currentModule - payloadStart);
 }
 
 static void loadModule(uint8_t **module, void *targetModuleAddress) {
 	uint32_t moduleSize = readUint32(module);
-
 	memcpy(targetModuleAddress, *module, moduleSize);
 	*module += moduleSize;
 }

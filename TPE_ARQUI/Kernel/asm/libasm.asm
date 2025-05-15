@@ -4,7 +4,6 @@ GLOBAL getMinutes
 GLOBAL getHours
 GLOBAL spkIn
 GLOBAL spkOut
-GLOBAL forceTimerTick
 
 section .text
 	
@@ -96,8 +95,5 @@ spkOut:
 	mov rsp, rbp
 	pop rbp
 	ret
-	
-forceTimerTick:
-  int 0x20
-  ret
+
 
