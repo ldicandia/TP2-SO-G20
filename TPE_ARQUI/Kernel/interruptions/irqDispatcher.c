@@ -19,17 +19,26 @@ extern uint64_t getSeconds();
 extern uint64_t getMinutes();
 extern uint64_t getHours();
 extern int _hlt();
+extern int _interrupt_keyboardHandler();
 
 static Color WHITE = {255, 255, 255};
 static void int_20();
+static void int_21();
 
 void irqDispatcher(uint64_t irq) {
 	switch (irq) {
 		case 0:
 			int_20();
 			break;
+		case 1:
+			int_21();
+			break;
 	}
 	return;
+}
+
+void int_21() {
+	_interrupt_keyboardHandler();
 }
 
 void int_20() {
@@ -146,7 +155,7 @@ static void syscall_free(void *ptr) {
 static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 									 uint8_t priority,
 									 int16_t fileDescriptors[]) {
-	return createProcess(code, args, name, priority, fileDescriptors);
+	return createProcess(code, args, name, priority, fileDescriptors, 0);
 }
 
 // kill process

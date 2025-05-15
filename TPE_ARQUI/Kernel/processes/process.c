@@ -33,6 +33,8 @@ typedef struct ProcessCDT {
 } ProcessCDT;
 
 static char **allocArguments(char **args) {
+	if (args == NULL)
+		return NULL;
 	int argc = stringArrayLen(args), totalArgsLen = 0;
 	int argsLen[argc];
 	for (int i = 0; i < argc; i++) {

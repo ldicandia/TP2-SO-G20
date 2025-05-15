@@ -2,7 +2,8 @@
     "files.associations": {
         "memorymanager.h": "c",
         "compare": "c",
-        "utility": "c"
+        "utility": "c",
+        "userlibrary.h": "c"
     },
     "makefile.configureOnOpen": false
 }

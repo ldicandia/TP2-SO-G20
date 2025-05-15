@@ -45,12 +45,19 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 										 testMemory,
 										 testProcesses};
 
+void infiniteLoop() {
+	while (1) {
+		printChar('a');
+	}
+}
 void shell() {
+	int flag = 0;
 	char c;
 	// testMemory();
 	// testProcesses();
 	//  test_prio();
 	printStr("\n--------------------| SHELL |--------------------\n");
+	// kill_process(0);
 	while (1) {
 		c = getChar();
 		if (lastc != c) {

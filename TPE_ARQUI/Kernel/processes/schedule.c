@@ -60,18 +60,31 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 	return process == NULL ? IDLE_PID : get_pid(process);
 }
 
+static int strcmp(char *str1, char *str2) {
+	while (*str1 && *str2 && *str1 == *str2) {
+		str1++;
+		str2++;
+	}
+	return *str1 - *str2;
+}
+
 void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
-	// driver_printStr("\n[Scheduling]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	if (get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
+		// driver_printStr(
+		// 	getName(scheduler->processes[scheduler->currentPid]->data),
+		// 	(Color) {0xAA, 0xFF, 0xFF});
+		// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF,
+		// 0xFF}); driver_printNum(scheduler->remainingQuantum, 				(Color) {0xAA,
+		// 0xFF, 0xFF}); driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+		// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
-	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+		// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+		// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
+		// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	}
 
 	scheduler->remainingQuantum--;
 
@@ -86,7 +99,7 @@ void *schedule(void *prevStackPointer) {
 	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
 	if (currentProcessNode != NULL) {
-		currentProcess = currentProcessNode->data;
+		currentProcess = (ProcessADT) currentProcessNode->data;
 		if (!firstTime)
 			set_stackPos(currentProcess, prevStackPointer);
 		else
@@ -95,9 +108,17 @@ void *schedule(void *prevStackPointer) {
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
 
-		uint8_t newPriority = get_priority(currentProcess) > 0 ?
-								  get_priority(currentProcess) - 1 :
-								  get_priority(currentProcess);
+		// Only decay priority if it's not the shell
+		uint8_t newPriority;
+		if (strcmp(getName(currentProcess), "shell") == 0) {
+			newPriority =
+				get_priority(currentProcess); // Don't decay shell's priority
+		}
+		else {
+			newPriority = get_priority(currentProcess) > 0 ?
+							  get_priority(currentProcess) - 1 :
+							  get_priority(currentProcess);
+		}
 		setPriority(get_pid(currentProcess), newPriority);
 	}
 
@@ -107,15 +128,15 @@ void *schedule(void *prevStackPointer) {
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
 
-	// if (scheduler->killFgProcess &&
-	// 	get_fileDescriptor(currentProcess, STDIN) == STDIN) {
-	// 	scheduler->killFgProcess = 0;
-	// 	if (killCurrentProcess(-1) != -1)
-	// 		forceTimerTick();
-	// }
+	if (scheduler->killFgProcess &&
+		get_fileDescriptor(currentProcess, STDIN) == STDIN) {
+		scheduler->killFgProcess = 0;
+		if (killCurrentProcess(-1) != -1)
+			forceTimerTick();
+	}
 
 	scheduler->remainingQuantum =
-		(MAX_PRIORITY - get_priority(currentProcess)) * QUANTUM_COEF;
+		(MAX_PRIORITY - get_priority(currentProcess) + 1);
 
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);
@@ -140,10 +161,11 @@ char *numToString(int number) {
 }
 
 uint16_t createProcess(MainFunction code, char **args, char *name,
-					   uint8_t priority, int16_t fileDescriptors[]) {
-	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+					   uint8_t priority, int16_t fileDescriptors[],
+					   uint8_t unkillable) {
+	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
 
 	SchedulerADT scheduler = getSchedulerADT();
 	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
@@ -158,16 +180,17 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 						(Color) {0xFF, 0x00, 0x00});
 		return -1;
 	}
+	// driver_printStr("\nIniting Process: ", (Color) {0xAA, 0xFF, 0xFF});
 	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
-				args, name, priority, fileDescriptors, 0);
-
+				args, name, priority, fileDescriptors, unkillable);
+	// driver_printStr("\nProcess inited: ", (Color) {0xAA, 0xFF, 0xFF});
 	Node *node = appendElement(scheduler->levels[priority], process);
 	scheduler->processes[scheduler->nextUnusedPid] = node;
 	while (scheduler->processes[scheduler->nextUnusedPid] != NULL)
 		scheduler->nextUnusedPid =
 			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
 	scheduler->qtyProcesses++;
-	driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
 	return get_pid(process);
 }
 
@@ -182,16 +205,11 @@ static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie) {
 }
 
 int32_t killCurrentProcess(int32_t retValue) {
-	SchedulerADT scheduler	  = getSchedulerADT();
-	Node *currentProcessNode  = scheduler->processes[scheduler->currentPid];
-	ProcessADT currentProcess = currentProcessNode->data;
-	scheduler->processes[scheduler->currentPid] = NULL;
-
-	scheduler->qtyProcesses--;
-	removeNode(scheduler->levels[get_priority(currentProcess)],
-			   currentProcessNode);
-
-	return 0;
+	SchedulerADT scheduler = getSchedulerADT();
+	driver_printStr("\nKill current process: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
+					(Color) {0xAA, 0xFF, 0xFF});
+	return killProcess(scheduler->currentPid, retValue);
 }
 
 int32_t killProcess(uint16_t pid, int32_t retValue) {
@@ -199,8 +217,10 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 	Node *processToKillNode = scheduler->processes[pid];
 	if (processToKillNode == NULL)
 		return -1;
+
 	ProcessADT processToKill = (ProcessADT) processToKillNode->data;
-	if (get_status(processToKill) == ZOMBIE || isUnkillable(processToKill))
+	if (get_status(processToKill) == ZOMBIE ||
+		isUnkillable(processToKill)) /// para activar el ctrl+c saca el !
 		return -1;
 
 	// closeFileDescriptors(processToKill);
