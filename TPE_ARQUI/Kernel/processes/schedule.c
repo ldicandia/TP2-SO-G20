@@ -29,6 +29,8 @@ typedef struct SchedulerCDT {
 	int8_t killFgProcess;
 } SchedulerCDT;
 
+extern void forceTimerTick();
+
 SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
 	for (int i = 0; i < MAX_PROCESSES; i++)
@@ -99,7 +101,6 @@ void *schedule(void *prevStackPointer) {
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);
 }
-
 char *numToString(int number) {
 	int length = (number == 0) ? 1 : 0;
 	int temp   = number;
@@ -121,8 +122,8 @@ char *numToString(int number) {
 
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[]) {
-	// driver_printStr(name, (Color) {0xFF, 0xFF, 0xFF}); debug
-	// driver_printStr("\nPID: ", (Color) {0xFF, 0xFF, 0xFF});
+	driver_printStr(name, (Color) {0xFF, 0xFF, 0xFF});
+	driver_printStr("\nPID: ", (Color) {0xFF, 0xFF, 0xFF});
 	// char *str = numToString(getSchedulerADT()->nextUnusedPid);
 	// if (str == NULL) {
 	// 	return -1;
@@ -137,7 +138,7 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 		return -1;
 	}
 
-	ProcessADT process = (ProcessADT) allocMemory(sizeof(ProcessADT));
+	ProcessADT process = (ProcessADT) allocMemory(sizeof(sizeofProcess()));
 	if (process == NULL) {
 		driver_printStr("Error: Memory allocation failed\n",
 						(Color) {0xFF, 0x00, 0x00});
@@ -215,7 +216,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 void killForegroundProcess() {
 	SchedulerADT scheduler	 = getSchedulerADT();
 	scheduler->killFgProcess = 1;
-	// forceTimerTick();
+	forceTimerTick();
 }
 
 int32_t blockProcess(uint16_t pid) {
@@ -340,5 +341,10 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 void yield() {
 	SchedulerADT scheduler		= getSchedulerADT();
 	scheduler->remainingQuantum = 0;
-	// forceTimerTick();
+	driver_printStr("[DEBUG] Forzando timer tick...\n",
+					(Color) {0xFF, 0x00, 0xFF});
+	forceTimerTick(); // Este llama a int 0x20
+	// Esta línea nunca se ejecutará si forceTimerTick funciona correctamente
+	driver_printStr("[DEBUG] Después de forceTimerTick\n",
+					(Color) {0xFF, 0x00, 0xFF});
 }

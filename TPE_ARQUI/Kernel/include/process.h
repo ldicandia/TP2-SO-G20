@@ -47,4 +47,12 @@ int32_t get_retValue(ProcessADT process);
 
 void set_retValue(ProcessADT process, int32_t retValue);
 
+void set_initialized(ProcessADT process, int initialized);
+
+int get_initialized(ProcessADT process);
+
+void *get_stackBase(ProcessADT process);
+
+int64_t sizeofProcess();
+
 #endif

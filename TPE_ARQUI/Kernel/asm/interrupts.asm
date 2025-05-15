@@ -17,6 +17,7 @@ GLOBAL _irq02handler
 GLOBAL _irq03handler
 GLOBAL _irq04handler
 GLOBAL _irq05handler
+GLOBAL forceTimerTick
 
 
 GLOBAL _initialize_stack_frame
@@ -326,24 +327,24 @@ _interrupt_syscall:
 	call sys_master
 	iretq
 
-;;;; visto en clase
+;;;;
 _initialize_stack_frame:
-	mov r8, rsp 	
-	mov r9, rbp		
-	mov rsp, rdx 	
-	mov rbp, rdx
-	push 0x0
-	push rdx
-	push 0x202
-	push 0x8
-	push rdi
-	mov rdi, rsi 		
-	mov rsi, rcx		
-	pushState
-	mov rax, rsp
-	mov rsp, r8
-	mov rbp, r9
-	ret
+    mov r8, rsp
+    mov r9, rbp
+    mov rsp, rdx
+    mov rbp, rdx
+    push 0x0           ; SS
+    push rdx           ; RSP
+    push 0x202         ; RFLAGS
+    push 0x8           ; CS
+    push rdi           ; <--- Dirección de la función principal
+    mov rdi, rsi       ; Primer argumento
+    mov rsi, rax       ; Segundo argumento (si lo necesitás)
+    pushState
+    mov rax, rsp
+    mov rsp, r8
+    mov rbp, r9
+    ret
 
 
 _irq00handler:
@@ -385,6 +386,10 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+forceTimerTick:
+  int 0x20
+  ret
 
 
 

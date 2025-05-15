@@ -7,6 +7,7 @@
 #include <process.h>
 #include <stdlib.h>
 #include <videoDriver.h>
+#include <schedule.h>
 
 #define STACK_SIZE (1 << 12) // 4KB stack size
 
@@ -24,6 +25,7 @@ typedef struct ProcessCDT {
 	ProcessStatus status;
 	int16_t fileDescriptors[BUILT_IN_DESCRIPTORS];
 	int32_t retValue;
+	int initialized;
 	// creo q aca nos faltaria una lista de zombieChildren;
 } ProcessCDT;
 
@@ -55,8 +57,9 @@ static char **allocArguments(char **args) {
 // }
 
 void processWrapper(MainFunction code, char **args) {
-	// int len = stringArrayLen(args);
-	//  int retValue = code(len, args);
+	int len		 = stringArrayLen(args);
+	int retValue = code(len, args);
+	killCurrentProcess(retValue);
 }
 
 void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
@@ -91,13 +94,14 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 	process->priority = priority;
 	void *stackEnd	  = (void *) ((uint64_t) process->stackBase + STACK_SIZE);
 
-	process->stackPos =
-		_initialize_stack_frame(&processWrapper, code, stackEnd, args);
+	process->stackPos = _initialize_stack_frame(&processWrapper, code, stackEnd,
+												(void *) process->argv);
 
 	process->status = READY;
 
-	process->unkillable = unkillable;
-	process->retValue	= 0;
+	process->unkillable	 = unkillable;
+	process->retValue	 = 0;
+	process->initialized = 0;
 
 	// assignFileDescriptor(process, STDIN, fileDescriptors[STDIN], READ);
 	// assignFileDescriptor(process, STDOUT, fileDescriptors[STDOUT], WRITE);
@@ -174,4 +178,21 @@ int32_t get_retValue(ProcessADT process) {
 void set_retValue(ProcessADT process, int32_t retValue) {
 	if (process != NULL)
 		process->retValue = retValue;
+}
+void set_initialized(ProcessADT process, int initialized) {
+	process->initialized = initialized;
+}
+
+int get_initialized(ProcessADT process) {
+	return process->initialized;
+}
+
+void *get_stackBase(ProcessADT process) {
+	if (process == NULL)
+		return NULL; // Return NULL if the process is NULL
+	return process->stackBase;
+}
+
+int64_t sizeofProcess() {
+	return sizeof(ProcessCDT);
 }

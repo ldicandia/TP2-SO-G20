@@ -75,8 +75,11 @@ int idle(int argc, char **argv) {
 		return -1;
 	}
 
-	while (1)
-		_hlt();
+	while (1) {
+		driver_printStr("[DEBUG] Idle running\n", (Color) {0xFF, 0xFF, 0x00});
+	  _hlt();
+		//yield();
+	}
 	return 0;
 }
 
