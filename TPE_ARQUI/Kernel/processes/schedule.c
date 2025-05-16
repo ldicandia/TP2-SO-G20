@@ -30,6 +30,7 @@ typedef struct SchedulerCDT {
 } SchedulerCDT;
 
 extern void forceTimerTick();
+extern int checkKeyboardActivity();
 
 SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
@@ -72,19 +73,18 @@ void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
-	if (get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
-		// driver_printStr(
-		// 	getName(scheduler->processes[scheduler->currentPid]->data),
-		// 	(Color) {0xAA, 0xFF, 0xFF});
-		// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF,
-		// 0xFF}); driver_printNum(scheduler->remainingQuantum, 				(Color) {0xAA,
-		// 0xFF, 0xFF}); driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-		// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
+	// driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
+	// 				(Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
-		// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-		// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
-		// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	}
+	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	//}
 
 	scheduler->remainingQuantum--;
 
@@ -108,18 +108,31 @@ void *schedule(void *prevStackPointer) {
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
 
-		// Only decay priority if it's not the shell
+		if (checkKeyboardActivity()) {
+			for (int i = 0; i < MAX_PROCESSES; i++) {
+				if (scheduler->processes[i] != NULL) {
+					ProcessADT process = scheduler->processes[i]->data;
+					if (process != NULL &&
+						strcmp(getName(process), "shell") == 0) {
+						setPriority(get_pid(process), MAX_PRIORITY);
+						if (scheduler->currentPid == get_pid(process)) {
+							scheduler->remainingQuantum +=
+								2; // Dale un poco más de tiempo
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		// Decae la prioridad de los procesos que no sean la shell
 		uint8_t newPriority;
-		if (strcmp(getName(currentProcess), "shell") == 0) {
-			newPriority =
-				get_priority(currentProcess); // Don't decay shell's priority
-		}
-		else {
-			newPriority = get_priority(currentProcess) > 0 ?
-							  get_priority(currentProcess) - 1 :
-							  get_priority(currentProcess);
-		}
+		// if (strcmp(getName(currentProcess), "shell") != 0) {
+		newPriority = get_priority(currentProcess) > 0 ?
+						  get_priority(currentProcess) - 1 :
+						  get_priority(currentProcess);
 		setPriority(get_pid(currentProcess), newPriority);
+		//}
 	}
 
 	// driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});

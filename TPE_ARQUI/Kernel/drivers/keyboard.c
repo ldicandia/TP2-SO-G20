@@ -15,6 +15,9 @@ static int shift	   = 0;
 static int capsLock	   = 0;
 static int ctrl		   = 0;
 
+// Agrega esta variable global para indicar actividad del teclado
+static int keyboardActivity = 0;
+
 static const char hexMapPressed[256] = {
 	0,	  0,   '1',	 '2',  '3', '4', '5', '6', '7', '8', '9',
 	'0',  '-', '=',	 '\b', // backspace,
@@ -27,6 +30,9 @@ static const char hexMapPressed[256] = {
 	0,	  0,   0,	 0,	   0,	0,	 0,	  0,   0,	0};
 
 void keyboard_master(uint8_t keyPressed) {
+	// Indica que hubo actividad del teclado
+	keyboardActivity = 1;
+
 	scanCode = keyPressed;
 
 	// shift pressed
@@ -85,4 +91,11 @@ void clearScanCode() {
 
 unsigned char getScanCode() {
 	return scanCode;
+}
+
+// Añade esta función para que el planificador pueda verificar la actividad
+int checkKeyboardActivity() {
+	int activity	 = keyboardActivity;
+	keyboardActivity = 0; // Resetea la bandera después de consultarla
+	return activity;
 }

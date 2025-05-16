@@ -13,4 +13,6 @@ void ctrl_c_handler();
 
 void clearScanCode();
 
+int checkKeyboardActivity();
+
 #endif
