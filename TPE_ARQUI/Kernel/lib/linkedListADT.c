@@ -4,7 +4,7 @@
 #include <linkedListADT.h>
 #include <memoryManager.h>
 #include <stdlib.h>
-
+#include <videoDriver.h>
 typedef struct LinkedListCDT {
 	Node *first;
 	Node *last;
@@ -14,10 +14,14 @@ typedef struct LinkedListCDT {
 
 LinkedListADT createLinkedListADT() {
 	LinkedListADT list = (LinkedListADT) allocMemory(sizeof(LinkedListCDT));
-	list->len		   = 0;
-	list->first		   = NULL;
-	list->last		   = NULL;
-	list->current	   = NULL;
+	if (list == NULL) {
+		driver_printStr("\nList Allocation Failed", (Color) {0xFF, 0x00, 0x00});
+		return NULL;
+	}
+	list->len	  = 0;
+	list->first	  = NULL;
+	list->last	  = NULL;
+	list->current = NULL;
 	return list;
 }
 
@@ -25,6 +29,10 @@ Node *appendElement(LinkedListADT list, void *data) {
 	if (list == NULL)
 		return NULL;
 	Node *newNode = (Node *) allocMemory(sizeof(Node));
+	if (newNode == NULL) {
+		driver_printStr("\nNode Allocation Failed", (Color) {0xFF, 0x00, 0x00});
+		return NULL;
+	}
 	newNode->data = data;
 	return appendNode(list, newNode);
 }
@@ -93,7 +101,7 @@ void *removeNode(LinkedListADT list, Node *node) {
 	void *data = node->data;
 	node->next = NULL;
 	node->prev = NULL;
-	// freeMemory(node);
+	freeMemory(node);
 	return data;
 }
 

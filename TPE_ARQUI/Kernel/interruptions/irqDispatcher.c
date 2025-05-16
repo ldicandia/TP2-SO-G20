@@ -151,11 +151,37 @@ static void syscall_free(void *ptr) {
 	return;
 }
 
+static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
+	driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
+	if (priority > MAX_PRIORITY) {
+		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printStr("Error: Priority too high\n",
+						(Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
+
+	if (fileDescriptors[STDIN] < 0 || fileDescriptors[STDOUT] < 0 ||
+		fileDescriptors[STDERR] < 0) {
+		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printStr("Error: Invalid file descriptor\n",
+						(Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
+	return 1;
+}
+
 // Create process
 static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 									 uint8_t priority,
 									 int16_t fileDescriptors[]) {
-	return createProcess(code, args, name, priority, fileDescriptors, 0);
+	driver_printStr("\nCreating process of Userland: ",
+					(Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+	if (checkParams(priority, fileDescriptors) == -1) {
+		return -1;
+	}
+	return createProcess(code, args, name, 1, fileDescriptors, 0);
 }
 
 // kill process

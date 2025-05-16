@@ -48,16 +48,16 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 void infiniteLoop() {
 	while (1) {
 		printChar('a');
+		yield();
 	}
 }
 void shell() {
-	int flag = 0;
 	char c;
 	// testMemory();
 	// testProcesses();
 	//  test_prio();
 	char *argsInf[2] = {"Inf", NULL};
-	create_process(infiniteLoop, argsInf, "infiniteLoop", 1);
+	create_process(infiniteLoop, argsInf, "infiniteLoop", 2);
 	printStr("\n--------------------| SHELL |--------------------\n");
 	while (1) {
 		c = getChar();
@@ -164,5 +164,6 @@ void testProcesses() {
 	// uint64_t argc = 1;
 	char *argv[] = {"20"};
 	// test_processes(argc, argv);
-	create_process(test_processes, argv, "test_processes", 1);
+	char *args[3] = {"Test Processes", "Hm?", NULL};
+	create_process(test_processes, args, "test_processes", 1);
 }

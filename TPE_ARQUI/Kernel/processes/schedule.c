@@ -40,7 +40,7 @@ SchedulerADT createScheduler() {
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->nextUnusedPid = 0;
 	scheduler->killFgProcess = 0;
-	scheduler->currentPid	 = IDLE_PID;
+	// scheduler->currentPid	 = IDLE_PID;
 	return scheduler;
 }
 
@@ -66,23 +66,52 @@ static int strcmp(char *str1, char *str2) {
 	return *str1 - *str2;
 }
 
+void printAllProcesses(SchedulerADT scheduler) {
+	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	for (int i = 0; i < MAX_PROCESSES; i++) {
+		if (scheduler->processes[i] != NULL) {
+			ProcessADT process = scheduler->processes[i]->data;
+			if (process != NULL) {
+				driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+				driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
+				driver_printStr(" Name: ", (Color) {0xAA, 0xFF, 0xFF});
+				driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
+			}
+		}
+	}
+}
+
+void printLevels(SchedulerADT scheduler) {
+	driver_printStr("\n[Levels]: ", (Color) {0xAA, 0xFF, 0xFF});
+	for (int i = 0; i < QTY_READY_LEVELS; i++) {
+		driver_printStr("\nLevel ", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printNum(i, (Color) {0xAA, 0xFF, 0xFF});
+		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printNum(getLength(scheduler->levels[i]),
+						(Color) {0xAA, 0xFF, 0xFF});
+	}
+}
+
 void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
+	// printAllProcesses(scheduler);
+	// printLevels(scheduler);
+
 	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) !=
 	// 		IDLE_PID &&
 	// 	get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
-	driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
-					(Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
+	// 				(Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
-	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
-	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
 	// }
 
 	// if (checkKeyboardActivity()) {
@@ -173,10 +202,6 @@ char *numToString(int number) {
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[],
 					   uint8_t unkillable) {
-	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-
 	SchedulerADT scheduler = getSchedulerADT();
 	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
 		driver_printStr("Error: Too many processes\n",
@@ -190,14 +215,12 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 						(Color) {0xFF, 0x00, 0x00});
 		return -1;
 	}
-	// driver_printStr("\nIniting Process: ", (Color) {0xAA, 0xFF, 0xFF});
 	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
 				args, name, priority, fileDescriptors, unkillable);
-	// driver_printStr("\nProcess inited: ", (Color) {0xAA, 0xFF, 0xFF});
 
 	Node *processNode;
 	if (get_pid(process) != IDLE_PID) {
-		processNode = appendElement(scheduler->levels[priority],
+		processNode = appendElement(scheduler->levels[get_priority(process)],
 									(void *) process); // seg fault aca
 	}
 	else {

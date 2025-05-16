@@ -3,7 +3,8 @@
         "memorymanager.h": "c",
         "compare": "c",
         "utility": "c",
-        "userlibrary.h": "c"
+        "userlibrary.h": "c",
+        "cstdint": "c"
     },
     "makefile.configureOnOpen": false
 }

@@ -9,6 +9,8 @@ typedef struct P_rq {
 	enum State state;
 } p_rq;
 
+// int create_process(void *code, char **args, char *name, uint8_t priority);
+
 int64_t test_processes(uint64_t argc, char *argv[]) {
 	printStr("\nTesting Processes...\n");
 	uint64_t rq;
