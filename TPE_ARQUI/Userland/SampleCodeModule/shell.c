@@ -56,8 +56,9 @@ void shell() {
 	// testMemory();
 	// testProcesses();
 	//  test_prio();
+	char *argsInf[2] = {"Inf", NULL};
+	create_process(infiniteLoop, argsInf, "infiniteLoop", 1);
 	printStr("\n--------------------| SHELL |--------------------\n");
-	// kill_process(0);
 	while (1) {
 		c = getChar();
 		if (lastc != c) {

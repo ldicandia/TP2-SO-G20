@@ -70,7 +70,7 @@ int idle(int argc, char **argv);
 int main() {
 	char *argsIdle[3]		  = {"idle", "Hm?", NULL};
 	int16_t fileDescriptors[] = {DEV_NULL, DEV_NULL, STDERR};
-	createProcess((MainFunction) &idle, argsIdle, "idle", 0, fileDescriptors,
+	createProcess((MainFunction) &idle, argsIdle, "idle", 4, fileDescriptors,
 				  1);
 	load_idt();
 	return 0;

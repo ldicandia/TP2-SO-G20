@@ -55,9 +55,6 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 			process = (getFirst(scheduler->levels[lvl]))->data;
 		}
 	}
-	if (process == NULL) {
-		driver_printStr("\nNo process found\n", (Color) {0xFF, 0x00, 0x00});
-	}
 	return process == NULL ? IDLE_PID : get_pid(process);
 }
 
@@ -73,18 +70,36 @@ void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
-	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
-	// driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
-	// 				(Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) !=
+	// 		IDLE_PID &&
+	// 	get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
+	driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
+					(Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
-	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	//}
+	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	// }
+
+	// if (checkKeyboardActivity()) {
+	// 	for (int i = 0; i < MAX_PROCESSES; i++) {
+	// 		if (scheduler->processes[i] != NULL) {
+	// 			ProcessADT process = scheduler->processes[i]->data;
+	// 			if (process != NULL && strcmp(getName(process), "shell") == 0) {
+	// 				setPriority(get_pid(process), MAX_PRIORITY);
+	// 				if (scheduler->currentPid == get_pid(process)) {
+	// 					scheduler->remainingQuantum +=
+	// 						5; // Dale un poco más de tiempo
+	// 				}
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	scheduler->remainingQuantum--;
 
@@ -108,23 +123,6 @@ void *schedule(void *prevStackPointer) {
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
 
-		if (checkKeyboardActivity()) {
-			for (int i = 0; i < MAX_PROCESSES; i++) {
-				if (scheduler->processes[i] != NULL) {
-					ProcessADT process = scheduler->processes[i]->data;
-					if (process != NULL &&
-						strcmp(getName(process), "shell") == 0) {
-						setPriority(get_pid(process), MAX_PRIORITY);
-						if (scheduler->currentPid == get_pid(process)) {
-							scheduler->remainingQuantum +=
-								2; // Dale un poco más de tiempo
-						}
-						break;
-					}
-				}
-			}
-		}
-
 		// Decae la prioridad de los procesos que no sean la shell
 		uint8_t newPriority;
 		// if (strcmp(getName(currentProcess), "shell") != 0) {
@@ -132,7 +130,7 @@ void *schedule(void *prevStackPointer) {
 						  get_priority(currentProcess) - 1 :
 						  get_priority(currentProcess);
 		setPriority(get_pid(currentProcess), newPriority);
-		//}
+		// }
 	}
 
 	// driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});
@@ -148,8 +146,7 @@ void *schedule(void *prevStackPointer) {
 			forceTimerTick();
 	}
 
-	scheduler->remainingQuantum =
-		(MAX_PRIORITY - get_priority(currentProcess) + 1);
+	scheduler->remainingQuantum = (MAX_PRIORITY - get_priority(currentProcess));
 
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);
@@ -176,9 +173,9 @@ char *numToString(int number) {
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[],
 					   uint8_t unkillable) {
-	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
 
 	SchedulerADT scheduler = getSchedulerADT();
 	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
@@ -197,8 +194,17 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
 				args, name, priority, fileDescriptors, unkillable);
 	// driver_printStr("\nProcess inited: ", (Color) {0xAA, 0xFF, 0xFF});
-	Node *node = appendElement(scheduler->levels[priority], process);
-	scheduler->processes[scheduler->nextUnusedPid] = node;
+
+	Node *processNode;
+	if (get_pid(process) != IDLE_PID) {
+		processNode = appendElement(scheduler->levels[priority],
+									(void *) process); // seg fault aca
+	}
+	else {
+		processNode		  = allocMemory(sizeof(Node));
+		processNode->data = (void *) process;
+	}
+	scheduler->processes[get_pid(process)] = processNode;
 	while (scheduler->processes[scheduler->nextUnusedPid] != NULL)
 		scheduler->nextUnusedPid =
 			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
