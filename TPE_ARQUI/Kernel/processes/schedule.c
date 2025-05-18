@@ -1,7 +1,6 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <defs.h>
 #include <lib.h>
 #include <linkedListADT.h>
 #include <memoryManager.h>
@@ -30,7 +29,6 @@ typedef struct SchedulerCDT {
 } SchedulerCDT;
 
 extern void forceTimerTick();
-extern int checkKeyboardActivity();
 
 SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
@@ -40,7 +38,7 @@ SchedulerADT createScheduler() {
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->nextUnusedPid = 0;
 	scheduler->killFgProcess = 0;
-	// scheduler->currentPid	 = IDLE_PID;
+	scheduler->currentPid	 = 0;
 	return scheduler;
 }
 
@@ -97,6 +95,9 @@ void printCurrentProcess(SchedulerADT scheduler) {
 					(Color) {0xAA, 0xFF, 0xFF});
 	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
 	driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(" \nName: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
+					(Color) {0xAA, 0xFF, 0xFF});
 }
 
 void *schedule(void *prevStackPointer) {
@@ -105,39 +106,14 @@ void *schedule(void *prevStackPointer) {
 
 	// printAllProcesses(scheduler);
 	// printLevels(scheduler);
-	// printCurrentProcess(scheduler);
 
-	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) !=
-	// 		IDLE_PID &&
-	// 	get_pid(scheduler->processes[scheduler->currentPid]->data) != 1) {
-	// driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
-	// 				(Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\n[Scheduler Quantum]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+	if (!firstTime) {
+		// printCurrentProcess(scheduler);
+	}
 
-	// driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->qtyProcesses, (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printChar('\n', (Color) {0xAA, 0xFF, 0xFF});
-	// }
-
-	// if (checkKeyboardActivity()) {
-	// 	for (int i = 0; i < MAX_PROCESSES; i++) {
-	// 		if (scheduler->processes[i] != NULL) {
-	// 			ProcessADT process = scheduler->processes[i]->data;
-	// 			if (process != NULL && strcmp(getName(process), "shell") == 0) {
-	// 				setPriority(get_pid(process), MAX_PRIORITY);
-	// 				if (scheduler->currentPid == get_pid(process)) {
-	// 					scheduler->remainingQuantum +=
-	// 						5; // Dale un poco más de tiempo
-	// 				}
-	// 				break;
-	// 			}
-	// 		}
-	// 	}
-	// }
-
+	// driver_printStr("\n[Scheduler]: Quantum...\n", (Color) {0xAA, 0xFF,
+	// 0xFF}); driver_printNum(scheduler->remainingQuantum, (Color) {0xAA, 0xFF,
+	// 0xFF});
 	scheduler->remainingQuantum--;
 
 	if (!scheduler->qtyProcesses || scheduler->remainingQuantum > 0) {
@@ -146,9 +122,6 @@ void *schedule(void *prevStackPointer) {
 
 	ProcessADT currentProcess;
 	Node *currentProcessNode = scheduler->processes[scheduler->currentPid];
-
-	// driver_printStr("\nnext PID: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
 
 	if (currentProcessNode != NULL) {
 		currentProcess = (ProcessADT) currentProcessNode->data;
@@ -159,15 +132,11 @@ void *schedule(void *prevStackPointer) {
 
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
-
-		// Decae la prioridad de los procesos que no sean la shell
 		uint8_t newPriority;
-		// if (strcmp(getName(currentProcess), "shell") != 0) {
 		newPriority = get_priority(currentProcess) > 0 ?
 						  get_priority(currentProcess) - 1 :
 						  get_priority(currentProcess);
 		setPriority(get_pid(currentProcess), newPriority);
-		// }
 	}
 
 	scheduler->currentPid = getNextPid(scheduler);
@@ -230,7 +199,7 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 	Node *processNode;
 	if (get_pid(process) != IDLE_PID) {
 		processNode = appendElement(scheduler->levels[get_priority(process)],
-									(void *) process); // seg fault aca
+									(void *) process);
 	}
 	else {
 		processNode		  = allocMemory(sizeof(Node));
@@ -273,7 +242,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 		isUnkillable(processToKill)) /// para activar el ctrl+c saca el !
 		return -1;
 
-	// closeFileDescriptors(processToKill);
+	closeFileDescriptors(processToKill);
 
 	uint8_t priorityIndex = get_status(processToKill) != BLOCKED ?
 								get_priority(processToKill) :
@@ -309,7 +278,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 void killForegroundProcess() {
 	SchedulerADT scheduler	 = getSchedulerADT();
 	scheduler->killFgProcess = 1;
-	forceTimerTick();
+	// forceTimerTick();
 }
 
 int32_t blockProcess(uint16_t pid) {
@@ -432,8 +401,8 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 }
 
 int32_t getZombieRetValue(uint16_t pid) {
-	// driver_printStr("\nGet Zombie Ret Value: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\nGet Zombie Ret Value: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
 
 	SchedulerADT scheduler = getSchedulerADT();
 	Node *zombieNode	   = scheduler->processes[pid];
@@ -448,6 +417,8 @@ int32_t getZombieRetValue(uint16_t pid) {
 	setWaitingForPid(parent, pid);
 
 	if (get_status(zombieProcess) != ZOMBIE) {
+		driver_printStr("\nParent: ", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printNum(get_pid(parent), (Color) {0xAA, 0xFF, 0xFF});
 		setStatus(get_pid(parent), BLOCKED);
 		yield();
 	}
@@ -467,4 +438,14 @@ void yield() {
 	SchedulerADT scheduler		= getSchedulerADT();
 	scheduler->remainingQuantum = 0;
 	forceTimerTick(); // Este llama a int 0x20
+}
+
+int8_t changeFD(uint16_t pid, uint8_t position, int16_t newFd) {
+	SchedulerADT scheduler = getSchedulerADT();
+	Node *processNode	   = scheduler->processes[pid];
+	if (pid == IDLE_PID || processNode == NULL)
+		return -1;
+	ProcessADT process = (ProcessADT) processNode->data;
+	setFileDescriptor(process, position, newFd);
+	return 0;
 }

@@ -53,6 +53,20 @@ void infiniteLoop(uint64_t argc, char *argv[]) {
 		yield();
 	}
 }
+
+void test_process_wrapper(uint64_t argc, char *argv[]) {
+	argc		= 1;
+	int64_t pid = test_processes(argc, argv);
+	if (pid == -1) {
+		printStr("\nError creating processes test\n");
+	}
+	else {
+		printStr("\nProcesses test created with PID: ");
+		printInteger(pid);
+		printStr("\n");
+	}
+}
+
 void shell() {
 	char c;
 	// testMemory();
@@ -64,16 +78,21 @@ void shell() {
 	// char *argsInf[3] = {"test_processes", "1", NULL};
 	// create_process((MainFunction) test_processes, argsInf, "test_processes",
 	// 2);
-	testProcesses();
+	// testProcesses();
 	//   test_prio();
+
+	printStr("\ncreating test_processes...\n");
+	char *args[] = {"test_processes", "10", NULL};
+	create_process((MainFunction) test_process_wrapper, args, "test_processes",
+				   4);
+
+	printStr("\nProcesses test created\n");
 
 	while (1) {
 		c = getChar();
 		if (lastc != c) {
 			printLine(c);
 		}
-
-		// yield();
 	}
 }
 
@@ -169,9 +188,7 @@ void testMemory() {
 }
 
 void testProcesses() {
-	char *argv[] = {
-		"10", "1",
-		NULL}; // Cambio el segundo parámetro a 1 para activar modo debug
+	char *argv[] = {"5", "1", NULL};
 
 	printStr("\nCreando test de procesos...\n");
 
@@ -186,7 +203,7 @@ void testProcesses() {
 		printInteger(pid);
 		printStr("\n");
 
-		// Espera a que termine el proceso hijo
+		// Now wait for it to complete
 		wait_pid(pid);
 
 		printStr("\nTest de procesos finalizado\n");

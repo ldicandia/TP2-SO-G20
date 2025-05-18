@@ -9,6 +9,7 @@
 #include <videoDriver.h>
 #include <schedule.h>
 #include <linkedListADT.h>
+#include <pipeManager.h>
 
 #define STACK_SIZE (1 << 12) // 4KB stack size
 
@@ -65,6 +66,24 @@ void processWrapper(MainFunction code, char **args) {
 	killCurrentProcess(retValue);
 }
 
+static void assignFileDescriptor(ProcessADT process, uint8_t fdIndex,
+								 int16_t fdValue, uint8_t mode) {
+	process->fileDescriptors[fdIndex] = fdValue;
+	if (fdValue >= BUILT_IN_DESCRIPTORS)
+		pipeOpenForPid(process->pid, fdValue, mode);
+}
+
+static void closeFileDescriptor(uint16_t pid, int16_t fdValue) {
+	if (fdValue >= BUILT_IN_DESCRIPTORS)
+		pipeCloseForPid(pid, fdValue);
+}
+
+void closeFileDescriptors(ProcessADT process) {
+	closeFileDescriptor(process->pid, process->fileDescriptors[STDIN]);
+	closeFileDescriptor(process->pid, process->fileDescriptors[STDOUT]);
+	closeFileDescriptor(process->pid, process->fileDescriptors[STDERR]);
+}
+
 void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 				 int code(int argc, char **args), char **args, char *name,
 				 uint8_t priority, int16_t fileDescriptors[],
@@ -84,9 +103,9 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 	process->zombieChildren = createLinkedListADT();
 	process->unkillable		= unkillable;
 
-	// assignFileDescriptor(process, STDIN, fileDescriptors[STDIN], READ);
-	// assignFileDescriptor(process, STDOUT, fileDescriptors[STDOUT], WRITE);
-	// assignFileDescriptor(process, STDERR, fileDescriptors[STDERR], WRITE);
+	assignFileDescriptor(process, STDIN, fileDescriptors[STDIN], READ);
+	assignFileDescriptor(process, STDOUT, fileDescriptors[STDOUT], WRITE);
+	assignFileDescriptor(process, STDERR, fileDescriptors[STDERR], WRITE);
 }
 
 void freeProcess(ProcessADT process) {
@@ -213,4 +232,9 @@ uint16_t getWaitingForPid(ProcessADT process) {
 void setWaitingForPid(ProcessADT process, uint16_t pid) {
 	if (process != NULL)
 		process->waitingForPid = pid;
+}
+
+void setFileDescriptor(ProcessADT process, uint8_t fdIndex, int16_t fdValue) {
+	if (process != NULL && fdIndex < BUILT_IN_DESCRIPTORS)
+		process->fileDescriptors[fdIndex] = fdValue;
 }

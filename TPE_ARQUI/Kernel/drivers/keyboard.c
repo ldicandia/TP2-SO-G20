@@ -78,10 +78,8 @@ char getCharFromKeyboard() {
 }
 
 void ctrl_c_handler() { // TODO
-	// driver_printStr("[DEBUG] ctrl+c", (Color) {0xAA, 0xFF, 0xFF});
 	//  CTRL + C
-	//  killForegroundProcess();
-	killCurrentProcess(0);
+	killForegroundProcess();
 	return;
 }
 
