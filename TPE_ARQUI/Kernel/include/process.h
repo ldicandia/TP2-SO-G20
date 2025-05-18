@@ -64,4 +64,8 @@ LinkedListADT getZombieChildren(ProcessADT process);
 
 uint16_t getParentPid(ProcessADT process);
 
+uint16_t getWaitingForPid(ProcessADT process);
+
+void setWaitingForPid(ProcessADT process, uint16_t pid);
+
 #endif

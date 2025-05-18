@@ -2,6 +2,6 @@
 #define _TEST_PROCESSES
 
 #include <stdint.h>
-int64_t test_processes(uint64_t argc, char *argv[]);
+int64_t test_processes();
 
 #endif

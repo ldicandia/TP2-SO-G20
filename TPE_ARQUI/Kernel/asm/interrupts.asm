@@ -320,10 +320,10 @@ _exception_invalidOpCode:
 
 
 
-; en  asm: RDI	RSI	RDX	R10	R8 R9
+; en  asm: RDI RSI	RDX	R10	R8 R9
 ; en    C: RDI RSI RDX RCX R8 R9
 _interrupt_syscall:
-	;mov rcx, r10                        ESTO BUGEA EL PASAJE DE PARAMETROS
+	;mov rcx, r10                        ESTO BUGEABA EL PASAJE DE PARAMETROS
 	mov r9, rax
 	call sys_master
 	iretq

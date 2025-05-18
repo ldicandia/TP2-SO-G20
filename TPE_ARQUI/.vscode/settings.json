@@ -4,7 +4,9 @@
         "compare": "c",
         "utility": "c",
         "userlibrary.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "test_processes.h": "c",
+        "system_error": "c"
     },
     "makefile.configureOnOpen": false
 }

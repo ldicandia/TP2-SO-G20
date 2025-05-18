@@ -56,4 +56,6 @@ extern uint64_t u_sys_get_pid();
 
 extern uint64_t u_sys_yield();
 
+extern uint64_t u_sys_wait_pid(uint16_t pid);
+
 #endif

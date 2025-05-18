@@ -203,3 +203,14 @@ uint16_t getParentPid(ProcessADT process) {
 		return 0; // Return 0 if the process is NULL
 	return process->parentPid;
 }
+
+uint16_t getWaitingForPid(ProcessADT process) {
+	if (process == NULL)
+		return 0; // Return 0 if the process is NULL
+	return process->waitingForPid;
+}
+
+void setWaitingForPid(ProcessADT process, uint16_t pid) {
+	if (process != NULL)
+		process->waitingForPid = pid;
+}

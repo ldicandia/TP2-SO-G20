@@ -152,8 +152,8 @@ static void syscall_free(void *ptr) {
 }
 
 static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
-	driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
 	if (priority > MAX_PRIORITY) {
 		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
 		driver_printStr("Error: Priority too high\n",
@@ -175,10 +175,13 @@ static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
 static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 									 uint8_t priority,
 									 int16_t fileDescriptors[]) {
-	driver_printStr("\nCreating process of Userland: ",
-					(Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
-	if (checkParams(priority, fileDescriptors) == -1) {
+	// driver_printStr("\nCreating process of Userland: ",
+	// 				(Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+	int ret = checkParams(priority, fileDescriptors);
+	if (ret == -1) {
+		driver_printStr("[IRQDISPATCHER] Param Error",
+						(Color) {0xFF, 0x00, 0x00});
 		return -1;
 	}
 	return createProcess(code, args, name, 1, fileDescriptors, 0);
@@ -217,6 +220,10 @@ static uint64_t sys_yield() {
 	return 1;
 }
 
+static uint64_t sys_wait_pid(uint16_t pid) {
+	return getZombieRetValue(pid);
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,				// 0
@@ -242,6 +249,7 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_block,				// 20
 	(void *) sys_getpid,			// 21
 	(void *) sys_yield,				// 22
+	(void *) sys_wait_pid,			// 23
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,

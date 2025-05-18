@@ -16,6 +16,8 @@
 #define MAX_BUFFER 254
 #define COMMANDS_SIZE 12
 
+typedef int (*MainFunction)(int argc, char **args);
+
 static void printLine(char c);
 int linePos = 0;
 char lastc;
@@ -45,7 +47,7 @@ void (*command_func[COMMANDS_SIZE])() = {help,
 										 testMemory,
 										 testProcesses};
 
-void infiniteLoop() {
+void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
 		printChar('a');
 		yield();
@@ -56,14 +58,22 @@ void shell() {
 	// testMemory();
 	// testProcesses();
 	//  test_prio();
-	char *argsInf[2] = {"Inf", NULL};
-	create_process(infiniteLoop, argsInf, "infiniteLoop", 2);
+	// char *argsInf[3] = {"Inf", "Hm?", NULL};
+	// create_process((MainFunction) infiniteLoop, argsInf, "infiniteLoop", 2);
 	printStr("\n--------------------| SHELL |--------------------\n");
+	// char *argsInf[3] = {"test_processes", "1", NULL};
+	// create_process((MainFunction) test_processes, argsInf, "test_processes",
+	// 2);
+	testProcesses();
+	//   test_prio();
+
 	while (1) {
 		c = getChar();
 		if (lastc != c) {
 			printLine(c);
 		}
+
+		// yield();
 	}
 }
 
@@ -159,11 +169,26 @@ void testMemory() {
 }
 
 void testProcesses() {
-	// MODO DEBUG -> argc = 2, argv[0] = "20", argv[1] = "1"
-	// MODO NORMAL -> argc = 1 argv[0] = "20"
-	// uint64_t argc = 1;
-	char *argv[] = {"20"};
-	// test_processes(argc, argv);
-	char *args[3] = {"Test Processes", "Hm?", NULL};
-	create_process(test_processes, args, "test_processes", 1);
+	char *argv[] = {
+		"10", "1",
+		NULL}; // Cambio el segundo parámetro a 1 para activar modo debug
+
+	printStr("\nCreando test de procesos...\n");
+
+	int pid = create_process((MainFunction) test_processes, argv,
+							 "test_processes", 4);
+
+	if (pid < 0) {
+		printStr("\nError creating processes test\n");
+	}
+	else {
+		printStr("\nProcesses test created with PID: ");
+		printInteger(pid);
+		printStr("\n");
+
+		// Espera a que termine el proceso hijo
+		wait_pid(pid);
+
+		printStr("\nTest de procesos finalizado\n");
+	}
 }

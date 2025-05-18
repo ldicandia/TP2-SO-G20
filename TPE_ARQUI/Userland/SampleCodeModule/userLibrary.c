@@ -181,7 +181,8 @@ void freeMemory(void *address) {
 	u_sys_free(address);
 }
 
-int create_process(void *code, char **args, char *name, uint8_t priority) {
+int create_process(MainFunction code, char **args, char *name,
+				   uint8_t priority) {
 	if (priority > MAX_PRIORITY) {
 		printStr("\n[Userland]: ");
 		printStr("Error: Priority too high\n");
@@ -213,4 +214,8 @@ int getpid() {
 
 int yield() {
 	return u_sys_yield();
+}
+
+int wait_pid(uint16_t pid) {
+	return u_sys_wait_pid(pid);
 }

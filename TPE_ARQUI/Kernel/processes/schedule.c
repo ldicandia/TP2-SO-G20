@@ -92,12 +92,20 @@ void printLevels(SchedulerADT scheduler) {
 	}
 }
 
+void printCurrentProcess(SchedulerADT scheduler) {
+	driver_printStr("\n[Scheduler Current Process]: ",
+					(Color) {0xAA, 0xFF, 0xFF});
+	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
+}
+
 void *schedule(void *prevStackPointer) {
 	static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
 	// printAllProcesses(scheduler);
 	// printLevels(scheduler);
+	// printCurrentProcess(scheduler);
 
 	// if (get_pid(scheduler->processes[scheduler->currentPid]->data) !=
 	// 		IDLE_PID &&
@@ -162,9 +170,6 @@ void *schedule(void *prevStackPointer) {
 		// }
 	}
 
-	// driver_printStr("Scheduler: ", (Color) {0xFF, 0xFF, 0xFF});
-	// driver_printNum(scheduler->currentPid, (Color) {0xFF, 0xFF, 0xFF});
-
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
 
@@ -202,6 +207,10 @@ char *numToString(int number) {
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[],
 					   uint8_t unkillable) {
+	// driver_printStr("\n[Kenrel]: Creating Process... ",
+	// 				(Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
+
 	SchedulerADT scheduler = getSchedulerADT();
 	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
 		driver_printStr("Error: Too many processes\n",
@@ -232,7 +241,6 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 		scheduler->nextUnusedPid =
 			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
 	scheduler->qtyProcesses++;
-	// driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
 	return get_pid(process);
 }
 
@@ -423,13 +431,40 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 	return scheduler->nextUnusedPid;
 }
 
+int32_t getZombieRetValue(uint16_t pid) {
+	// driver_printStr("\nGet Zombie Ret Value: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printNum(pid, (Color) {0xAA, 0xFF, 0xFF});
+
+	SchedulerADT scheduler = getSchedulerADT();
+	Node *zombieNode	   = scheduler->processes[pid];
+	if (zombieNode == NULL)
+		return -1;
+	ProcessADT zombieProcess = (ProcessADT) zombieNode->data;
+	if (getParentPid(zombieProcess) != scheduler->currentPid)
+		return -1;
+
+	ProcessADT parent =
+		(ProcessADT) scheduler->processes[scheduler->currentPid]->data;
+	setWaitingForPid(parent, pid);
+
+	if (get_status(zombieProcess) != ZOMBIE) {
+		setStatus(get_pid(parent), BLOCKED);
+		yield();
+	}
+	removeNode(getZombieChildren(parent), zombieNode);
+	destroyZombie(scheduler, zombieProcess);
+	return get_retValue(zombieProcess);
+}
+
+int32_t processIsAlive(uint16_t pid) {
+	SchedulerADT scheduler = getSchedulerADT();
+	Node *processNode	   = scheduler->processes[pid];
+	return processNode != NULL &&
+		   get_status((ProcessADT) processNode->data) != ZOMBIE;
+}
+
 void yield() {
 	SchedulerADT scheduler		= getSchedulerADT();
 	scheduler->remainingQuantum = 0;
-	// driver_printStr("[DEBUG] Forzando timer tick...\n",
-	// 				(Color) {0xFF, 0x00, 0xFF});
 	forceTimerTick(); // Este llama a int 0x20
-	// Esta línea nunca se ejecutará si forceTimerTick funciona
-	// correctamente driver_printStr("[DEBUG] Después de forceTimerTick\n",
-	// 				(Color) {0xFF, 0x00, 0xFF});
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "syscall.h"
 #include "test_util.h"
+#include <test_processes.h>
 
 enum State { RUNNING, BLOCKED, KILLED };
 
@@ -16,8 +17,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 	uint64_t rq;
 	uint64_t alive = 0;
 	uint64_t action;
-	int64_t max_processes;
-	int debug_mode = 1; // Modo debugging desactivado por defecto
+	int64_t max_processes = 5;
+	int debug_mode		  = 0; // Modo debugging desactivado por defecto
 
 	if (argc < 1 || argc > 2) {
 		return -1;
@@ -26,8 +27,6 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 	if ((max_processes = satoi(argv[0])) <= 0) {
 		return -1;
 	}
-
-	max_processes = 3;
 
 	if (argc == 2 && satoi(argv[1]) == 1) {
 		debug_mode = 1; // Activar modo debugging si el segundo argumento es 1
@@ -38,9 +37,9 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 	while (1) {
 		// Crear procesos
 		for (rq = 0; rq < max_processes; rq++) {
-			char *args[] = {"endless_loop", NULL};
-			p_rqs[rq].pid =
-				create_process(&endless_loop, args, "endless_loop", 0);
+			char *args[]  = {"endless_loop", NULL};
+			p_rqs[rq].pid = create_process((MainFunction) endless_loop, args,
+										   "endless_loop", 0);
 
 			if (p_rqs[rq].pid == -1) {
 				printStr("test_processes: ERROR creating process\n");
@@ -77,6 +76,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 								printInteger(p_rqs[rq].pid);
 							}
 							p_rqs[rq].state = KILLED;
+							wait_pid(p_rqs[rq].pid);
 							alive--;
 						}
 						break;

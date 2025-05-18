@@ -21,6 +21,7 @@ GLOBAL u_sys_block_process
 GLOBAL u_sys_unblock_process
 GLOBAL u_sys_get_pid
 GLOBAL u_sys_yield
+GLOBAL u_sys_wait_pid
 
 section .text
 
@@ -133,5 +134,10 @@ u_sys_get_pid:
 
 u_sys_yield:
     mov rax, 0x16
+    int 0x80
+    ret
+
+u_sys_wait_pid:
+    mov rax, 0x17
     int 0x80
     ret

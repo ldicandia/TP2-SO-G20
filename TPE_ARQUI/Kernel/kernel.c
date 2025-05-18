@@ -70,7 +70,7 @@ int idle(int argc, char **argv);
 int main() {
 	char *argsIdle[3]		  = {"idle", "Hm?", NULL};
 	int16_t fileDescriptors[] = {DEV_NULL, DEV_NULL, STDERR};
-	createProcess((MainFunction) &idle, argsIdle, "idle", 4, fileDescriptors,
+	createProcess((MainFunction) &idle, argsIdle, "idle", 0, fileDescriptors,
 				  1);
 	load_idt();
 	return 0;
@@ -80,7 +80,7 @@ int idle(int argc, char **argv) {
 	// driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
 	char *argsShell[2]		  = {"shell", NULL};
 	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
-	createProcess((MainFunction) sampleCodeModuleAddress, argsShell, "shell", 4,
+	createProcess((MainFunction) sampleCodeModuleAddress, argsShell, "shell", 0,
 				  fileDescriptors, 1);
 	while (1) {
 		_hlt();

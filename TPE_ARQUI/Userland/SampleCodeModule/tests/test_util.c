@@ -63,8 +63,9 @@ void bussy_wait(uint64_t n) {
 }
 
 void endless_loop() {
-	while (1)
-		;
+	while (1) {
+		yield();
+	}
 }
 
 void endless_loop_print(int argc, char **argv) {

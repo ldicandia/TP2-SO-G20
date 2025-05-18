@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <userLibrary.h>
 
+typedef int (*MainFunction)(int argc, char **args);
+
 void printChar(char c);
 
 char getChar();
@@ -49,7 +51,8 @@ void *allocMemory(uint64_t size);
 
 void freeMemory(void *address);
 
-int create_process(void *code, char **args, char *name, uint8_t priority);
+int create_process(MainFunction code, char **args, char *name,
+				   uint8_t priority);
 
 int kill_process(uint64_t pid);
 
@@ -62,5 +65,7 @@ int unblock(uint64_t pid);
 int getpid();
 
 int yield();
+
+int wait_pid(uint16_t pid);
 
 #endif // USER_LIBRARY_H
