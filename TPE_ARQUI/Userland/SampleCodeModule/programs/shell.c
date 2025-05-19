@@ -18,6 +18,8 @@
 
 typedef int (*MainFunction)(int argc, char **args);
 
+void testPrio();
+
 static void printLine(char c);
 int linePos = 0;
 char lastc;
@@ -67,6 +69,19 @@ void test_process_wrapper(uint64_t argc, char *argv[]) {
 	}
 }
 
+void test_prio_wrapper(uint64_t argc, char *argv[]) {
+	argc		= 1;
+	int64_t pid = test_prio();
+	if (pid == -1) {
+		printStr("\nError creating processes test\n");
+	}
+	else {
+		printStr("\nProcesses test created with PID: ");
+		printInteger(pid);
+		printStr("\n");
+	}
+}
+
 void shell() {
 	char c;
 	// testMemory();
@@ -78,13 +93,8 @@ void shell() {
 	// char *argsInf[3] = {"test_processes", "1", NULL};
 	// create_process((MainFunction) test_processes, argsInf, "test_processes",
 	// 2);
-	// testProcesses();
-	//   test_prio();
 
-	printStr("\ncreating test_processes...\n");
-	char *args[] = {"test_processes", "10", NULL};
-	create_process((MainFunction) test_process_wrapper, args, "test_processes",
-				   4);
+	testProcesses();
 
 	printStr("\nProcesses test created\n");
 
@@ -188,24 +198,18 @@ void testMemory() {
 }
 
 void testProcesses() {
-	char *argv[] = {"5", "1", NULL};
+	printStr("\ncreating test_processes...\n");
+	char *args[] = {"test_processes", "10", NULL};
+	int pid		 = create_process((MainFunction) test_process_wrapper, args,
+								  "test_processes", 4);
+	// while (1) {
+	// }
+}
 
-	printStr("\nCreando test de procesos...\n");
-
-	int pid = create_process((MainFunction) test_processes, argv,
-							 "test_processes", 4);
-
-	if (pid < 0) {
-		printStr("\nError creating processes test\n");
-	}
-	else {
-		printStr("\nProcesses test created with PID: ");
-		printInteger(pid);
-		printStr("\n");
-
-		// Now wait for it to complete
-		wait_pid(pid);
-
-		printStr("\nTest de procesos finalizado\n");
-	}
+void testPrio() {
+	printStr("\ncreating test_prio...\n");
+	char *args[] = {"test_prio", "10", NULL};
+	int pid = create_process((MainFunction) test_prio, args, "test_prio", 4);
+	// while (1) {
+	// }
 }

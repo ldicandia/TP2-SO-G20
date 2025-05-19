@@ -18,13 +18,13 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-void test_prio(void) {
+void test_prio(uint64_t argc, char *argv[]) {
 	int64_t pids[TOTAL_PROCESSES];
-	char *argv[] = {"endless_loop_print", MINOR_WAIT, 0};
+	char *args[] = {"endless_loop_print", MINOR_WAIT, 0};
 	uint64_t i;
 
 	for (i = 0; i < TOTAL_PROCESSES; i++) {
-		pids[i] = create_process((MainFunction) endless_loop_print, argv,
+		pids[i] = create_process((MainFunction) endless_loop_print, args,
 								 "endless_loop_print", 0);
 	}
 

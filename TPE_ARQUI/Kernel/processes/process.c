@@ -52,14 +52,6 @@ static char **allocArguments(char **args) {
 	return newArgsArray;
 }
 
-// static void assignFileDescriptor(ProcessADT process, uint8_t fdIndex,
-// 								 int16_t fdValue, uint8_t mode) {
-// 	process->fileDescriptors[fdIndex] = fdValue;
-// 	if (fdValue >= BUILT_IN_DESCRIPTORS) {
-// 		// pipeOpenForPid(process->pid, fdValue, mode);
-// 	}
-// }
-
 void processWrapper(MainFunction code, char **args) {
 	int len		 = stringArrayLen(args);
 	int retValue = code(len, args);
@@ -85,9 +77,8 @@ void closeFileDescriptors(ProcessADT process) {
 }
 
 void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
-				 int code(int argc, char **args), char **args, char *name,
-				 uint8_t priority, int16_t fileDescriptors[],
-				 uint8_t unkillable) {
+				 MainFunction code, char **args, char *name, uint8_t priority,
+				 int16_t fileDescriptors[], uint8_t unkillable) {
 	process->pid		   = pid;
 	process->parentPid	   = parentPid;
 	process->waitingForPid = 0;

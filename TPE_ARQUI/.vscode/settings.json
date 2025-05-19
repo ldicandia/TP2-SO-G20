@@ -7,7 +7,8 @@
         "cstdint": "c",
         "test_processes.h": "c",
         "system_error": "c",
-        "chilt_process_test.h": "c"
+        "chilt_process_test.h": "c",
+        "inputparseradt.h": "c"
     },
     "makefile.configureOnOpen": false
 }

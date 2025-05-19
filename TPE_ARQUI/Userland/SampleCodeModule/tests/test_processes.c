@@ -32,7 +32,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
 	printStr("\nEntering loop\n");
 	while (1) {
-		// Crear procesos
+		printStr("\nWHILE(1)\n");
+
 		for (rq = 0; rq < max_processes; rq++) {
 			char *args[]  = {"endless_loop", NULL};
 			p_rqs[rq].pid = create_process((MainFunction) endless_loop, args,
@@ -57,6 +58,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 		while (alive > 0) {
 			for (rq = 0; rq < max_processes; rq++) {
 				action = GetUniform(100) % 2;
+				// action = 0;
 
 				switch (action) {
 					case 0:
@@ -99,7 +101,8 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 			// Desbloquear procesos aleatoriamente
 			for (rq = 0; rq < max_processes; rq++) {
 				if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
-					if (my_unblock(p_rqs[rq].pid) == -1) {
+					if (my_unblock(p_rqs[rq].pid) ==
+						-1) { // aca se corta aparentemente
 						printStr("test_processes: ERROR unblocking process\n");
 						return -1;
 					}
@@ -112,5 +115,6 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 				}
 			}
 		}
+		// yield();
 	}
 }
