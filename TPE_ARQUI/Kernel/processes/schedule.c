@@ -334,34 +334,25 @@ void printBlockedProcesses() {
 int32_t unblockProcess(uint16_t pid) {
 	SchedulerADT scheduler = getSchedulerADT();
 	Node *node			   = scheduler->processes[pid];
-	printBlockedProcesses();
-	printAllProcesses(scheduler);
 	if (!node)
 		return -1;
 
-	ProcessADT process = node->data;
-	ProcessStatus st   = get_status(process);
+	ProcessADT process	 = node->data;
+	ProcessStatus status = get_status(process);
+	if (status != BLOCKED)
+		return status == ZOMBIE ? -1 : 0;
 
-	if (st == ZOMBIE)
-		return -1;
-	if (st == READY || st == RUNNING)
-		return 0;
-	if (st != BLOCKED)
-		return -1;
-
-	// detach from blocked list
+	// detach & free old
 	removeNode(scheduler->blockedProcesses, node);
 
-	// mark READY
+	// mark READY & re-enqueue with a new node
 	set_status(process, READY);
-
-	// re-enqueue in its priority queue and update the array
-	Node *newNode = appendNode(scheduler->levels[get_priority(process)], node);
+	Node *newNode = appendElement(scheduler->levels[get_priority(process)],
+								  (void *) process);
 	scheduler->processes[pid] = newNode;
 
-	// force a reschedule
+	// force reschedule
 	scheduler->remainingQuantum = 0;
-	printBlockedProcesses();
 	return 0;
 }
 
@@ -432,7 +423,13 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 
 int32_t getZombieRetValue(uint16_t pid) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *zombieNode	   = scheduler->processes[pid];
+
+	if (pid >= MAX_PROCESSES) {
+		driver_printStr("Error: Invalid PID\n", (Color) {0xFF, 0x00, 0x00});
+		return -1;
+	}
+
+	Node *zombieNode = scheduler->processes[pid];
 	if (zombieNode == NULL)
 		return -1;
 	ProcessADT zombieProcess = (ProcessADT) zombieNode->data;

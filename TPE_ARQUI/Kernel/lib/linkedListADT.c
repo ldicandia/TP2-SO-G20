@@ -101,7 +101,7 @@ void *removeNode(LinkedListADT list, Node *node) {
 	void *data = node->data;
 	node->next = NULL;
 	node->prev = NULL;
-	freeMemory(node);
+	// freeMemory(node);
 	return data;
 }
 

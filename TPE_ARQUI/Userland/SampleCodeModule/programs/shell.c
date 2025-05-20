@@ -83,6 +83,9 @@ void test_prio_wrapper(uint64_t argc, char *argv[]) {
 }
 
 void shell() {
+	printStrColor("\nITBA Shell Group 20\n", (Color) {0xFF, 0xFF, 0x00});
+	printStrColor("ALFIERI - DI CANDIA - DIAZ VARELA\n",
+				  (Color) {0xFF, 0xFF, 0x00});
 	char c;
 	// testMemory();
 	// testProcesses();

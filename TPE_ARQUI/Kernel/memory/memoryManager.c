@@ -3,22 +3,23 @@
 // filepath:
 // c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
 
+// #ifdef USE_BUDDY_MEMORY_MANAGER
 
-
-//#ifdef USE_BUDDY_MEMORY_MANAGER
-
-//#ifndef BUDDY
+// #ifndef BUDDY
 #ifdef OUR
 #include "memoryManager.h"
-//#include "buddyMemoryManager.h"
+// #include "buddyMemoryManager.h"
 
-//#else
+// #else
 
 #include <defs.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <videoDriver.h>
 
 #define MAX_BLOCKS 1024 // Máxima cantidad de bloques a trackear
+
+#define RED (Color){0x00, 0x00, 0xFF}
 
 // Estructura de tracking de memoria asignada
 typedef struct MemoryBlock {
@@ -62,9 +63,10 @@ MemoryManagerADT getMemoryManager() {
 // Agrega un bloque al array de tracking
 static void addBlock(MemoryManagerADT memoryManager, void *address,
 					 uint64_t size) {
-	if (memoryManager->blockCount >= MAX_BLOCKS)
+	if (memoryManager->blockCount >= MAX_BLOCKS) {
+		driver_printStr("addBlock error: max blocks reached\n", RED);
 		return;
-
+	}
 	memoryManager->blocks[memoryManager->blockCount].address = address;
 	memoryManager->blocks[memoryManager->blockCount].size	 = size;
 	memoryManager->blockCount++;
@@ -72,9 +74,10 @@ static void addBlock(MemoryManagerADT memoryManager, void *address,
 
 // Elimina un bloque del tracking si coincide con la dirección dada
 static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
-	if (memoryManager == NULL || address == NULL)
+	if (memoryManager == NULL || address == NULL) {
+		driver_printStr("removeBlock error: null argument\n", RED);
 		return false;
-
+	}
 	for (int i = 0; i < memoryManager->blockCount; i++) {
 		if (memoryManager->blocks[i].address == address) {
 			// Reemplazamos el bloque eliminado con el último bloque
@@ -84,7 +87,7 @@ static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
 			return true;
 		}
 	}
-
+	driver_printStr("removeBlock warning: block not found\n", RED);
 	return false; // No encontrado
 }
 
@@ -92,12 +95,16 @@ static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
 void *allocMemory(const uint64_t memoryToAllocate) {
 	MemoryManagerADT memoryManager = getMemoryManager();
 
-	if (memoryToAllocate == 0 || memoryManager == NULL)
+	if (memoryToAllocate == 0 || memoryManager == NULL) {
+		driver_printStr(
+			"allocMemory error: invalid size or uninitialized manager\n", RED);
 		return NULL;
+	}
 
 	if (memoryManager->nextAddress + memoryToAllocate >
 		memoryManager->endAddress) {
-		return NULL; // No hay suficiente espacio
+		driver_printStr("allocMemory error: insufficient memory\n", RED);
+		return NULL;
 	}
 
 	void *allocation = memoryManager->nextAddress;
@@ -110,12 +117,16 @@ void *allocMemory(const uint64_t memoryToAllocate) {
 
 // Libera un bloque asignado
 void freeMemory(void *ptr) {
-	if (ptr == NULL)
+	if (ptr == NULL) {
+		driver_printStr("freeMemory error: null pointer\n", RED);
 		return;
+	}
 
 	MemoryManagerADT memoryManager = getMemoryManager();
-
-	removeBlock(memoryManager, ptr);
+	if (!removeBlock(memoryManager, ptr)) {
+		driver_printStr(
+			"freeMemory warning: attempted to free untracked block\n", RED);
+	}
 }
 
 #endif
