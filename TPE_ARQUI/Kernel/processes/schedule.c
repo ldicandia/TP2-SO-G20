@@ -38,7 +38,7 @@ SchedulerADT createScheduler() {
 	for (int i = 0; i < QTY_READY_LEVELS; i++)
 		scheduler->levels[i] = createLinkedListADT();
 	scheduler->blockedProcesses = createLinkedListADT();
-	scheduler->nextUnusedPid	= 1;
+	scheduler->nextUnusedPid	= 0;
 	scheduler->killFgProcess	= 0;
 	scheduler->currentPid		= 0;
 	return scheduler;
