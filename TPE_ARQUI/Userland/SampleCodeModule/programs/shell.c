@@ -57,9 +57,9 @@ void infiniteLoop(uint64_t argc, char *argv[]) {
 }
 
 void test_process_wrapper(uint64_t argc, char *argv[]) {
-	argc		= 1;
-	int64_t pid = test_processes(argc, argv);
-	// int64_t pid = test_prio();
+	argc = 1;
+	// int64_t pid = test_processes(argc, argv);
+	int64_t pid = test_prio();
 	if (pid == -1) {
 		printStr("\nError creating processes test\n");
 	}

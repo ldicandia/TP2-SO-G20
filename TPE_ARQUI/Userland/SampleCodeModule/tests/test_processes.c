@@ -114,7 +114,10 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 				}
 			}
 		}
-		clear();
+		// bussy_wait(100000000);
+		// printStr("\nRunning Test Processes\n");
+		// printStr("To Exit, press Ctrl+C\n");
+		// clear();
 	}
 }
 

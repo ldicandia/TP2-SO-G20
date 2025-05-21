@@ -89,6 +89,16 @@ void printLevels(SchedulerADT scheduler) {
 		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
 		driver_printNum(getLength(scheduler->levels[i]),
 						(Color) {0xAA, 0xFF, 0xFF});
+		// driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
+		// Node *currentNode = getFirst(scheduler->levels[i]);
+		// while (currentNode != NULL) {
+		// 	ProcessADT process = currentNode->data;
+		// 	driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
+		// 	currentNode = currentNode->next;
+		// 	if (currentNode != NULL)
+		// 		driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
+		// }
+		// driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
 	}
 }
 
@@ -107,7 +117,7 @@ void *schedule(void *prevStackPointer) {
 	SchedulerADT scheduler = getSchedulerADT();
 
 	// printAllProcesses(scheduler);
-	//  printLevels(scheduler);
+	// printLevels(scheduler);
 
 	if (!firstTime) {
 		// printCurrentProcess(scheduler);
@@ -131,10 +141,10 @@ void *schedule(void *prevStackPointer) {
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
 		uint8_t newPriority;
-		newPriority = get_priority(currentProcess) > 0 ?
-						  get_priority(currentProcess) - 1 :
-						  get_priority(currentProcess);
-		setPriority(get_pid(currentProcess), newPriority);
+		// newPriority = get_priority(currentProcess) > 0 ?
+		// 				  get_priority(currentProcess) - 1 :
+		// 				  get_priority(currentProcess);
+		// setPriority(get_pid(currentProcess), newPriority);
 	}
 
 	scheduler->currentPid = getNextPid(scheduler);
@@ -337,6 +347,8 @@ int32_t unblockProcess(uint16_t pid) {
 	if (!node)
 		return -1;
 
+	// printBlockedProcesses();
+
 	ProcessADT process	 = node->data;
 	ProcessStatus status = get_status(process);
 	if (status != BLOCKED)
@@ -350,6 +362,8 @@ int32_t unblockProcess(uint16_t pid) {
 	Node *newNode = appendElement(scheduler->levels[get_priority(process)],
 								  (void *) process);
 	scheduler->processes[pid] = newNode;
+
+	// printBlockedProcesses();
 
 	// force reschedule
 	scheduler->remainingQuantum = 0;
@@ -365,15 +379,24 @@ uint16_t getPid() {
 	return scheduler->currentPid;
 }
 
+int checkPriority(uint8_t priority) {
+	return (priority >= QTY_READY_LEVELS ||
+			priority < 0); /// SIN ESTO NO FUNCIONA DEBERIA SER PRIORITY < 0
+}
+
 int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 	SchedulerADT scheduler = getSchedulerADT();
 	Node *node			   = scheduler->processes[pid];
+
 	if (node == NULL || pid == IDLE_PID)
 		return -1;
 
 	ProcessADT process = node->data;
-	if (newPriority >= QTY_READY_LEVELS)
+	if (checkPriority(newPriority)) { // cambiar por checkPriority
+		// driver_printStr("Error: Invalid priority\n",
+		//				(Color) {0xFF, 0x00, 0x00});
 		return -1;
+	}
 
 	if (get_status(process) == READY || get_status(process) == RUNNING) {
 		removeNode(scheduler->levels[get_priority(process)], node);
