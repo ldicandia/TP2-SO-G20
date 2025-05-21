@@ -235,12 +235,6 @@ void readCommand() {
 				argv[argc] = NULL;
 				// lanzamos proceso en background con prioridad 0
 
-				printStr("\nArguments: ");
-				for (int j = 0; j < argc; j++) {
-					printStr(argv[j]);
-					printStr(" ");
-				}
-
 				create_process(command_func[i], argv, command_names[i], 0);
 			}
 			return;

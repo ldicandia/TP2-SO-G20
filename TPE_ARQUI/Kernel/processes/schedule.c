@@ -81,16 +81,16 @@ void printLevels(SchedulerADT scheduler) {
 		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
 		driver_printNum(getLength(scheduler->levels[i]),
 						(Color) {0xAA, 0xFF, 0xFF});
-		// driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
-		// Node *currentNode = getFirst(scheduler->levels[i]);
-		// while (currentNode != NULL) {
-		// 	ProcessADT process = currentNode->data;
-		// 	driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
-		// 	currentNode = currentNode->next;
-		// 	if (currentNode != NULL)
-		// 		driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
-		// }
-		// driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
+		Node *currentNode = getFirst(scheduler->levels[i]);
+		while (currentNode != NULL) {
+			ProcessADT process = currentNode->data;
+			driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
+			currentNode = currentNode->next;
+			if (currentNode != NULL)
+				driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
+		}
+		driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
 	}
 }
 
@@ -109,7 +109,8 @@ void *schedule(void *prevStackPointer) {
 	SchedulerADT scheduler = getSchedulerADT();
 
 	// printAllProcesses(scheduler);
-	// printLevels(scheduler);
+	if (scheduler->currentPid != 0 && scheduler->currentPid != 1)
+		printLevels(scheduler);
 
 	if (!firstTime) {
 		// printCurrentProcess(scheduler);

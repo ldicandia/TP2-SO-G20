@@ -68,15 +68,18 @@ void endless_loop() {
 	}
 }
 
-void endless_loop_print(int argc, char **argv) {
-	// int64_t pid = getpid();
-	int64_t pid = 1;
+int64_t endless_loop_print(uint64_t argc, char **argv) {
+	printStr("\nENDLESS LOOP PRINT\n");
+
+	int64_t pid = getpid();
 
 	uint64_t wait = satoi(argv[1]);
+
 	while (1) {
 		printStr("\nProcess PID: ");
 		printInteger(pid);
 		// psPrint();
 		bussy_wait(wait);
 	}
+	return 0;
 }
