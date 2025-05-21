@@ -58,14 +58,6 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 	return process == NULL ? IDLE_PID : get_pid(process);
 }
 
-static int strcmp(char *str1, char *str2) {
-	while (*str1 && *str2 && *str1 == *str2) {
-		str1++;
-		str2++;
-	}
-	return *str1 - *str2;
-}
-
 void printAllProcesses(SchedulerADT scheduler) {
 	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
 	for (int i = 0; i < MAX_PROCESSES; i++) {
@@ -140,11 +132,11 @@ void *schedule(void *prevStackPointer) {
 
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
-		uint8_t newPriority;
-		// newPriority = get_priority(currentProcess) > 0 ?
-		// 				  get_priority(currentProcess) - 1 :
-		// 				  get_priority(currentProcess);
-		// setPriority(get_pid(currentProcess), newPriority);
+		// uint8_t newPriority;
+		//  newPriority = get_priority(currentProcess) > 0 ?
+		//  				  get_priority(currentProcess) - 1 :
+		//  				  get_priority(currentProcess);
+		//  setPriority(get_pid(currentProcess), newPriority);
 	}
 
 	scheduler->currentPid = getNextPid(scheduler);

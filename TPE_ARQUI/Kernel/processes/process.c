@@ -55,6 +55,8 @@ static char **allocArguments(char **args) {
 void processWrapper(MainFunction code, char **args) {
 	int len		 = stringArrayLen(args);
 	int retValue = code(len, args);
+	driver_printStr("\nProcess finished with return value: ",
+					(Color) {0xFF, 0x00, 0x00});
 	killCurrentProcess(retValue);
 }
 

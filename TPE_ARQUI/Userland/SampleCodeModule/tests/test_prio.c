@@ -18,7 +18,7 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-void test_prio(uint64_t argc, char *argv[]) {
+int test_prio() {
 	int64_t pids[TOTAL_PROCESSES];
 	char *args[] = {"endless_loop_print", MINOR_WAIT, 0};
 	uint64_t i;
@@ -55,4 +55,6 @@ void test_prio(uint64_t argc, char *argv[]) {
 
 	for (i = 0; i < TOTAL_PROCESSES; i++)
 		my_kill(pids[i]);
+
+	return 0;
 }

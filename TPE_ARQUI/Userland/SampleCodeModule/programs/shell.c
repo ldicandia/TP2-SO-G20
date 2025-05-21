@@ -6,7 +6,6 @@
 #include <snake.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <user_time.h>
 #include <test_mm.h>
 #include <test_processes.h>
@@ -14,11 +13,9 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 12
+#define COMMANDS_SIZE 13
 
 typedef int (*MainFunction)(int argc, char **args);
-
-void testPrio();
 
 static void printLine(char c);
 int linePos = 0;
@@ -31,42 +28,60 @@ char parameter[MAX_BUFFER + 1] = {0};
 
 char buffer[MAX_BUFFER] = {0};
 
-char *command_names[] = {"help",	  "time",		"clear",
-						 "snake 1",	  "snake 2",	"inforeg",
-						 "zerodiv",	  "invopcode",	"increment",
-						 "decrement", "testMemory", "testProcesses"};
+char *command_names[] = {
+	"help",		  "time",		   "clear",		"snake 1",	 "snake 2",
+	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
+	"testMemory", "testProcesses", "testPrio"};
 
-void (*command_func[COMMANDS_SIZE])() = {help,
-										 user_time,
-										 clear,
-										 shell_snake_1,
-										 shell_snake_2,
-										 inforeg,
-										 exc_zerodiv,
-										 exc_invopcode,
-										 increment_size_char,
-										 decrement_size_char,
-										 testMemory,
-										 testProcesses};
+// 1) Creamos los wrappers para los comandos “externos”:
+static int _shell_snake_1(int argc, char **argv) {
+	snake(1);
+	return 0;
+}
+static int _shell_snake_2(int argc, char **argv) {
+	snake(2);
+	return 0;
+}
+static int _inforeg_wrap(int argc, char **argv) {
+	inforeg();
+	return 0;
+}
+static int _zerodiv_wrap(int argc, char **argv) {
+	exc_zerodiv();
+	return 0;
+}
+static int _invop_wrap(int argc, char **argv) {
+	exc_invopcode();
+	return 0;
+}
+static int _inc_wrap(int argc, char **argv) {
+	increment_size_char();
+	return 0;
+}
+static int _dec_wrap(int argc, char **argv) {
+	decrement_size_char();
+	return 0;
+}
+
+// 2) Cambiamos el array de handlers para que apunte a MainFunction:
+MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
+											(MainFunction) user_time,
+											(MainFunction) clear,
+											_shell_snake_1,
+											_shell_snake_2,
+											_inforeg_wrap,
+											_zerodiv_wrap,
+											_invop_wrap,
+											_inc_wrap,
+											_dec_wrap,
+											(MainFunction) test_mm,
+											(MainFunction) test_processes,
+											(MainFunction) test_prio};
 
 void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
 		printChar('a');
 		yield();
-	}
-}
-
-void test_process_wrapper(uint64_t argc, char *argv[]) {
-	argc = 1;
-	// int64_t pid = test_processes(argc, argv);
-	int64_t pid = test_prio();
-	if (pid == -1) {
-		printStr("\nError creating processes test\n");
-	}
-	else {
-		printStr("\nProcesses test created with PID: ");
-		printInteger(pid);
-		printStr("\n");
 	}
 }
 
@@ -88,17 +103,10 @@ void shell() {
 	printStrColor("ALFIERI - DI CANDIA - DIAZ VARELA\n",
 				  (Color) {0xFF, 0xFF, 0x00});
 	char c;
-	// testMemory();
-	// testProcesses();
-	//  test_prio();
-	// char *argsInf[3] = {"Inf", "Hm?", NULL};
-	// create_process((MainFunction) infiniteLoop, argsInf, "infiniteLoop", 2);
-	printStr("\n--------------------| SHELL |--------------------\n");
-	// char *argsInf[3] = {"test_processes", "1", NULL};
-	// create_process((MainFunction) test_processes, argsInf, "test_processes",
-	// 2);
 
-	testProcesses();
+	printStr("\n--------------------| SHELL |--------------------\n");
+
+	// testProcesses();
 
 	while (1) {
 		c = getChar();
@@ -115,7 +123,9 @@ static void printLine(char c) {
 	}
 	if (c == '\n') {
 		buffer[lastEnter] = '\0';
+
 		readCommand();
+
 		buffer[0] = '\0';
 		printStr(buffer);
 		lastEnter = 0;
@@ -170,10 +180,63 @@ static int strcmp_shell(char *str1, char *str2) {
 	return 1;
 }
 
+static int strchr(const char *str, char c) {
+	while (*str) {
+		if (*str == c) {
+			return 1;
+		}
+		str++;
+	}
+	return 0;
+}
+
+static char *strtok(char *str, const char *delim) {
+	static char *last = NULL;
+	if (str == NULL) {
+		str = last;
+	}
+	if (str == NULL) {
+		return NULL;
+	}
+	while (*str && strchr(delim, *str)) {
+		str++;
+	}
+	if (*str == '\0') {
+		last = NULL;
+		return NULL;
+	}
+	char *start = str;
+	while (*str && !strchr(delim, *str)) {
+		str++;
+	}
+	if (*str) {
+		*str++ = '\0';
+	}
+	last = str;
+	return start;
+}
+
+// 3) Adaptamos readCommand() para diferenciar built-ins de procesos:
 void readCommand() {
 	for (int i = 0; i < COMMANDS_SIZE; i++) {
 		if (strcmp_shell(buffer, command_names[i])) {
-			command_func[i]();
+			// built-ins (índices 0,1,2)
+			if (i <= 2) {
+				command_func[i](0, NULL);
+			}
+			else {
+				// parseo muy sencillo de argumentos
+				char *argv[4] = {NULL};
+				int argc	  = 0;
+				char *tok	  = strtok(buffer, " ");
+				while (tok && argc < 3) {
+					argv[argc++] = tok;
+					tok			 = strtok(NULL, " ");
+				}
+				argv[argc] = NULL;
+				// lanzamos proceso en background con prioridad 0
+				create_process(command_func[i], argv, command_names[i], 0);
+			}
 			return;
 		}
 	}
@@ -191,27 +254,4 @@ void shell_snake_1() {
 
 void shell_snake_2() {
 	snake(2);
-}
-
-void testMemory() {
-	uint64_t argc = 1;
-	char *argv[]  = {"1000"};
-	test_mm(argc, argv);
-}
-
-void testProcesses() {
-	printStr("\ncreating test_processes...\n");
-	char *args[] = {"test_processes", "10", NULL};
-	int pid		 = create_process((MainFunction) test_process_wrapper, args,
-								  "test_processes", 4);
-	// while (1) {
-	// }
-}
-
-void testPrio() {
-	printStr("\ncreating test_prio...\n");
-	char *args[] = {"test_prio", "10", NULL};
-	int pid = create_process((MainFunction) test_prio, args, "test_prio", 4);
-	// while (1) {
-	// }
 }

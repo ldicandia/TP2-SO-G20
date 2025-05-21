@@ -13,7 +13,7 @@ typedef struct P_rq {
 
 // int create_process(void *code, char **args, char *name, uint8_t priority);
 
-int64_t test_processes(uint64_t argc, char *argv[]) {
+int test_processes(uint64_t argc, char *argv[]) {
 	printStr("\nEntered Testing Processes...\n");
 	uint64_t rq;
 	uint64_t alive = 0;
@@ -21,9 +21,9 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 	int64_t max_processes = 5;
 	int debug_mode		  = 1; // Modo debugging desactivado por defecto
 
-	if (argc > 1) {
-		return -1;
-	}
+	// if (argc > 1) {
+	// 	return -1;
+	// }
 
 	// if ((max_processes = satoi(argv[1])) <= 0) {
 	// 	return -1;

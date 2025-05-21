@@ -183,11 +183,6 @@ void freeMemory(void *address) {
 
 int create_process(MainFunction code, char **args, char *name,
 				   uint8_t priority) {
-	if (priority > MAX_PRIORITY) {
-		printStr("\n[Userland]: ");
-		printStr("Error: Priority too high\n");
-		return -1;
-	}
 	int16_t fileDescriptors[] = {STDIN, STDOUT, STDERR};
 	return u_sys_create_process(code, args, name, priority, fileDescriptors);
 }
