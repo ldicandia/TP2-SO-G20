@@ -166,18 +166,17 @@ void help() {
 				  WHITE);
 }
 
-static int strcmp_shell(char *str1, char *str2) {
+static int strcmp_shell(const char *str, const char *cmd) {
 	int i = 0;
-	while (str1[i] != '\0' && str2[i] != '\0') {
-		if (str1[i] != str2[i]) {
+	// comparamos mientras cmd no termine
+	while (cmd[i] != '\0') {
+		if (str[i] != cmd[i]) {
 			return 0;
 		}
 		i++;
 	}
-	if (str1[i] != str2[i]) {
-		return 0;
-	}
-	return 1;
+	// tras coincidir todo cmd, str[i] debe ser espacio o '\0'
+	return (str[i] == ' ' || str[i] == '\0');
 }
 
 static int strchr(const char *str, char c) {
@@ -235,6 +234,13 @@ void readCommand() {
 				}
 				argv[argc] = NULL;
 				// lanzamos proceso en background con prioridad 0
+
+				printStr("\nArguments: ");
+				for (int j = 0; j < argc; j++) {
+					printStr(argv[j]);
+					printStr(" ");
+				}
+
 				create_process(command_func[i], argv, command_names[i], 0);
 			}
 			return;

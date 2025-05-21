@@ -19,15 +19,15 @@ int test_processes(uint64_t argc, char *argv[]) {
 	uint64_t alive = 0;
 	uint64_t action;
 	int64_t max_processes = 5;
-	int debug_mode		  = 1; // Modo debugging desactivado por defecto
+	int debug_mode		  = 0; // Modo debugging desactivado por defecto
 
-	// if (argc > 1) {
-	// 	return -1;
-	// }
+	if (argc < 2) {
+		printStr("ERROR: Not enough arguments, testProcesses <#processes>\n");
+		return -1;
+	}
 
-	// if ((max_processes = satoi(argv[1])) <= 0) {
-	// 	return -1;
-	// }
+	if ((max_processes = satoi(argv[1])) <= 0)
+		return -1;
 
 	p_rq p_rqs[max_processes];
 
@@ -120,71 +120,3 @@ int test_processes(uint64_t argc, char *argv[]) {
 		// clear();
 	}
 }
-
-// int64_t test_processes(uint64_t argc, char *argv[]) {
-// 	printStr("\n=== Simple test_processes start ===\n");
-// 	int32_t pids[3];
-// 	char *args[] = {"endless_loop", NULL};
-
-// 	int i = 0;
-
-// 	while (i < 20) {
-// 		i++;
-// 		// 1) Create 3 processes
-// 		for (int i = 0; i < 3; i++) {
-// 			pids[i] = create_process((MainFunction) endless_loop, args,
-// 									 "endless_loop", 0);
-// 			if (pids[i] == -1) {
-// 				printStr("Error creating process\n");
-// 				return -1;
-// 			}
-// 			printStr("Created PID: ");
-// 			printInteger(pids[i]);
-// 			printStr("\n");
-// 		}
-
-// 		// 2) Block them
-// 		for (int i = 0; i < 3; i++) {
-// 			if (my_block(pids[i]) == -1) {
-// 				printStr("Error blocking PID: ");
-// 				printInteger(pids[i]);
-// 				printStr("\n");
-// 				return -1;
-// 			}
-// 			printStr("Blocked PID: ");
-// 			printInteger(pids[i]);
-// 			printStr("\n");
-// 		}
-
-// 		// 3) Unblock them
-// 		for (int i = 0; i < 3; i++) {
-// 			if (my_unblock(pids[i]) == -1) {
-// 				printStr("Error unblocking PID: ");
-// 				printInteger(pids[i]);
-// 				printStr("\n");
-// 				return -1;
-// 			}
-// 			printStr("Unblocked PID: ");
-// 			printInteger(pids[i]);
-// 			printStr("\n");
-// 		}
-
-// 		// 4) Kill them
-// 		for (int i = 0; i < 3; i++) {
-// 			if (my_kill(pids[i]) == -1) {
-// 				printStr("Error killing PID: ");
-// 				printInteger(pids[i]);
-// 				printStr("\n");
-// 				return -1;
-// 			}
-// 			wait_pid(pids[i]);
-// 			printStr("Killed PID: ");
-// 			printInteger(pids[i]);
-// 			printStr("\n");
-// 		}
-
-// 		printStr("=== Simple test_processes end ===\n");
-// 		clear();
-// 	}
-// 	return 0;
-// }

@@ -340,7 +340,7 @@ _initialize_stack_frame:
     push 0x8           ; CS
     push rdi           ; <--- Dirección de la función principal
     mov rdi, rsi       ; Primer argumento
-    mov rsi, rax       ; Segundo argumento (si lo necesitás)
+    mov rsi, rcx       ; Segundo argumento (si lo necesitás)
     pushState
     mov rax, rsp
     mov rsp, r8
