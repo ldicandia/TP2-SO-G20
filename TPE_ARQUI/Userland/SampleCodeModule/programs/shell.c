@@ -128,17 +128,17 @@ void shell() {
 
 	// BBBBBBBBBAABBBBBBBBAABBBBB
 
-	// char *argsA[] = {"endless_loopA", NULL};
-	// char *argsB[] = {"endless_loopB", NULL};
+	char *argsA[] = {"endless_loopA", NULL};
+	char *argsB[] = {"endless_loopB", NULL};
 
-	// create_process(endless_A, argsA, "print_A", 2); // prioridad alta
-	// create_process(endless_B, argsB, "print_B", 4); // prioridad media
+	create_process(endless_A, argsA, "print_A", 2); // prioridad alta
+	create_process(endless_B, argsB, "print_B", 4); // prioridad media
 
 	while (1) {
-		c = getChar();
-		if (lastc != c) {
-			printLine(c);
-		}
+		// c = getChar();
+		// if (lastc != c) {
+		// 	printLine(c);
+		// }
 	}
 }
 

@@ -8,7 +8,10 @@
         "test_processes.h": "c",
         "system_error": "c",
         "chilt_process_test.h": "c",
-        "inputparseradt.h": "c"
+        "inputparseradt.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     },
     "makefile.configureOnOpen": false
 }

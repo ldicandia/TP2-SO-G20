@@ -2,11 +2,13 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <lib.h>
-#include <linkedListADT.h>
+// #include <linkedListADT.h>
 #include <memoryManager.h>
 #include <schedule.h>
 #include <stdlib.h>
 #include <videoDriver.h>
+#include <circularListADT.h>
+#include <linkedListADT.h>
 
 #define QTY_READY_LEVELS 5
 #define MAX_PRIORITY 4
@@ -21,7 +23,7 @@
 
 typedef struct SchedulerCDT {
 	Node *processes[MAX_PROCESSES];
-	LinkedListADT levels[QTY_READY_LEVELS];
+	circularListADT readyProcesses;
 	LinkedListADT blockedProcesses; // Separate list for blocked processes
 	uint16_t currentPid;
 	uint16_t nextUnusedPid;
@@ -36,8 +38,7 @@ SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
 	for (int i = 0; i < MAX_PROCESSES; i++)
 		scheduler->processes[i] = NULL;
-	for (int i = 0; i < QTY_READY_LEVELS; i++)
-		scheduler->levels[i] = createLinkedListADT();
+	initList_circular(scheduler->readyProcesses);
 	scheduler->blockedProcesses = createLinkedListADT();
 	scheduler->nextUnusedPid	= 0;
 	scheduler->killFgProcess	= 0;
@@ -50,45 +51,33 @@ SchedulerADT getSchedulerADT() {
 }
 
 static uint16_t getNextPid(SchedulerADT scheduler) {
-	ProcessADT process = NULL;
-	for (int lvl = MAX_PRIORITY; lvl >= 0 && process == NULL; lvl--) {
-		if (!isEmpty(scheduler->levels[lvl])) {
-			Node *node		   = getFirst(scheduler->levels[lvl]);
-			ProcessADT process = node->data;
-
-			// Rotamos la lista (solo si hay más de 1)
-			if (getLength(scheduler->levels[lvl]) > 1) {
-				removeNode(scheduler->levels[lvl], node);
-				appendNode(scheduler->levels[lvl], node);
-			}
-
-			return get_pid(process);
-		}
+	if (hasNext_circular(scheduler->readyProcesses)) {
+		return next_circular(scheduler->readyProcesses);
 	}
-	return process == NULL ? IDLE_PID : get_pid(process);
+	return -1;
 }
 
-void applyAging(SchedulerADT scheduler) {
-	for (int lvl = 0; lvl < MAX_PRIORITY; lvl++) {
-		Node *node = getFirst(scheduler->levels[lvl]);
-		while (node != NULL) {
-			ProcessADT process = node->data;
-			node			   = node->next;
+// void applyAging(SchedulerADT scheduler) {
+// 	for (int lvl = 0; lvl < MAX_PRIORITY; lvl++) {
+// 		Node *node = getFirst(scheduler->levels[lvl]);
+// 		while (node != NULL) {
+// 			ProcessADT process = node->data;
+// 			node			   = node->next;
 
-			incrementWaitingTime(process);
+// 			incrementWaitingTime(process);
 
-			if (getWaitingTime(process) >= AGING_THRESHOLD) {
-				// Promover de prioridad
-				removeNode(scheduler->levels[lvl],
-						   scheduler->processes[get_pid(process)]);
-				set_priority(process, lvl + 1);
-				appendNode(scheduler->levels[lvl + 1],
-						   scheduler->processes[get_pid(process)]);
-				setWaitingTime(process, 0);
-			}
-		}
-	}
-}
+// 			if (getWaitingTime(process) >= AGING_THRESHOLD) {
+// 				// Promover de prioridad
+// 				removeNode(scheduler->levels[lvl],
+// 						   scheduler->processes[get_pid(process)]);
+// 				set_priority(process, lvl + 1);
+// 				appendNode(scheduler->levels[lvl + 1],
+// 						   scheduler->processes[get_pid(process)]);
+// 				setWaitingTime(process, 0);
+// 			}
+// 		}
+// 	}
+// }
 
 void printAllProcesses(SchedulerADT scheduler) {
 	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
@@ -105,26 +94,26 @@ void printAllProcesses(SchedulerADT scheduler) {
 	}
 }
 
-void printLevels(SchedulerADT scheduler) {
-	driver_printStr("\n[Levels]: ", (Color) {0xAA, 0xFF, 0xFF});
-	for (int i = 0; i < QTY_READY_LEVELS; i++) {
-		driver_printStr("\nLevel ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printNum(i, (Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printNum(getLength(scheduler->levels[i]),
-						(Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
-		Node *currentNode = getFirst(scheduler->levels[i]);
-		while (currentNode != NULL) {
-			ProcessADT process = currentNode->data;
-			driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
-			currentNode = currentNode->next;
-			if (currentNode != NULL)
-				driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
-		}
-		driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
-	}
-}
+// void printLevels(SchedulerADT scheduler) {
+// 	driver_printStr("\n[Levels]: ", (Color) {0xAA, 0xFF, 0xFF});
+// 	for (int i = 0; i < QTY_READY_LEVELS; i++) {
+// 		driver_printStr("\nLevel ", (Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printNum(i, (Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printNum(getLength(scheduler->levels[i]),
+// 						(Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
+// 		Node *currentNode = getFirst(scheduler->levels[i]);
+// 		while (currentNode != NULL) {
+// 			ProcessADT process = currentNode->data;
+// 			driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
+// 			currentNode = currentNode->next;
+// 			if (currentNode != NULL)
+// 				driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
+// 		}
+// 		driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
+// 	}
+// }
 
 void printCurrentProcess(SchedulerADT scheduler) {
 	driver_printStr("\n[Scheduler Current Process]: ",
@@ -178,7 +167,7 @@ void *schedule(void *prevStackPointer) {
 		// setPriority(get_pid(currentProcess), newPriority);
 	}
 
-	applyAging(scheduler);
+	// applyAging(scheduler);
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
 
@@ -234,8 +223,8 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 
 	Node *processNode;
 	if (get_pid(process) != IDLE_PID) {
-		processNode = appendElement(scheduler->levels[get_priority(process)],
-									(void *) process);
+		processNode =
+			append_circular(scheduler->readyProcesses, (void *) process);
 	}
 	else {
 		processNode		  = allocMemory(sizeof(Node));
@@ -305,8 +294,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 				   processToKillNode); // Changed from levels[BLOCKED_INDEX]
 	}
 	else {
-		removeNode(scheduler->levels[get_priority(processToKill)],
-				   processToKillNode);
+		removeNode_circular(scheduler->readyProcesses, processToKillNode);
 	}
 
 	set_retValue(processToKill, retValue);
@@ -356,7 +344,7 @@ int32_t blockProcess(uint16_t pid) {
 		return 0;
 
 	set_status(process, BLOCKED);
-	removeNode(scheduler->levels[get_priority(process)], node);
+	removeNode_circular(scheduler->readyProcesses, node);
 	appendNode(scheduler->blockedProcesses, node);
 	return 0;
 }
@@ -391,8 +379,8 @@ int32_t unblockProcess(uint16_t pid) {
 
 	// mark READY & re-enqueue with a new node
 	set_status(process, READY);
-	Node *newNode = appendElement(scheduler->levels[get_priority(process)],
-								  (void *) process);
+	Node *newNode =
+		append_circular(scheduler->readyProcesses, (void *) process);
 	scheduler->processes[pid] = newNode;
 
 	// printBlockedProcesses();
@@ -430,11 +418,11 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 		return -1;
 	}
 
-	if (get_status(process) == READY || get_status(process) == RUNNING) {
-		removeNode(scheduler->levels[get_priority(process)], node);
-		scheduler->processes[get_pid(process)] =
-			appendNode(scheduler->levels[newPriority], node);
-	}
+	// if (get_status(process) == READY || get_status(process) == RUNNING) {
+	// 	removeNode(scheduler->levels[get_priority(process)], node);
+	// 	scheduler->processes[get_pid(process)] =
+	// 		appendNode(scheduler->levels[newPriority], node);
+	// }
 	set_priority(process, newPriority);
 	return newPriority;
 }
@@ -456,13 +444,15 @@ int8_t setStatus(uint16_t pid, uint8_t newStatus) {
 
 	set_status(process, newStatus);
 	if (newStatus == BLOCKED) {
-		removeNode(scheduler->levels[get_priority(process)], node);
+		removeNode_circular(scheduler->readyProcesses, node);
 		appendNode(scheduler->blockedProcesses, node);
 	}
 	else if (oldStatus == BLOCKED) {
 		removeNode(scheduler->blockedProcesses, node);
 		set_priority(process, MAX_PRIORITY);
-		prependNode(scheduler->levels[get_priority(process)], node);
+
+		// prependNode(scheduler->readyProcesses, node);
+
 		scheduler->remainingQuantum = 0;
 	}
 	return newStatus;

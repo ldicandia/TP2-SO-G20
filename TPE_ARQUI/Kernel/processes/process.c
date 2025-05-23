@@ -58,7 +58,7 @@ void processWrapper(MainFunction code, char **args) {
 		driver_printStr("Error: args is NULL\n", (Color) {0xFF, 0x00, 0x00});
 		killCurrentProcess(-1);
 	}
-	// driver_printStr(args[0], (Color) {0xFF, 0x00, 0x00});
+	driver_printStr(args[0], (Color) {0xFF, 0x00, 0x00});
 	int len		 = stringArrayLen(args);
 	int retValue = code(len, args);
 	killCurrentProcess(retValue);
