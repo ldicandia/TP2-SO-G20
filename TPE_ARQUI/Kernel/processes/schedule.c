@@ -71,7 +71,7 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 }
 
 void applyAging(SchedulerADT scheduler) {
-	for (int lvl = QTY_READY_LEVELS - 1; lvl > 0; lvl--) {
+	for (int lvl = 0; lvl < MAX_PRIORITY; lvl++) {
 		Node *node = getFirst(scheduler->levels[lvl]);
 		while (node != NULL) {
 			ProcessADT process = node->data;
@@ -83,8 +83,8 @@ void applyAging(SchedulerADT scheduler) {
 				// Promover de prioridad
 				removeNode(scheduler->levels[lvl],
 						   scheduler->processes[get_pid(process)]);
-				set_priority(process, lvl - 1);
-				appendNode(scheduler->levels[lvl - 1],
+				set_priority(process, lvl + 1);
+				appendNode(scheduler->levels[lvl + 1],
 						   scheduler->processes[get_pid(process)]);
 				setWaitingTime(process, 0);
 			}

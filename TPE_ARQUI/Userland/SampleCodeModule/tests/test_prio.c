@@ -18,17 +18,63 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-int test_prio() {
-	int64_t pids[TOTAL_PROCESSES];
-	char *argv[] = {"endless_loop_print", "50000"};
-	uint64_t i;
+// char *argsA[] = {"endless_loopA", NULL};
+// char *argsB[] = {"endless_loopB", NULL};
 
-	for (i = 0; i < TOTAL_PROCESSES; i++) {
-		pids[i] = create_process((MainFunction) endless_loop_print_main, argv,
-								 "endless_loop_print_main", 0);
+// create_process(endless_A, argsA, "print_A", 2); // prioridad alta
+// create_process(endless_B, argsB, "print_B", 4); // prioridad media
+
+static char *intToChar(int i) {
+	static char buffer[12]; // Enough space for 32-bit integer
+	int j = 0;
+
+	if (i < 0) {
+		buffer[j++] = '-';
+		i			= -i;
 	}
 
-	yield();
+	if (i == 0) {
+		buffer[j++] = '0';
+	}
+
+	while (i > 0) {
+		buffer[j++] = (i % 10) + '0';
+		i /= 10;
+	}
+
+	buffer[j] = '\0';
+
+	// Reverse the string
+	for (int k = 0; k < j / 2; k++) {
+		char temp		  = buffer[k];
+		buffer[k]		  = buffer[j - k - 1];
+		buffer[j - k - 1] = temp;
+	}
+
+	return buffer;
+}
+
+void endless_pid(int argc, char **argv) {
+	while (1) {
+		printStr(argv[1]);
+		for (int i = 0; i < 100000000; i++)
+			;
+		yield(); // Cede el control manualmente
+	}
+}
+
+int test_prio() {
+	int64_t pids[TOTAL_PROCESSES];
+	uint64_t i;
+
+	// char *args_pid[] = {"endless_loopA", "NULL", NULL};
+
+	for (i = 0; i < TOTAL_PROCESSES; i++) {
+		char *args_pid[] = {"endless_loopA", intToChar(i), NULL};
+		pids[i] =
+			create_process((MainFunction) endless_pid, args_pid, "print_A", 2);
+	}
+
 	bussy_wait(WAIT);
 	printStr("\nCHANGING PRIORITIES...\n");
 
