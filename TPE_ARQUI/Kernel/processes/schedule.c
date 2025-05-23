@@ -15,6 +15,7 @@
 #define MAX_PROCESSES (1 << 12)
 #define IDLE_PID 0
 #define QUANTUM_COEF 2
+#define AGING_THRESHOLD 10 // Threshold for aging processes
 
 #define SCHEDULER_ADDRESS 0x60000
 
@@ -52,10 +53,43 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 	ProcessADT process = NULL;
 	for (int lvl = MAX_PRIORITY; lvl >= 0 && process == NULL; lvl--) {
 		if (!isEmpty(scheduler->levels[lvl])) {
-			process = (getFirst(scheduler->levels[lvl]))->data;
+			Node *node		   = getFirst(scheduler->levels[lvl]);
+			ProcessADT process = node->data;
+
+			// Rotamos la lista (solo si hay más de 1)
+			if (getLength(scheduler->levels[lvl]) > 1) {
+				removeNode(scheduler->levels[lvl], node);
+				appendNode(scheduler->levels[lvl], node);
+			}
+
+			return get_pid(process);
 		}
 	}
+	driver_printStr("\nNext PID: ", (Color) {0xAA, 0xFF, 0xFF});
+	driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
 	return process == NULL ? IDLE_PID : get_pid(process);
+}
+
+void applyAging(SchedulerADT scheduler) {
+	for (int lvl = QTY_READY_LEVELS - 1; lvl > 0; lvl--) {
+		Node *node = getFirst(scheduler->levels[lvl]);
+		while (node != NULL) {
+			ProcessADT process = node->data;
+			node			   = node->next;
+
+			incrementWaitingTime(process);
+
+			if (getWaitingTime(process) >= AGING_THRESHOLD) {
+				// Promover de prioridad
+				removeNode(scheduler->levels[lvl],
+						   scheduler->processes[get_pid(process)]);
+				set_priority(process, lvl - 1);
+				appendNode(scheduler->levels[lvl - 1],
+						   scheduler->processes[get_pid(process)]);
+				setWaitingTime(process, 0);
+			}
+		}
+	}
 }
 
 void printAllProcesses(SchedulerADT scheduler) {
@@ -104,20 +138,26 @@ void printCurrentProcess(SchedulerADT scheduler) {
 					(Color) {0xAA, 0xFF, 0xFF});
 }
 
+static int firstTime = 1;
+
 void *schedule(void *prevStackPointer) {
-	static int firstTime   = 1;
+	// static int firstTime   = 1;
 	SchedulerADT scheduler = getSchedulerADT();
 
 	// printAllProcesses(scheduler);
-	if (scheduler->currentPid != 0 && scheduler->currentPid != 1)
-		printLevels(scheduler);
+	if (scheduler->currentPid != 0 && scheduler->currentPid != 1) {
+		// printAllProcesses(scheduler);
+		// printLevels(scheduler);
+	}
 
 	if (!firstTime) {
 		// printCurrentProcess(scheduler);
+		// driver_printNum(scheduler->remainingQuantum,
+		//				(Color) {0xAA, 0xFF, 0xFF});
 	}
 	scheduler->remainingQuantum--;
 
-	if (!scheduler->qtyProcesses || scheduler->remainingQuantum > 0) {
+	if (scheduler->remainingQuantum > 0) {
 		return prevStackPointer;
 	}
 
@@ -134,12 +174,13 @@ void *schedule(void *prevStackPointer) {
 		if (get_status(currentProcess) == RUNNING)
 			set_status(currentProcess, READY);
 		// uint8_t newPriority;
-		//  newPriority = get_priority(currentProcess) > 0 ?
-		//  				  get_priority(currentProcess) - 1 :
-		//  				  get_priority(currentProcess);
-		//  setPriority(get_pid(currentProcess), newPriority);
+		// newPriority = get_priority(currentProcess) > 0 ?
+		// 				  get_priority(currentProcess) - 1 :
+		// 				  get_priority(currentProcess);
+		// setPriority(get_pid(currentProcess), newPriority);
 	}
 
+	applyAging(scheduler);
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
 
@@ -150,7 +191,7 @@ void *schedule(void *prevStackPointer) {
 			forceTimerTick();
 	}
 
-	scheduler->remainingQuantum = (MAX_PRIORITY - get_priority(currentProcess));
+	scheduler->remainingQuantum = get_priority(currentProcess);
 
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);

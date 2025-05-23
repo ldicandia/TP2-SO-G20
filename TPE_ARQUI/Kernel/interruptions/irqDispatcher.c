@@ -184,7 +184,7 @@ static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 						(Color) {0xFF, 0x00, 0x00});
 		return -1;
 	}
-	return createProcess(code, args, name, 1, fileDescriptors, 0);
+	return createProcess(code, args, name, priority, fileDescriptors, 0);
 }
 
 // kill process

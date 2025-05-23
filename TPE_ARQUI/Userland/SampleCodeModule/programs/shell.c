@@ -98,6 +98,24 @@ void test_prio_wrapper(uint64_t argc, char *argv[]) {
 	}
 }
 
+void endless_A(int argc, char **argv) {
+	while (1) {
+		printStr("A");
+		for (int i = 0; i < 100000000; i++)
+			;
+		yield(); // Cede el control manualmente
+	}
+}
+
+void endless_B(int argc, char **argv) {
+	while (1) {
+		printStr("B");
+		for (int i = 0; i < 100000000; i++)
+			;
+		yield(); // No hace yield, depende del quantum para ser expulsado
+	}
+}
+
 void shell() {
 	printStrColor("\nITBA Shell Group 20\n", (Color) {0xFF, 0xFF, 0x00});
 	printStrColor("ALFIERI - DI CANDIA - DIAZ VARELA\n",
@@ -108,11 +126,17 @@ void shell() {
 
 	// testProcesses();
 
+	char *argsA[] = {"endless_loopA", NULL};
+	char *argsB[] = {"endless_loopB", NULL};
+
+	create_process(endless_A, argsA, "print_A", 1); // prioridad alta
+	create_process(endless_B, argsB, "print_B", 4); // prioridad media
+
 	while (1) {
-		c = getChar();
-		if (lastc != c) {
-			printLine(c);
-		}
+		// c = getChar();
+		// if (lastc != c) {
+		// 	printLine(c);
+		// }
 	}
 }
 
@@ -235,7 +259,7 @@ void readCommand() {
 				argv[argc] = NULL;
 				// lanzamos proceso en background con prioridad 0
 
-				create_process(command_func[i], argv, command_names[i], 0);
+				create_process(command_func[i], argv, command_names[i], 4);
 			}
 			return;
 		}

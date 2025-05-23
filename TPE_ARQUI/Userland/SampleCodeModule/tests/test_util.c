@@ -57,6 +57,7 @@ int64_t satoi(char *str) {
 
 // Dummies
 void bussy_wait(uint64_t n) {
+	printStr("\nBUSSY WAITING...\n");
 	uint64_t i;
 	for (i = 0; i < n; i++)
 		;
@@ -68,16 +69,34 @@ void endless_loop() {
 	}
 }
 
-int64_t endless_loop_print(uint64_t argc, char **argv) {
+// typedef int (*MainFunction)(int argc, char **args);
+
+int endless_loop_print_main(int argc, char **args) {
+	printStr("\nENDLESS LOOP PRINT MAIN\n");
+	if (args == NULL || argc != 2) {
+		printStr("Error: argv[0] must be 'endless_loop_print'\n");
+		return -1;
+	}
+
+	int64_t satoi_flag;
+	uint64_t wait = satoi(args[1]);
+
+	if (wait <= 0 || !satoi_flag) {
+		printStr("Error: argv[1] must be a positive integer\n");
+		return -1;
+	}
+	endless_loop_print(wait);
+	return 0;
+}
+
+void endless_loop_print(uint64_t wait) {
 	printStr("\nENDLESS LOOP PRINT\n");
 
 	int64_t pid = getpid();
 
-	uint64_t wait = satoi(argv[1]);
-
 	while (1) {
-		printStr("\nProcess PID: ");
 		printInteger(pid);
+		printStr(" ");
 		// psPrint();
 		bussy_wait(wait);
 	}

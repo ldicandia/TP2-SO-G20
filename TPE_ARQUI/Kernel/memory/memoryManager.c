@@ -87,7 +87,7 @@ static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
 			return true;
 		}
 	}
-	driver_printStr("removeBlock warning: block not found\n", RED);
+	// driver_printStr("removeBlock warning: block not found\n", RED);
 	return false; // No encontrado
 }
 
@@ -123,10 +123,7 @@ void freeMemory(void *ptr) {
 	}
 
 	MemoryManagerADT memoryManager = getMemoryManager();
-	if (!removeBlock(memoryManager, ptr)) {
-		driver_printStr(
-			"freeMemory warning: attempted to free untracked block\n", RED);
-	}
+	removeBlock(memoryManager, ptr);
 }
 
 #endif

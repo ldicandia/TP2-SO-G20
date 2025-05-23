@@ -19,7 +19,7 @@ int test_processes(uint64_t argc, char *argv[]) {
 	uint64_t alive = 0;
 	uint64_t action;
 	int64_t max_processes = 5;
-	int debug_mode		  = 0; // Modo debugging desactivado por defecto
+	int debug_mode		  = 1; // Modo debugging desactivado por defecto
 
 	if (argc < 2) {
 		printStr("ERROR: Not enough arguments, testProcesses <#processes>\n");

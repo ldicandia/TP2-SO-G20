@@ -8,8 +8,8 @@
 				// the
 				// screen
 #define WAIT                                                                   \
-	10000000 // TODO: Change this value to make the wait long enough to see
-			 // theese processes beeing run at least twice
+	1000000000 // TODO: Change this value to make the wait long enough to see
+// theese processes beeing run at least twice
 
 #define TOTAL_PROCESSES 3
 #define LOWEST 0  // TODO: Change as required
@@ -20,14 +20,15 @@ int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 int test_prio() {
 	int64_t pids[TOTAL_PROCESSES];
-	char *argv[] = {"endless_loop_print", "50000", NULL};
+	char *argv[] = {"endless_loop_print", "50000"};
 	uint64_t i;
 
 	for (i = 0; i < TOTAL_PROCESSES; i++) {
-		pids[i] = create_process((MainFunction) endless_loop_print, argv,
-								 "endless_loop_print", 4);
+		pids[i] = create_process((MainFunction) endless_loop_print_main, argv,
+								 "endless_loop_print_main", 0);
 	}
 
+	yield();
 	bussy_wait(WAIT);
 	printStr("\nCHANGING PRIORITIES...\n");
 

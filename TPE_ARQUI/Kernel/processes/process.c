@@ -29,6 +29,7 @@ typedef struct ProcessCDT {
 	int32_t retValue;
 	int initialized;
 	LinkedListADT zombieChildren;
+	uint16_t waitingTime;
 
 	// creo q aca nos faltaria una lista de zombieChildren;
 } ProcessCDT;
@@ -53,10 +54,13 @@ static char **allocArguments(char **args) {
 }
 
 void processWrapper(MainFunction code, char **args) {
+	if (args[0] == NULL) {
+		driver_printStr("Error: args is NULL\n", (Color) {0xFF, 0x00, 0x00});
+		killCurrentProcess(-1);
+	}
+	// driver_printStr(args[0], (Color) {0xFF, 0x00, 0x00});
 	int len		 = stringArrayLen(args);
 	int retValue = code(len, args);
-	driver_printStr("\nProcess finished with return value: ",
-					(Color) {0xFF, 0x00, 0x00});
 	killCurrentProcess(retValue);
 }
 
@@ -84,6 +88,7 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 	process->pid		   = pid;
 	process->parentPid	   = parentPid;
 	process->waitingForPid = 0;
+	process->waitingTime   = 0;
 	process->stackBase	   = allocMemory(STACK_SIZE);
 	process->argv		   = allocArguments(args);
 	process->name		   = allocMemory(strlen(name) + 1);
@@ -230,4 +235,20 @@ void setWaitingForPid(ProcessADT process, uint16_t pid) {
 void setFileDescriptor(ProcessADT process, uint8_t fdIndex, int16_t fdValue) {
 	if (process != NULL && fdIndex < BUILT_IN_DESCRIPTORS)
 		process->fileDescriptors[fdIndex] = fdValue;
+}
+
+void incrementWaitingTime(ProcessADT process) {
+	if (process != NULL)
+		process->waitingTime++;
+}
+
+uint16_t getWaitingTime(ProcessADT process) {
+	if (process == NULL)
+		return 0; // Return 0 if the process is NULL
+	return process->waitingTime;
+}
+
+void setWaitingTime(ProcessADT process, uint16_t waitingTime) {
+	if (process != NULL)
+		process->waitingTime = waitingTime;
 }

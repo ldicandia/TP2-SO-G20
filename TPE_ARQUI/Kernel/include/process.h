@@ -70,4 +70,10 @@ void setWaitingForPid(ProcessADT process, uint16_t pid);
 
 void setFileDescriptor(ProcessADT process, uint8_t fdIndex, int16_t fdValue);
 
+void incrementWaitingTime(ProcessADT process);
+
+uint16_t getWaitingTime(ProcessADT process);
+
+void setWaitingTime(ProcessADT process, uint16_t waitingTime);
+
 #endif
