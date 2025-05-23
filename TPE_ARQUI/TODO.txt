@@ -1,0 +1,72 @@
+TODO list
+
+
+= KERNEL:
+
+  - pipes (falta conectarlo al userland y ver q funcione)
+
+  - semaforos
+
+  - copia de la memoria (para mem)
+
+  - copia de los procesos (para ps)
+
+  DONE:
+
+  + memory (revisar buddy)
+
+  + process 
+
+  + scheduling / context switch
+
+= USERLAND:
+
+  - sh: 
+
+    - Deberá contar con algún mecanismo para determinar si va a ceder o no el
+    foreground al proceso que se ejecuta, por ejemplo, bash ejecuta un programa
+    en background cuando se agrega el símbolo “&” al final de un comando. Este
+    requisito es muy importante para poder demostrar el funcionamiento del
+    sistema en general ya que en la mayoría de los casos es necesario ejecutar
+    más de 1 proceso.
+
+    -  Deberá permitir conectar 2 procesos mediante un pipe, por ejemplo, bash
+    hace esto al agregar el símbolo “|” entre los 2 programas a ejecutar. No es
+    necesario que permita conectar más de 2 procesos con pipes, es decir, p1 |
+    p2 | p3.
+
+    - ctrl + D (envio de EOF) y ctrl + C (kill foreground)
+
+  - mem: Imprime el estado de la memoria.
+
+  - ps: Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
+  prioridad, stack y base pointer, foreground y cualquier otra variable que consideren
+  necesaria.
+
+  - loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
+
+  - kill: Mata un proceso dado su ID.
+
+  - nice: Cambia la prioridad de un proceso dado su ID y la nueva prioridad
+
+  - block: Cambia el estado de un proceso entre bloqueado y listo dado su ID.
+
+  - cat: Imprime el stdin tal como lo recibe.
+
+  - wc: Cuenta la cantidad de líneas del input.
+
+  - filter: Filtra las vocales del input
+
+  - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
+
+  DONE: 
+
+  + test_mm 
+
+  + test_processes (lo pasa con errores sin el debug mode, se queda sin memoria)
+
+  + test_prio (revisar si funciona por fuera de test_prio)
+
+  + nueva shell de procesos (falta pipe y foreground)
+
+

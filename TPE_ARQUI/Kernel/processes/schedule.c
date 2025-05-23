@@ -65,8 +65,6 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 			return get_pid(process);
 		}
 	}
-	driver_printStr("\nNext PID: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
 	return process == NULL ? IDLE_PID : get_pid(process);
 }
 

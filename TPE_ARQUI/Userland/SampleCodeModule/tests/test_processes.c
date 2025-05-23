@@ -26,8 +26,10 @@ int test_processes(uint64_t argc, char *argv[]) {
 		return -1;
 	}
 
-	if ((max_processes = satoi(argv[1])) <= 0)
+	if ((max_processes = satoi(argv[1])) <= 0 || max_processes > 10) {
+		printStr("ERROR: <#processes> must be between 1 and 10\n");
 		return -1;
+	}
 
 	p_rq p_rqs[max_processes];
 
@@ -114,9 +116,5 @@ int test_processes(uint64_t argc, char *argv[]) {
 				}
 			}
 		}
-		// bussy_wait(100000000);
-		// printStr("\nRunning Test Processes\n");
-		// printStr("To Exit, press Ctrl+C\n");
-		// clear();
 	}
 }

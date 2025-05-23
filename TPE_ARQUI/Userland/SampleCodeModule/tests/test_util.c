@@ -71,24 +71,6 @@ void endless_loop() {
 
 // typedef int (*MainFunction)(int argc, char **args);
 
-int endless_loop_print_main(int argc, char **args) {
-	printStr("\nENDLESS LOOP PRINT MAIN\n");
-	if (args == NULL || argc != 2) {
-		printStr("Error: argv[0] must be 'endless_loop_print'\n");
-		return -1;
-	}
-
-	int64_t satoi_flag;
-	uint64_t wait = satoi(args[1]);
-
-	if (wait <= 0 || !satoi_flag) {
-		printStr("Error: argv[1] must be a positive integer\n");
-		return -1;
-	}
-	endless_loop_print(wait);
-	return 0;
-}
-
 void endless_loop_print(uint64_t wait) {
 	printStr("\nENDLESS LOOP PRINT\n");
 
@@ -100,5 +82,4 @@ void endless_loop_print(uint64_t wait) {
 		// psPrint();
 		bussy_wait(wait);
 	}
-	return 0;
 }

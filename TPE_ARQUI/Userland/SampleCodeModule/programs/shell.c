@@ -126,6 +126,8 @@ void shell() {
 
 	// testProcesses();
 
+	// BBBBBBBBBAABBBBBBBBAABBBBB
+
 	// char *argsA[] = {"endless_loopA", NULL};
 	// char *argsB[] = {"endless_loopB", NULL};
 
