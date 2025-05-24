@@ -28,6 +28,7 @@ typedef struct SchedulerCDT {
 	uint16_t qtyProcesses;
 	int8_t remainingQuantum;
 	int8_t killFgProcess;
+	uint8_t currentLevel;
 } SchedulerCDT;
 
 extern void forceTimerTick();
@@ -42,6 +43,7 @@ SchedulerADT createScheduler() {
 	scheduler->nextUnusedPid	= 0;
 	scheduler->killFgProcess	= 0;
 	scheduler->currentPid		= 0;
+	scheduler->currentLevel		= 0;
 	return scheduler;
 }
 
@@ -51,21 +53,26 @@ SchedulerADT getSchedulerADT() {
 
 static uint16_t getNextPid(SchedulerADT scheduler) {
 	ProcessADT process = NULL;
-	for (int lvl = MAX_PRIORITY; lvl >= 0 && process == NULL; lvl--) {
-		if (!isEmpty(scheduler->levels[lvl])) {
-			Node *node		   = getFirst(scheduler->levels[lvl]);
-			ProcessADT process = node->data;
 
-			// Rotamos la lista (solo si hay más de 1)
+	// Rotamos niveles de prioridad en orden circular
+	for (int i = 0; i < QTY_READY_LEVELS; i++) {
+		int lvl = (scheduler->currentLevel + i) % QTY_READY_LEVELS;
+		if (!isEmpty(scheduler->levels[lvl])) {
+			Node *node = getFirst(scheduler->levels[lvl]);
+			process	   = node->data;
+
+			// Rotación dentro del mismo nivel (round-robin interno)
 			if (getLength(scheduler->levels[lvl]) > 1) {
 				removeNode(scheduler->levels[lvl], node);
 				appendNode(scheduler->levels[lvl], node);
 			}
 
+			scheduler->currentLevel = (lvl + 1) % QTY_READY_LEVELS;
+
 			return get_pid(process);
 		}
 	}
-	return process == NULL ? IDLE_PID : get_pid(process);
+	return IDLE_PID;
 }
 
 void applyAging(SchedulerADT scheduler) {
@@ -178,7 +185,7 @@ void *schedule(void *prevStackPointer) {
 		// setPriority(get_pid(currentProcess), newPriority);
 	}
 
-	applyAging(scheduler);
+	// applyAging(scheduler);
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
 
@@ -189,7 +196,7 @@ void *schedule(void *prevStackPointer) {
 			forceTimerTick();
 	}
 
-	scheduler->remainingQuantum = get_priority(currentProcess);
+	scheduler->remainingQuantum = get_priority(currentProcess) + 1;
 
 	set_status(currentProcess, RUNNING);
 	return get_stackPos(currentProcess);
