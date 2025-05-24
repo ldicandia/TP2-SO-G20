@@ -97,18 +97,51 @@ void applyAging(SchedulerADT scheduler) {
 	}
 }
 
+static const char *statusToString(ProcessStatus s) {
+	switch (s) {
+		case READY:
+			return "READY";
+		case RUNNING:
+			return "RUNNING";
+		case BLOCKED:
+			return "BLOCKED";
+		case ZOMBIE:
+			return "ZOMBIE";
+		default:
+			return "UNKNOWN";
+	}
+}
+
 void printAllProcesses(SchedulerADT scheduler) {
-	driver_printStr("\n[Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
+	Color c = (Color) {0xFF, 0xFF, 0xFF};
+	driver_printStr("\n[Processes]\n", c);
+	// Cabecera
+	driver_printStr("PID Name  Status  Prio\n", c);
+	driver_printStr("--- ----  ------  ----\n", c);
+
 	for (int i = 0; i < MAX_PROCESSES; i++) {
-		if (scheduler->processes[i] != NULL) {
-			ProcessADT process = scheduler->processes[i]->data;
-			if (process != NULL) {
-				driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-				driver_printNum(get_pid(process), (Color) {0xAA, 0xFF, 0xFF});
-				driver_printStr(" Name: ", (Color) {0xAA, 0xFF, 0xFF});
-				driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
-			}
-		}
+		Node *n = scheduler->processes[i];
+		if (!n)
+			continue;
+		ProcessADT p = n->data;
+		if (!p)
+			continue;
+
+		// PID
+		driver_printNum(get_pid(p), c);
+		driver_printStr(" ", c);
+
+		// Nombre (asumimos <=8 chars; si no, ajusta el tabulado)
+		driver_printStr(getName(p), c);
+		driver_printStr("  ", c);
+
+		// Estado
+		driver_printStr(statusToString(get_status(p)), c);
+		driver_printStr("  ", c);
+
+		// Prioridad
+		driver_printNum(get_priority(p), c);
+		driver_printStr("\n", c);
 	}
 }
 

@@ -214,3 +214,7 @@ int yield() {
 int wait_pid(uint16_t pid) {
 	return u_sys_wait_pid(pid);
 }
+
+int ps() {
+	return u_sys_ps();
+}

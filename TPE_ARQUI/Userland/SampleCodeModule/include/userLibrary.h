@@ -68,4 +68,6 @@ int yield();
 
 int wait_pid(uint16_t pid);
 
+int ps();
+
 #endif // USER_LIBRARY_H

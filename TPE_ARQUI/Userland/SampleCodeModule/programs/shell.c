@@ -13,7 +13,7 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 13
+#define COMMANDS_SIZE 20 // antes: 13
 
 typedef int (*MainFunction)(int argc, char **args);
 
@@ -31,7 +31,25 @@ char buffer[MAX_BUFFER] = {0};
 char *command_names[] = {
 	"help",		  "time",		   "clear",		"snake 1",	 "snake 2",
 	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
-	"testMemory", "testProcesses", "testPrio"};
+	"testMemory", "testProcesses", "testPrio",	"ps",		 "mem",
+	"loop",		  "kill",		   "nice",		"block",	 "ws"};
+
+int atoi(const char *str) {
+	int res	 = 0;
+	int sign = 1;
+
+	if (*str == '-') {
+		sign = -1;
+		str++;
+	}
+
+	while (*str >= '0' && *str <= '9') {
+		res = res * 10 + (*str - '0');
+		str++;
+	}
+
+	return sign * res;
+}
 
 // 1) Creamos los wrappers para los comandos “externos”:
 static int _shell_snake_1(int argc, char **argv) {
@@ -62,6 +80,47 @@ static int _dec_wrap(int argc, char **argv) {
 	decrement_size_char();
 	return 0;
 }
+static int _ps_wrap(int argc, char **argv) {
+	ps(); // asume que existe ps()
+	return 0;
+}
+static int _mem_wrap(int argc, char **argv) {
+	// mem(); // asume que existe mem()
+	return 0;
+}
+static int _loop_wrap(int argc, char **argv) {
+	// infiniteLoop(0, NULL);
+	return 0;
+}
+static int _kill_wrap(int argc, char **argv) {
+	if (argc < 2) {
+		printStr("\nUsage: kill <pid>");
+		return -1;
+	}
+	kill_process(atoi(argv[1]));
+	return 0;
+}
+static int _nice_wrap(int argc, char **argv) {
+	if (argc < 3) {
+		printStr("\nUsage: nice <pid> <prio>");
+		return -1;
+	}
+	set_prio(atoi(argv[1]), atoi(argv[2]));
+	return 0;
+}
+static int _block_wrap(int argc, char **argv) {
+	if (argc < 2) {
+		printStr("\nUsage: block <pid>");
+		return -1;
+	}
+	block(atoi(argv[1]));
+
+	return 0;
+}
+static int _ws_wrap(int argc, char **argv) {
+	// ws(); // muestra working set
+	return 0;
+}
 
 // 2) Cambiamos el array de handlers para que apunte a MainFunction:
 MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
@@ -76,7 +135,14 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											_dec_wrap,
 											(MainFunction) test_mm,
 											(MainFunction) test_processes,
-											(MainFunction) test_prio};
+											(MainFunction) test_prio,
+											_ps_wrap,
+											_mem_wrap,
+											_loop_wrap,
+											_kill_wrap,
+											_nice_wrap,
+											_block_wrap,
+											_ws_wrap};
 
 void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
@@ -131,7 +197,7 @@ void shell() {
 	// char *argsA[] = {"endless_loopA", NULL};
 	// char *argsB[] = {"endless_loopB", NULL};
 
-	// create_process(endless_A, argsA, "print_A", 0); // prioridad alta
+	// create_process(endless_A, argsA, "print_A", 4); // prioridad alta
 	// create_process(endless_B, argsB, "print_B", 0); // prioridad media
 
 	while (1) {
@@ -188,6 +254,14 @@ void help() {
 	printStrColor("\n decrement                decrease letter size", WHITE);
 	printStrColor("\n testMemory [size]        tests memory allocation", WHITE);
 	printStrColor("\n testProcesses [size]     tests process creation", WHITE);
+	// nuevos comandos
+	printStrColor("\n ps                       list processes", WHITE);
+	printStrColor("\n mem                      show memory info", WHITE);
+	printStrColor("\n loop                     launch infinite loop", WHITE);
+	printStrColor("\n kill <pid>               terminate a process", WHITE);
+	printStrColor("\n nice <pid> <prio>        change process priority", WHITE);
+	printStrColor("\n block <pid>              block a process", WHITE);
+	printStrColor("\n ws                       show working set", WHITE);
 	printStrColor("\n---------------------------------------------------",
 				  WHITE);
 }

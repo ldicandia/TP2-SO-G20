@@ -224,6 +224,16 @@ static uint64_t sys_wait_pid(uint16_t pid) {
 	return getZombieRetValue(pid);
 }
 
+static uint64_t sys_ps() {
+	// driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
+	// driver_printStr("Error: Priority too high\n", (Color) {0xFF, 0x00,
+	// 0x00});
+
+	SchedulerADT scheduler = getSchedulerADT();
+	printAllProcesses(scheduler);
+	return 1;
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,				// 0
@@ -250,6 +260,7 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_getpid,			// 21
 	(void *) sys_yield,				// 22
 	(void *) sys_wait_pid,			// 23
+	(void *) sys_ps,				// 24
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
