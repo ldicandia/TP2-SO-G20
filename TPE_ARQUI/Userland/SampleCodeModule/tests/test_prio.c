@@ -57,6 +57,7 @@ static char *intToChar(int i) {
 void endless_pid(int argc, char **argv) {
 	while (1) {
 		printStr(argv[1]);
+		printStr("  ");
 		for (int i = 0; i < 100000000; i++)
 			;
 		yield(); // Cede el control manualmente
@@ -77,6 +78,14 @@ int test_prio() {
 
 	bussy_wait(WAIT);
 	printStr("\nCHANGING PRIORITIES...\n");
+	printStr("NEW PROCESS PRIORITY:\n");
+	for (i = 0; i < TOTAL_PROCESSES; i++) {
+		printStr("PROCESS: ");
+		printStr(intToChar(i));
+		printStr("  ");
+		printStr(intToChar(prio[i]));
+		printStr("\n");
+	}
 
 	for (i = 0; i < TOTAL_PROCESSES; i++)
 		my_nice(pids[i], prio[i]);
@@ -88,6 +97,14 @@ int test_prio() {
 		my_block(pids[i]);
 
 	printStr("CHANGING PRIORITIES WHILE BLOCKED...\n");
+	printStr("NEW PROCESS PRIORITY:\n");
+	for (i = 0; i < TOTAL_PROCESSES; i++) {
+		printStr("PROCESS: ");
+		printStr(intToChar(i));
+		printStr("  ");
+		printStr(intToChar(MEDIUM));
+		printStr("\n");
+	}
 
 	for (i = 0; i < TOTAL_PROCESSES; i++)
 		my_nice(pids[i], MEDIUM);

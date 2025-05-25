@@ -97,7 +97,7 @@ void applyAging(SchedulerADT scheduler) {
 	}
 }
 
-static const char *statusToString(ProcessStatus s) {
+static char *statusToString(ProcessStatus s) {
 	switch (s) {
 		case READY:
 			return "READY";
@@ -116,8 +116,8 @@ void printAllProcesses(SchedulerADT scheduler) {
 	Color c = (Color) {0xFF, 0xFF, 0xFF};
 	driver_printStr("\n[Processes]\n", c);
 	// Cabecera
-	driver_printStr("PID Name  Status  Prio\n", c);
-	driver_printStr("--- ----  ------  ----\n", c);
+	driver_printStr("PID   Name      Status   Prio\n", c);
+	driver_printStr("---   ----      ------   ----\n", c);
 
 	for (int i = 0; i < MAX_PROCESSES; i++) {
 		Node *n = scheduler->processes[i];
@@ -129,15 +129,15 @@ void printAllProcesses(SchedulerADT scheduler) {
 
 		// PID
 		driver_printNum(get_pid(p), c);
-		driver_printStr(" ", c);
+		driver_printStr("     ", c);
 
 		// Nombre (asumimos <=8 chars; si no, ajusta el tabulado)
 		driver_printStr(getName(p), c);
-		driver_printStr("  ", c);
+		driver_printStr("        ", c);
 
 		// Estado
 		driver_printStr(statusToString(get_status(p)), c);
-		driver_printStr("  ", c);
+		driver_printStr("   ", c);
 
 		// Prioridad
 		driver_printNum(get_priority(p), c);

@@ -9,8 +9,6 @@ TODO list
 
   - copia de la memoria (para mem)
 
-  - copia de los procesos (para ps)
-
   DONE:
 
   + memory (revisar buddy)
@@ -45,12 +43,6 @@ TODO list
 
   - loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
 
-  - kill: Mata un proceso dado su ID.
-
-  - nice: Cambia la prioridad de un proceso dado su ID y la nueva prioridad
-
-  - block: Cambia el estado de un proceso entre bloqueado y listo dado su ID.
-
   - cat: Imprime el stdin tal como lo recibe.
 
   - wc: Cuenta la cantidad de líneas del input.
@@ -60,6 +52,13 @@ TODO list
   - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
 
   DONE: 
+  + ps (Mejorar UI y ver si falta algo q agregar)
+
+  + kill
+
+  + nice
+
+  + block
 
   + test_mm 
 
