@@ -516,7 +516,7 @@ int getNextUnusedPid(SchedulerADT scheduler) {
 	return scheduler->nextUnusedPid;
 }
 
-int32_t getZombieRetValue(uint16_t pid) {
+int32_t getZombieRetValue(uint16_t pid) { /// ARREGLAR
 	SchedulerADT scheduler = getSchedulerADT();
 
 	if (pid >= MAX_PROCESSES) {

@@ -335,7 +335,11 @@ void readCommand() {
 				argv[argc] = NULL;
 				// lanzamos proceso en background con prioridad 0
 
-				create_process(command_func[i], argv, command_names[i], 1);
+				int pid =
+					create_process(command_func[i], argv, command_names[i], 1);
+				// printStr("\nProcess created with PID: ");
+				// printInteger(pid);
+				// wait_pid(pid);
 			}
 			return;
 		}
