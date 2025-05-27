@@ -362,9 +362,9 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 	if (parentNode != NULL &&
 		get_status((ProcessADT) parentNode->data) != ZOMBIE) {
 		ProcessADT parent = (ProcessADT) parentNode->data;
-		appendNode(getZombieChildren(processToKill), processToKillNode);
+		appendNode(getZombieChildren(parent), processToKillNode);
 		if (processIsWaiting(parent, get_pid(processToKill))) {
-			setStatus(get_pid(processToKill), READY);
+			setStatus(getParentPid(processToKill), READY);
 		}
 	}
 	else {
@@ -434,7 +434,6 @@ int32_t unblockProcess(uint16_t pid) {
 	Node *newNode = appendElement(scheduler->levels[get_priority(process)],
 								  (void *) process);
 	scheduler->processes[pid] = newNode;
-
 	// printBlockedProcesses();
 
 	// force reschedule

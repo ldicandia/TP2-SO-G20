@@ -52,7 +52,7 @@ TODO list
   - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
 
   DONE: 
-  + ps (Mejorar UI y ver si falta algo q agregar)
+  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas)
 
   + kill
 

@@ -11,6 +11,13 @@ typedef struct P_rq {
 	enum State state;
 } p_rq;
 
+// aca funciona, en test_util no, probablemente sea por problema de args
+int endless_loop1(int argc, char **argv) {
+	while (1) {
+		yield();
+	}
+}
+
 // int create_process(void *code, char **args, char *name, uint8_t priority);
 
 int test_processes(uint64_t argc, char *argv[]) {
@@ -37,7 +44,7 @@ int test_processes(uint64_t argc, char *argv[]) {
 	while (1) {
 		for (rq = 0; rq < max_processes; rq++) {
 			char *args[]  = {"endless_loop", NULL};
-			p_rqs[rq].pid = create_process((MainFunction) endless_loop, args,
+			p_rqs[rq].pid = create_process((MainFunction) endless_loop1, args,
 										   "endless_loop", 0);
 
 			if (p_rqs[rq].pid == -1) {

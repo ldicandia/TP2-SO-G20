@@ -13,7 +13,19 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 20 // antes: 13
+#define COMMANDS_SIZE 20
+
+// Añadido: buffer para último comando y función de copia
+static char last_command[MAX_BUFFER + 1] = {0};
+
+static void copy_command(char *dest, const char *src) {
+	int i = 0;
+	while (src[i] && i < MAX_BUFFER) {
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+}
 
 typedef int (*MainFunction)(int argc, char **args);
 
@@ -197,8 +209,9 @@ void shell() {
 	// char *argsA[] = {"endless_loopA", NULL};
 	// char *argsB[] = {"endless_loopB", NULL};
 
-	// create_process(endless_A, argsA, "print_A", 4); // prioridad alta
-	// create_process(endless_B, argsB, "print_B", 0); // prioridad media
+	// int pid = create_process(endless_A, argsA, "print_A", 4); // prioridad
+	// alta create_process(endless_B, argsB, "print_B", 0);			  //
+	// prioridad media
 
 	while (1) {
 		c = getChar();
@@ -209,6 +222,18 @@ void shell() {
 }
 
 static void printLine(char c) {
+	// Si se escribe '=' al inicio, recupero el último comando
+	if (c == '=' && lastEnter == 0 && last_command[0] != '\0') {
+		int i = 0;
+		while (last_command[i]) {
+			buffer[lastEnter++] = last_command[i];
+			printChar(last_command[i]);
+			i++;
+		}
+		lastc = c;
+		return;
+	}
+
 	if (isChar(c) || isDigit(c) || c == ' ') {
 		buffer[lastEnter] = c;
 		lastEnter++;
@@ -317,6 +342,11 @@ static char *strtok(char *str, const char *delim) {
 
 // 3) Adaptamos readCommand() para diferenciar built-ins de procesos:
 void readCommand() {
+	// Guardar como último comando, si no es línea vacía
+	if (buffer[0] != '\0') {
+		copy_command(last_command, buffer);
+	}
+
 	for (int i = 0; i < COMMANDS_SIZE; i++) {
 		if (strcmp_shell(buffer, command_names[i])) {
 			// built-ins (índices 0,1,2)
@@ -333,13 +363,9 @@ void readCommand() {
 					tok			 = strtok(NULL, " ");
 				}
 				argv[argc] = NULL;
-				// lanzamos proceso en background con prioridad 0
-
 				int pid =
 					create_process(command_func[i], argv, command_names[i], 1);
-				// printStr("\nProcess created with PID: ");
-				// printInteger(pid);
-				// wait_pid(pid);
+				wait_pid(pid); // Espera a que el proceso termine
 			}
 			return;
 		}
