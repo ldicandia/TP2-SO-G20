@@ -218,3 +218,19 @@ int wait_pid(uint16_t pid) {
 int ps() {
 	return u_sys_ps();
 }
+
+int user_sem_wait(uint16_t sem_id) {
+	return u_sys_sem_wait(sem_id);
+}
+
+int user_sem_post(uint16_t sem_id) {
+	return u_sys_sem_post(sem_id);
+}
+
+int user_sem_open(uint16_t sem_id, uint64_t initialValue) {
+	return u_sys_sem_open(sem_id, initialValue);
+}
+
+int user_sem_close(uint16_t sem_id) {
+	return u_sys_sem_close(sem_id);
+}

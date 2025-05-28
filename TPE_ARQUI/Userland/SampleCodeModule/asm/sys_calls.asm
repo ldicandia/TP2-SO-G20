@@ -23,6 +23,10 @@ GLOBAL u_sys_get_pid
 GLOBAL u_sys_yield
 GLOBAL u_sys_wait_pid
 GLOBAL u_sys_ps
+GLOBAL u_sys_sem_wait
+GLOBAL u_sys_sem_post
+GLOBAL u_sys_sem_open
+GLOBAL u_sys_sem_close
 
 section .text
 
@@ -145,5 +149,26 @@ u_sys_wait_pid:
 
 u_sys_ps:
     mov rax, 0x18
+    int 0x80
+    ret
+
+
+u_sys_sem_wait:
+    mov rax, 0x19
+    int 0x80
+    ret
+
+u_sys_sem_post:
+    mov rax, 0x1A
+    int 0x80
+    ret
+
+u_sys_sem_open:
+    mov rax, 0x1B
+    int 0x80
+    ret
+
+u_sys_sem_close:
+    mov rax, 0x1C
     int 0x80
     ret

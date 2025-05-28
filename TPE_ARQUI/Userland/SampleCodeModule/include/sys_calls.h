@@ -60,4 +60,12 @@ extern uint64_t u_sys_wait_pid(uint16_t pid);
 
 extern uint64_t u_sys_ps();
 
+extern uint64_t u_sys_sem_wait(uint16_t sem_id);
+
+extern uint64_t u_sys_sem_post(uint16_t sem_id);
+
+extern uint64_t u_sys_sem_open(uint16_t sem_id, uint64_t initialValue);
+
+extern uint64_t u_sys_sem_close(uint16_t sem_id);
+
 #endif

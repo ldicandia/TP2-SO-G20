@@ -11,12 +11,12 @@ typedef struct Semaphore {
 } Semaphore;
 
 void initSemaphores();
-Semaphore *my_sem_open(const char *name, int initialValue);
-void my_sem_init(Semaphore *s, int initialValue);
-int my_sem_close(const char *name);
-void my_sem_wait(const char *name);
-void my_sem_post(const char *name);
+int my_sem_open(uint16_t sem_id, int initialValue);
+int my_sem_close(uint16_t sem_id);
+void my_sem_wait(uint16_t sem_id);
+void my_sem_post(uint16_t sem_id);
 int strcmp(const char *str1, const char *str2);
 void strncpy(char *dest, const char *src, int n);
+void my_sem_init(Semaphore *sem, int initialValue);
 
 #endif // SEMAPHORE_H

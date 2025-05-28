@@ -1,5 +1,6 @@
 #include "semaphore.h"
 #include <stdlib.h>
+#include <stdint.h>
 #include <videoDriver.h>
 #include <schedule.h>
 #include <linkedListADT.h>
@@ -35,109 +36,87 @@ void initSemaphores() {
 }
 
 
-Semaphore *my_sem_open(const char *name, int initialValue) {
+// Cambia la función para devolver el índice (id) del semáforo
+int my_sem_open(uint16_t sem_id, int initialValue) {
+    if (sem_id < 0 || sem_id >= MAX_SEMAPHORES)
+        return 0;
+
     acquire(&globalSemLock);
 
-
-    for (int i = 0; i < MAX_SEMAPHORES; i++) {
-        if (semaphores[i].inUse && strcmp(semaphores[i].name, name) == 0) {
-            release(&globalSemLock);
-            return &semaphores[i].sem;
-        }
-    }
-
-
-    for (int i = 0; i < MAX_SEMAPHORES; i++) {
-        if (!semaphores[i].inUse) {
-            strncpy(semaphores[i].name, name, SEM_NAME_MAX_LEN - 1);
-            semaphores[i].name[SEM_NAME_MAX_LEN - 1] = '\0';
-            semaphores[i].inUse = 1;
-            my_sem_init(&semaphores[i].sem, initialValue);
-            release(&globalSemLock);
-            return &semaphores[i].sem;
-        }
+    if (!semaphores[sem_id].inUse) {
+        semaphores[sem_id].name[0] = '\0'; // Opcional: limpiar nombre
+        semaphores[sem_id].inUse = 1;
+        my_sem_init(&semaphores[sem_id].sem, initialValue);
+        release(&globalSemLock);
+        return 1;
     }
 
     release(&globalSemLock);
-    return NULL;
+    return 0; // Ya estaba en uso
 }
 
-
-
-
-void my_sem_init(Semaphore *s, int initialValue) {
-    s->value = initialValue;
-    s->lock = 0;
-    s->waitingQueue = createLinkedListADT();
-    if (s->waitingQueue == NULL) {
-        driver_printStr("\nError al alocar memoria para el semaforo", (Color) {0xFF, 0x00, 0x00});
-    }
+void my_sem_init(Semaphore *sem, int initialValue) {
+    sem->value = initialValue;
+    sem->waitingQueue = createLinkedListADT();
+    sem->lock = 0;
 }
 
-int my_sem_close(const char *name) {
+int my_sem_close(uint16_t sem_id) {
+    if (sem_id < 0 || sem_id >= MAX_SEMAPHORES) return -1;
     acquire(&globalSemLock);
 
-    for (int i = 0; i < MAX_SEMAPHORES; i++) {
-        if (semaphores[i].inUse && strcmp(semaphores[i].name, name) == 0) {
-            // Libera recursos asociados al semáforo
-            if (semaphores[i].sem.waitingQueue != NULL) {
-                freeLinkedListADTDeep(semaphores[i].sem.waitingQueue);
-                semaphores[i].sem.waitingQueue = NULL;
-            }
-            semaphores[i].inUse = 0;
-            release(&globalSemLock);
-            return 0;
+    if (semaphores[sem_id].inUse) {
+        if (semaphores[sem_id].sem.waitingQueue != NULL) {
+            freeLinkedListADTDeep(semaphores[sem_id].sem.waitingQueue);
+            semaphores[sem_id].sem.waitingQueue = NULL;
         }
+        semaphores[sem_id].inUse = 0;
+        release(&globalSemLock);
+        return 0;
     }
 
     release(&globalSemLock);
     return -1;
 }
 
+void my_sem_wait(uint16_t sem_id) {
+    if (sem_id < 0 || sem_id >= MAX_SEMAPHORES) return;
+    if (!semaphores[sem_id].inUse) return;
 
-void my_sem_wait(const char *name) {
-    for (int i = 0; i < MAX_SEMAPHORES; i++) {
-        if (semaphores[i].inUse && strcmp(semaphores[i].name, name) == 0) {
-            Semaphore *s = &semaphores[i].sem;
-            acquire(&s->lock);
-            s->value--;
-            if (s->value < 0) {
-                ProcessADT currentProcess = getCurrentProcess();
-                if (currentProcess != NULL) {
-                    setStatus(get_pid(currentProcess), BLOCKED);
-                    appendElement(s->waitingQueue, currentProcess);
-                }
-                release(&s->lock);
-                yield();
-            } else {
-                release(&s->lock);
-            }
-            return;
+    Semaphore *s = &semaphores[sem_id].sem;
+    acquire(&s->lock);
+    s->value--;
+    if (s->value < 0) {
+        ProcessADT currentProcess = getCurrentProcess();
+        if (currentProcess != NULL) {
+            setStatus(get_pid(currentProcess), BLOCKED);
+            appendElement(s->waitingQueue, currentProcess);
         }
+        release(&s->lock);
+        yield();
+    } else {
+        release(&s->lock);
     }
 }
 
-void my_sem_post(const char *name) {
-    for (int i = 0; i < MAX_SEMAPHORES; i++) {
-        if (semaphores[i].inUse && strcmp(semaphores[i].name, name) == 0) {
-            Semaphore *s = &semaphores[i].sem;
-            acquire(&s->lock);
-            s->value++;
+void my_sem_post(uint16_t sem_id) {
+    if (sem_id < 0 || sem_id >= MAX_SEMAPHORES) return;
+    if (!semaphores[sem_id].inUse) return;
 
-            if (s->value <= 0) {
-                Node *waitingProcessNode = getFirst(s->waitingQueue);
-                if (waitingProcessNode != NULL) {
-                    ProcessADT waitingProcess = (ProcessADT) waitingProcessNode->data;
-                    setStatus(get_pid(waitingProcess), READY);
-                    freeMemory(waitingProcessNode);
-                }
-            }
+    Semaphore *s = &semaphores[sem_id].sem;
+    acquire(&s->lock);
+    s->value++;
 
-            release(&s->lock);
-            return;
+    if (s->value <= 0) {
+        Node *waitingProcessNode = getFirst(s->waitingQueue);
+        if (waitingProcessNode != NULL) {
+            ProcessADT waitingProcess = (ProcessADT) waitingProcessNode->data;
+            setStatus(get_pid(waitingProcess), READY);
+            freeMemory(waitingProcessNode);
         }
     }
 
+    release(&s->lock);
 }
 
 
