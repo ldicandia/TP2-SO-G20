@@ -126,4 +126,21 @@ void freeMemory(void *ptr) {
 	removeBlock(memoryManager, ptr);
 }
 
+void getMemoryInfo(MemoryInfo *info) {
+    MemoryManagerADT mm = getMemoryManager(); //recibe la direccion de memoria. 
+    if (!mm || !info) return;
+
+    uint64_t total = mm->endAddress - (char *)mm->blocks;
+    uint64_t used = 0;
+    for (int i = 0; i < mm->blockCount; i++) {
+        used += mm->blocks[i].size;
+    }
+    info->totalMemory = total;
+    info->usedMemory = used;
+    info->freeMemory = total - used;
+    info->usedBlocks = mm->blockCount;
+    info->freeBlocks = MAX_BLOCKS - mm->blockCount; // No hay bloques libres en el simple manager
+    info->totalBlocks = MAX_BLOCKS; // Total de bloques gestionados
+}
+
 #endif

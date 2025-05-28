@@ -138,4 +138,38 @@ void freeMemory(void *ptr) {
     mm->blocks[block->exp - MIN_EXP] = createMemoryBlock((void *)block, block->exp, mm->blocks[block->exp - MIN_EXP]);
 }
 
+void getMemoryInfo(MemoryInfo *info) { 
+    MemoryManagerADT mm = getMemoryManager();
+    if (!mm || !info) return;
+
+    uint8_t maxExp = mm->maxExp;
+    uint64_t total = 1UL << maxExp;
+    uint64_t used = 0, free = 0;
+    uint64_t usedBlocks = 0, freeBlocks = 0, totalBlocks = 0;
+
+    uint8_t *ptr = (uint8_t *)mm->firstAddress;
+    uint8_t *end = ptr + total;
+
+    while (ptr < end) {
+        MemoryBlock *block = (MemoryBlock *)ptr;
+        uint64_t blockSize = 1UL << block->exp;
+        totalBlocks++;
+        if (block->used == USED) {
+            usedBlocks++;
+            used += blockSize;
+        } else {
+            freeBlocks++;
+            free += blockSize;
+        }
+        ptr += blockSize;
+    }
+
+    info->totalMemory = total;
+    info->usedMemory = used;
+    info->freeMemory = free;
+    info->usedBlocks = usedBlocks;
+    info->freeBlocks = freeBlocks;
+    info->totalBlocks = totalBlocks;
+}
+
 #endif
