@@ -1,279 +1,141 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #ifdef BUDDY
+
 #include "memoryManager.h"
-
-#include <lib.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 
-#define LEVELS 10
+#define MIN_EXP 5 // Minimum block size is 2^5 = 32 bytes
+#define LEVELS 32 //cant de tamanos distintos de bloques, desde 2^5 hasta 2^36
 #define FREE 0
 #define USED 1
-#define MIN_BUDDY_EXP 5 // Tamaño del MemoryBlock
 
-/*División: Los bloques grandes se dividen en pares de bloques iguales
-(buddies). Asignación: Se asigna el bloque del tamaño adecuado (o uno de los
-buddies si es q se dividió). Fusión: Cuando dos bloques buddy contiguos están
-libres, se fusionan para formar un bloque más grande. */
-
-typedef struct BuddyBlock {
-	uint8_t exp;  // Exponente de 2 que representa el tamaño del bloque
-	uint8_t used; // 0 si libre, 1 si usado
-	struct BuddyBlock *prev; // Puntero al bloque anterior en la lista libre
-	struct BuddyBlock *next; // Puntero al bloque siguiente en la lista libre
-} BuddyBlock;
+typedef struct MemoryBlock {
+    uint8_t exp;
+    uint8_t used;
+    struct MemoryBlock *prev;
+    struct MemoryBlock *next;
+} MemoryBlock;
 
 typedef struct MemoryManagerCDT {
-	uint8_t maxExp;
-	void *Address;				// dir inicial de la memoria
-	BuddyBlock *blocks[LEVELS]; // Array de listas doblemente enlazadas de
-								// bloques libres (tantos niveles)
-	uint64_t totalMemory;
-	uint64_t freeMemory;
-	uint32_t totalBlocks;
-	uint32_t freeBlocks;
-
+    void *firstAddress;
+    uint8_t maxExp;
+    MemoryBlock *blocks[LEVELS];
 } MemoryManagerCDT;
 
-static uint8_t next_exp(uint64_t n) { // encuentra el menor exponenta tal que
-									  // 2^exp sea mayor o igual a n
-	uint8_t exp = 0;
-	while ((1UL << exp) < n) { // 1UL
-		exp++;
-	}
-	return exp;
+static MemoryBlock *createMemoryBlock(void *ptr, uint8_t exp, MemoryBlock *next) {
+    MemoryBlock *block = (MemoryBlock *)ptr;
+    block->exp = exp;
+    block->used = FREE;
+    block->prev = NULL;
+    block->next = next;
+    if (next) next->prev = block;
+    return block;
 }
 
-static BuddyBlock *createBuddyBlock(void *address, uint8_t exp,
-									BuddyBlock *next);
-static BuddyBlock *removeBuddyBlock(MemoryManagerADT memoryManager,
-									BuddyBlock *block);
-static BuddyBlock *merge(MemoryManagerADT memoryManager, BuddyBlock *block,
-						 BuddyBlock *buddy);
-static void split(MemoryManagerADT memoryManager, uint8_t index);
-static void insertFreeBlock(uint8_t index, BuddyBlock *block,
-							MemoryManagerADT memoryManager);
-
-MemoryManagerADT
-createMemoryManager(void *const restrict memoryForMemoryManager,
-					void *const restrict managedMemory, uint64_t memAmount) {
-	MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
-
-	memoryManager->Address	   = managedMemory;
-	memoryManager->totalMemory = 1UL << next_exp(memAmount);
-	memoryManager->freeMemory  = memoryManager->totalMemory;
-	memoryManager->totalBlocks = 1;
-	memoryManager->freeBlocks  = 1;
-	memoryManager->maxExp	   = next_exp(memoryManager->totalMemory);
-
-	for (int i = 0; i < LEVELS; ++i) {
-		memoryManager->blocks[i] = NULL;
-	}
-
-	if (memoryManager->maxExp < MIN_BUDDY_EXP) {
-		return NULL; // La memoria es demasiado chica
-	}
-	BuddyBlock *initialBlock = createBuddyBlock(
-		managedMemory, memoryManager->maxExp, NULL); // no tiene previo
-	insertFreeBlock(memoryManager->maxExp - MIN_BUDDY_EXP, initialBlock,
-					memoryManager); // Insertar en la lista correcta
-
-	return memoryManager;
+static MemoryBlock *removeMemoryBlock(MemoryBlock **blocks, MemoryBlock *block) {//remueve de la lista de libres
+    if (block->prev)
+        block->prev->next = block->next;
+    else
+        blocks[block->exp - MIN_EXP] = block->next;
+    if (block->next)
+        block->next->prev = block->prev;
+    return block->next;
 }
 
-MemoryManagerADT getMemoryManager() {
-	return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
+static void split(MemoryManagerADT mm, uint8_t idx) {
+    MemoryBlock *block = mm->blocks[idx];
+    removeMemoryBlock(mm->blocks, block);
+
+    uint8_t newExp = block->exp - 1;
+    uint64_t halfSize = 1UL << newExp;
+
+    MemoryBlock *buddy = (MemoryBlock *)((uint8_t *)block + halfSize);
+    createMemoryBlock(buddy, newExp, mm->blocks[newExp - MIN_EXP]);
+    mm->blocks[newExp - MIN_EXP] = createMemoryBlock(block, newExp, buddy);
+}
+
+static MemoryBlock *merge(MemoryManagerADT mm, MemoryBlock *block, MemoryBlock *buddy) {//une dos buddies libres 
+    removeMemoryBlock(mm->blocks, buddy);
+    MemoryBlock *left = (block < buddy) ? block : buddy;
+    left->exp++;
+    return left;
+}
+
+MemoryManagerADT createMemoryManager(void *const restrict memoryForManager,
+                                     void *const restrict managedMemory,
+                                     uint64_t memAmount) {
+    (void)memoryForManager; //no lo uso
+    MemoryManagerADT mm = (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
+    mm->firstAddress = managedMemory;
+    mm->maxExp = 0;
+    uint64_t size = 1UL << MIN_EXP;
+    while (size < memAmount && mm->maxExp < LEVELS + MIN_EXP)
+        size <<= 1, mm->maxExp++;
+    mm->maxExp += MIN_EXP;
+
+    for (int i = 0; i < LEVELS; i++)
+        mm->blocks[i] = NULL;
+
+    uint8_t idx = mm->maxExp - MIN_EXP;
+    mm->blocks[idx] = createMemoryBlock(managedMemory, mm->maxExp, NULL);
+    return mm;
+}
+
+MemoryManagerADT getMemoryManager(void) {
+    return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
 }
 
 void *allocMemory(const size_t size) {
-	MemoryManagerADT memoryManager = getMemoryManager();
-	if (size == 0 || memoryManager == NULL) {
-		return NULL;
-	}
+    MemoryManagerADT mm = getMemoryManager();
+    if (!mm) return NULL;
 
-	// Sumar el tamaño del header para reservar espacio para el BuddyBlock
-	uint8_t exp = next_exp(size + sizeof(BuddyBlock));
-	if (exp < MIN_BUDDY_EXP)
-		exp = MIN_BUDDY_EXP;
+    uint8_t exp = MIN_EXP;
+    uint64_t blockSize = 1UL << exp;
+    while (blockSize < size + sizeof(MemoryBlock) && exp < mm->maxExp)
+        blockSize <<= 1, exp++;
 
-	if (exp > memoryManager->maxExp)
-		return NULL; // No hay suficiente memoria
+    if (exp > mm->maxExp)
+        return NULL;
 
-	int idxToAlloc = exp - MIN_BUDDY_EXP;
+    uint8_t idx = exp - MIN_EXP;
+    uint8_t splitIdx = idx;
+    while (splitIdx < LEVELS && mm->blocks[splitIdx] == NULL) 
+        splitIdx++;
+    if (splitIdx == LEVELS)
+        return NULL;
 
-	// Si no hay bloques libres en el nivel, buscar el más cercano superior y
-	// dividir
-	int closestIdx = -1;
-	for (int i = idxToAlloc; i < LEVELS; ++i) {
-		if (memoryManager->blocks[i] != NULL) {
-			closestIdx = i;
-			break;
-		}
-	}
-	if (closestIdx == -1)
-		return NULL; // No hay bloques libres disponibles
+    while (splitIdx > idx) {//divide en buddies hasta alcanzar un tamaño adecuado
+        split(mm, splitIdx);//recursiva
+        splitIdx--;
+    }
 
-	// Dividir bloques grandes hasta llegar al tamaño deseado
-	for (int i = closestIdx; i > idxToAlloc; --i) {
-		split(memoryManager, i + MIN_BUDDY_EXP);
-	}
+    MemoryBlock *block = mm->blocks[idx];
+    removeMemoryBlock(mm->blocks, block);
+    block->used = USED;
+    block->prev = NULL;
+    block->next = NULL;
 
-	// Tomar el primer bloque libre del nivel adecuado
-	BuddyBlock *block =
-		removeBuddyBlock(memoryManager, memoryManager->blocks[idxToAlloc]);
-	block->used = USED;
-	block->prev = NULL;
-	block->next = NULL;
-
-	uint64_t blockSize = 1UL << block->exp;
-	memoryManager->freeMemory -= blockSize;
-	memoryManager->freeBlocks--;
-	memoryManager->totalBlocks--;
-
-	// Retornar la dirección usable (después del header)
-	return (void *) ((uint8_t *) block + sizeof(BuddyBlock));
+    return (void *)((uint8_t *)block + sizeof(MemoryBlock));
 }
 
 void freeMemory(void *ptr) {
-	if (ptr == NULL)
-		return;
+    if (!ptr) return;
+    MemoryManagerADT mm = getMemoryManager();
+    MemoryBlock *block = (MemoryBlock *)((uint8_t *)ptr - sizeof(MemoryBlock));
+    if (block->used == FREE)
+        return;
+    block->used = FREE;
 
-	MemoryManagerADT memoryManager = getMemoryManager();
-	// El bloque está justo antes del puntero devuelto al usuario
-	BuddyBlock *block = (BuddyBlock *) ((uint8_t *) ptr - sizeof(BuddyBlock));
-	if (block->used == FREE)
-		return;
-	block->used = FREE;
-
-	uint64_t blockSize = 1UL << block->exp;
-	memoryManager->freeMemory += blockSize;
-	memoryManager->totalBlocks++;
-	memoryManager->freeBlocks++;
-
-	// Calcular la posición relativa del bloque respecto al inicio de la memoria
-	// administrada
-	uint64_t relativePosition =
-		(uint64_t) ((uint8_t *) block - (uint8_t *) memoryManager->Address);
-
-	// Buscar y fusionar con buddies libres del mismo tamaño
-	BuddyBlock *buddy = NULL;
-	while (block->exp < memoryManager->maxExp) {
-		uint64_t buddyOffset = relativePosition ^ (1UL << block->exp);
-		buddy =
-			(BuddyBlock *) ((uint8_t *) memoryManager->Address + buddyOffset);
-
-		if (buddy->used == FREE && buddy->exp == block->exp) {
-			// Remover buddy de la lista de libres
-			removeBuddyBlock(memoryManager, buddy);
-			// Fusionar ambos bloques
-			if (block > buddy)
-				block = buddy;
-			block->exp++;
-			memoryManager->freeBlocks--;
-			memoryManager->totalBlocks--;
-			// Actualizar posición relativa para el siguiente ciclo
-			relativePosition = (uint64_t) ((uint8_t *) block -
-										   (uint8_t *) memoryManager->Address);
-		}
-		else {
-			break;
-		}
-	}
-
-	// Insertar el bloque (fusionado o no) en la lista de libres correspondiente
-	insertFreeBlock(block->exp - MIN_BUDDY_EXP, block, memoryManager);
-}
-
-// add, remove, merge y split  de los buddy blocks...
-
-static BuddyBlock *createBuddyBlock(void *address, uint8_t exp,
-									BuddyBlock *next) {
-	BuddyBlock *block = (BuddyBlock *) address;
-	block->exp		  = exp;
-	block->used		  = FREE;
-	block->prev		  = NULL;
-	if (next != NULL) {
-		next->prev = block;
-	}
-	return block;
-}
-
-static BuddyBlock *removeBuddyBlock(MemoryManagerADT memoryManager,
-									BuddyBlock *block) {
-	if (block->prev != NULL) {
-		block->prev->next = block->next;
-	}
-	else {
-		memoryManager->blocks[block->exp - MIN_BUDDY_EXP] = block->next;
-	}
-
-	if (block->next != NULL) {
-		block->next->prev = block->prev;
-	}
-
-	return block->next;
-}
-
-static BuddyBlock *merge(MemoryManagerADT memoryManager, BuddyBlock *block,
-						 BuddyBlock *buddy) {
-	removeBuddyBlock(memoryManager,
-					 buddy); // el buddy se elimina, xq se fusionan en uno
-
-	BuddyBlock *leftBlock =
-		(BuddyBlock *) ((uintptr_t) block < (uintptr_t) buddy ? block : buddy);
-	leftBlock->exp++;
-
-	memoryManager->freeBlocks--;
-	memoryManager->totalBlocks--;
-	// memoryManager->freeMemory += (1UL << (leftBlock->exp - MIN_BUDDY_EXP));
-	uint64_t mergedBlockSize = 1UL << block->exp;
-	memoryManager->freeMemory += mergedBlockSize;
-	return leftBlock;
-}
-
-static void split(MemoryManagerADT memoryManager, uint8_t index) {
-	BuddyBlock *block = memoryManager->blocks[index - MIN_BUDDY_EXP];
-	removeBuddyBlock(memoryManager, block);
-
-	uint64_t blockSize =
-		1UL << (index + MIN_BUDDY_EXP); // Tamaño del bloque a dividir
-	uint64_t halfBlockSize = blockSize >> 1;
-	uint8_t newExp		   = index + MIN_BUDDY_EXP - 1;
-
-	BuddyBlock *buddyBlock = (BuddyBlock *) ((char *) block + halfBlockSize);
-	buddyBlock->exp		   = newExp;
-	buddyBlock->used	   = FREE;
-	buddyBlock->prev	   = NULL;
-	buddyBlock->next	   = memoryManager->blocks[newExp - MIN_BUDDY_EXP];
-	if (memoryManager->blocks[newExp - MIN_BUDDY_EXP] != NULL) {
-		memoryManager->blocks[newExp - MIN_BUDDY_EXP]->prev = buddyBlock;
-	}
-	memoryManager->blocks[newExp - MIN_BUDDY_EXP] = buddyBlock;
-
-	block->exp									  = newExp;
-	block->used									  = FREE;
-	block->prev									  = NULL;
-	block->next									  = buddyBlock;
-	buddyBlock->prev							  = block;
-	memoryManager->blocks[newExp - MIN_BUDDY_EXP] = block;
-
-	memoryManager->freeBlocks++;
-	memoryManager->totalBlocks++;
-}
-
-static void insertFreeBlock(uint8_t index, BuddyBlock *block,
-							MemoryManagerADT memoryManager) {
-	block->next = memoryManager->blocks[index];
-	block->prev = NULL;
-
-	if (memoryManager->blocks[index] != NULL) {
-		memoryManager->blocks[index]->prev = block;
-	}
-
-	memoryManager->blocks[index] = block;
-	memoryManager->freeBlocks++;
+    uint64_t relPos = (uint64_t)((uint8_t *)block - (uint8_t *)mm->firstAddress);
+    MemoryBlock *buddy = (MemoryBlock *)((uint8_t *)mm->firstAddress + (relPos ^ (1UL << block->exp)));
+    while (buddy->used == FREE && buddy->exp == block->exp && block->exp < mm->maxExp) {
+        block = merge(mm, block, buddy);
+        relPos = (uint64_t)((uint8_t *)block - (uint8_t *)mm->firstAddress);
+        buddy = (MemoryBlock *)((uint8_t *)mm->firstAddress + (relPos ^ (1UL << block->exp)));
+    }
+    mm->blocks[block->exp - MIN_EXP] = createMemoryBlock((void *)block, block->exp, mm->blocks[block->exp - MIN_EXP]);
 }
 
 #endif
