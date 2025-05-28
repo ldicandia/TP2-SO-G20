@@ -203,7 +203,7 @@ void shell() {
 	printStr("\n--------------------| SHELL |--------------------\n");
 
 	// testProcesses();
-
+	//test_sync();
 	// BBBBBBBBBAABBBBBBBBAABBBBB
 
 	// char *argsA[] = {"endless_loopA", NULL};

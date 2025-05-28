@@ -85,4 +85,6 @@ int getNextUnusedPid(SchedulerADT scheduler);
 
 void printAllProcesses(SchedulerADT scheduler);
 
+ProcessADT getCurrentProcess();
+
 #endif // SCHEDULE_H

@@ -565,3 +565,12 @@ int8_t changeFD(uint16_t pid, uint8_t position, int16_t newFd) {
 	setFileDescriptor(process, position, newFd);
 	return 0;
 }
+
+
+ProcessADT getCurrentProcess() {
+	SchedulerADT scheduler = getSchedulerADT();
+	Node *currentNode	   = scheduler->processes[scheduler->currentPid];
+	if (currentNode == NULL)
+		return NULL;
+	return (ProcessADT) currentNode->data;
+}
