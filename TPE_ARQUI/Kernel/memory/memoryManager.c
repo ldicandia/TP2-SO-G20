@@ -126,9 +126,10 @@ void freeMemory(void *ptr) {
 	removeBlock(memoryManager, ptr);
 }
 
-void getMemoryInfo(MemoryInfo *info) {
+MemoryInfo * getMemoryInfo() {
+	static MemoryInfo *info;
     MemoryManagerADT mm = getMemoryManager(); //recibe la direccion de memoria. 
-    if (!mm || !info) return;
+    //if (!mm || !info) return;
 
     uint64_t total = mm->endAddress - (char *)mm->blocks;
     uint64_t used = 0;
@@ -141,6 +142,18 @@ void getMemoryInfo(MemoryInfo *info) {
     info->usedBlocks = mm->blockCount;
     info->freeBlocks = MAX_BLOCKS - mm->blockCount; // No hay bloques libres en el simple manager
     info->totalBlocks = MAX_BLOCKS; // Total de bloques gestionados
+	return &info;
+}
+
+void printMemoryInfo(const MemoryInfo *info) {
+    Color c = (Color){0xFF, 0xFF, 0xFF};
+    driver_printStr("\n[Memory Info]\n", c);
+    driver_printStr("Total: ", c); driver_printNum(info->totalMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Usada: ", c); driver_printNum(info->usedMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Libre: ", c); driver_printNum(info->freeMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Bloques usados: ", c); driver_printNum(info->usedBlocks, c); driver_printStr("\n", c);
+    driver_printStr("Bloques libres: ", c); driver_printNum(info->freeBlocks, c); driver_printStr("\n", c);
+    driver_printStr("Bloques totales: ", c); driver_printNum(info->totalBlocks, c); driver_printStr("\n", c);
 }
 
 #endif

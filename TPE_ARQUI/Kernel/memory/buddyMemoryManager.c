@@ -5,6 +5,7 @@
 #include "memoryManager.h"
 #include <stdint.h>
 #include <stddef.h>
+#include <videoDriver.h>
 
 #define MIN_EXP 5 // Minimum block size is 2^5 = 32 bytes
 #define LEVELS 32 //cant de tamanos distintos de bloques, desde 2^5 hasta 2^36
@@ -138,9 +139,10 @@ void freeMemory(void *ptr) {
     mm->blocks[block->exp - MIN_EXP] = createMemoryBlock((void *)block, block->exp, mm->blocks[block->exp - MIN_EXP]);
 }
 
-void getMemoryInfo(MemoryInfo *info) { 
+MemoryInfo * getMemoryInfo() { 
     MemoryManagerADT mm = getMemoryManager();
-    if (!mm || !info) return;
+    static MemoryInfo *info;
+    //if (!mm || !info) return null;
 
     uint8_t maxExp = mm->maxExp;
     uint64_t total = 1UL << maxExp;
@@ -170,6 +172,18 @@ void getMemoryInfo(MemoryInfo *info) {
     info->usedBlocks = usedBlocks;
     info->freeBlocks = freeBlocks;
     info->totalBlocks = totalBlocks;
+    return info;
+}
+
+void printMemoryInfo(const MemoryInfo *info) {
+    Color c = (Color){0xFF, 0xFF, 0xFF};
+    driver_printStr("\n[Memory Info]\n", c);
+    driver_printStr("Total: ", c); driver_printNum(info->totalMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Usada: ", c); driver_printNum(info->usedMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Libre: ", c); driver_printNum(info->freeMemory, c); driver_printStr(" bytes\n", c);
+    driver_printStr("Bloques usados: ", c); driver_printNum(info->usedBlocks, c); driver_printStr("\n", c);
+    driver_printStr("Bloques libres: ", c); driver_printNum(info->freeBlocks, c); driver_printStr("\n", c);
+    driver_printStr("Bloques totales: ", c); driver_printNum(info->totalBlocks, c); driver_printStr("\n", c);
 }
 
 #endif
