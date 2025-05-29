@@ -3,13 +3,13 @@ TODO list
 
 = KERNEL:
 
-  - pipes (falta conectarlo al userland y ver q funcione)
-
   - semaforos
 
   - copia de la memoria (para mem)
 
   DONE:
+
+  + pipes (falta q funcione ps, pasar los prints al Userland)
 
   + memory (revisar buddy)
 
@@ -33,7 +33,7 @@ TODO list
     necesario que permita conectar más de 2 procesos con pipes, es decir, p1 |
     p2 | p3.
 
-    - ctrl + D (envio de EOF) y ctrl + C (kill foreground)
+    - ctrl + D (envio de EOF)
 
   - mem: Imprime el estado de la memoria.
 
@@ -43,16 +43,15 @@ TODO list
 
   - wc: Cuenta la cantidad de líneas del input.
 
-  - filter: Filtra las vocales del input
-
   - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
 
   DONE: 
-  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas) Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
+  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas) pasar los prints al userland para q funcione el pipeo 
+  Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
   prioridad, stack y base pointer, foreground y cualquier otra variable que consideren
   necesaria.
 
-  + kill
+  + kill (chequear, no funciona bien)
 
   + nice
 
@@ -60,10 +59,12 @@ TODO list
 
   + test_mm 
 
-  + test_processes (lo pasa con errores sin el debug mode, se queda sin memoria)
+  + test_processes (sin el debug mode, se queda sin memoria)
 
-  + test_prio (revisar si funciona por fuera de test_prio)
+  + test_prio
 
-  + nueva shell de procesos (falta pipe y foreground)
+  + nueva shell de procesos (falta foreground)
+
+  + filter
 
 
