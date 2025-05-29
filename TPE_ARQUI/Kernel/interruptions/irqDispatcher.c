@@ -10,6 +10,12 @@
 #include <memoryManager.h>
 #include <process.h>
 #include <schedule.h>
+#include <pipeManager.h>
+
+#undef EOF
+#undef DEV_NULL
+#define EOF (-1)
+#define DEV_NULL -1
 
 #define SYS_CALLS_QTY 3
 
@@ -45,32 +51,68 @@ void int_20() {
 	timer_master();
 }
 
-static uint64_t sys_read(uint64_t fd, char *buff) {
-	if (fd != 0) {
+static int64_t sys_read(uint64_t fd, char *buff, uint64_t len) {
+	if (fd == DEV_NULL) {
+		driver_printStr("Reading from /dev/null\n", WHITE);
+	}
+	if ((int64_t) fd == DEV_NULL) {
+		buff[0] = EOF;
+		return 0;
+	}
+	if ((int64_t) fd < DEV_NULL) {
 		return -1;
 	}
 
-	*buff = getCharFromKeyboard();
+	int16_t fdVal = (fd < BUILT_IN_DESCRIPTORS) ?
+						getCurrentProcessFileDescriptor((uint8_t) fd) :
+						(int16_t) fd;
 
-	return 0;
+	if (fdVal >= BUILT_IN_DESCRIPTORS) {
+		return readPipe(fdVal, buff, len);
+	}
+	else if (fdVal == STDIN) {
+		for (uint64_t i = 0; i < len; i++) {
+			buff[i] = getCharFromKeyboard();
+			if ((int) buff[i] == EOF) {
+				return i + 1;
+			}
+		}
+		return len;
+	}
+
+	return -1;
 }
 
-static uint64_t sys_write(uint64_t fd, char buffer) {
-	if (fd != 1) {
-		return -1;
+static uint64_t sys_write(uint64_t fd, char *buffer, uint64_t len) {
+	int16_t fdVal = (fd < BUILT_IN_DESCRIPTORS) ?
+						getCurrentProcessFileDescriptor((uint8_t) fd) :
+						(int16_t) fd;
+
+	if (fdVal >= BUILT_IN_DESCRIPTORS) {
+		return writePipe(getPid(), fdVal, buffer, len);
+	}
+	else if (fdVal == STDOUT || fdVal == STDERR) {
+		driver_printStr(buffer, WHITE);
+		return len;
 	}
 
-	driver_printChar(buffer, WHITE);
 	return 1;
 }
 
 static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt) {
-	if (fd != 1) {
-		return -1;
+	int16_t fdVal = (fd < BUILT_IN_DESCRIPTORS) ?
+						getCurrentProcessFileDescriptor((uint8_t) fd) :
+						(int16_t) fd;
+	if (fdVal >= BUILT_IN_DESCRIPTORS) {
+		// envío el carácter coloreado al pipe
+		return writePipe(getPid(), fdVal, &buffer, 1);
 	}
-
-	driver_printChar(buffer, fnt);
-	return 1;
+	// si no, va a pantalla
+	else if (fdVal == STDOUT || fdVal == STDERR) {
+		driver_printChar(buffer, fnt);
+		return 1;
+	}
+	return -1;
 }
 
 static uint64_t sys_clear() {
@@ -151,39 +193,30 @@ static void syscall_free(void *ptr) {
 	return;
 }
 
-static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
-	// driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
-	if (priority > MAX_PRIORITY) {
-		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr("Error: Priority too high\n",
-						(Color) {0xFF, 0x00, 0x00});
-		return -1;
-	}
+// static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
+// 	// driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
+// 	// driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
+// 	if (priority > MAX_PRIORITY) {
+// 		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printStr("Error: Priority too high\n",
+// 						(Color) {0xFF, 0x00, 0x00});
+// 		return -1;
+// 	}
 
-	if (fileDescriptors[STDIN] < 0 || fileDescriptors[STDOUT] < 0 ||
-		fileDescriptors[STDERR] < 0) {
-		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr("Error: Invalid file descriptor\n",
-						(Color) {0xFF, 0x00, 0x00});
-		return -1;
-	}
-	return 1;
-}
+// 	if (fileDescriptors[STDIN] < 0 || fileDescriptors[STDOUT] < 0 ||
+// 		fileDescriptors[STDERR] < 0) {
+// 		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
+// 		driver_printStr("Error: Invalid file descriptor\n",
+// 						(Color) {0xFF, 0x00, 0x00});
+// 		return -1;
+// 	}
+// 	return 1;
+// }
 
 // Create process
 static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 									 uint8_t priority,
 									 int16_t fileDescriptors[]) {
-	// driver_printStr("\nCreating process of Userland: ",
-	// 				(Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr(name, (Color) {0xAA, 0xFF, 0xFF});
-	int ret = checkParams(priority, fileDescriptors);
-	if (ret == -1) {
-		driver_printStr("[IRQDISPATCHER] Param Error",
-						(Color) {0xFF, 0x00, 0x00});
-		return -1;
-	}
 	return createProcess(code, args, name, priority, fileDescriptors, 0);
 }
 
@@ -224,6 +257,24 @@ static uint64_t sys_wait_pid(uint16_t pid) {
 	return getZombieRetValue(pid);
 }
 
+static uint64_t sys_pipeOpen(uint16_t pid, uint8_t mode) {
+	if (pid < 0) {
+		return -1;
+	}
+	return pipeOpen(pid, mode);
+}
+
+static uint64_t sys_pipeClose(uint16_t pid) {
+	if (pid < 0) {
+		return -1;
+	}
+	return pipeClose(pid);
+}
+
+static uint64_t sys_getPipe() {
+	return getLastFreePipe();
+}
+
 static uint64_t sys_ps() {
 	// driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
 	// driver_printStr("Error: Priority too high\n", (Color) {0xFF, 0x00,
@@ -261,6 +312,9 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_yield,				// 22
 	(void *) sys_wait_pid,			// 23
 	(void *) sys_ps,				// 24
+	(void *) sys_pipeOpen,			// 25
+	(void *) sys_pipeClose,			// 26
+	(void *) sys_getPipe,			// 27
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,

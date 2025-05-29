@@ -230,11 +230,10 @@ _interrupt_keyboardHandler:
 .afterShift:
 
     ; Ctrl+C detection
-    cmp al, 0x2E     ; 'C' key
-    jne .checkTab
     cmp byte [ctrl_pressed], 1
     jne .checkTab
-
+		cmp al, 0x2E     ; 'C' key
+    jne .checkTab
     ; Call ctrl_c_handler if Ctrl+C is pressed
     call ctrl_c_handler
     jmp .keyboardContinue

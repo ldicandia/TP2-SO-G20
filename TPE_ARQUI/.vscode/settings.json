@@ -8,7 +8,13 @@
         "test_processes.h": "c",
         "system_error": "c",
         "chilt_process_test.h": "c",
-        "inputparseradt.h": "c"
+        "inputparseradt.h": "c",
+        "exception": "c",
+        "memory_resource": "c",
+        "iosfwd": "c",
+        "new": "c",
+        "ostream": "c",
+        "streambuf": "c"
     },
     "makefile.configureOnOpen": false
 }

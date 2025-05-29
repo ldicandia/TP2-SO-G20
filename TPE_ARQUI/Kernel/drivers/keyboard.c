@@ -9,6 +9,8 @@
 #include <process.h>
 #include <schedule.h>
 
+#define EOF (-1)
+
 unsigned char scanCode = 0;
 static char retChar	   = 0;
 static int shift	   = 0;
@@ -70,6 +72,14 @@ char getCharFromKeyboard() {
 		return retChar - ('a' - 'A');
 	}
 
+	if (retChar == '\\' && shift == 1) {
+		return '|';
+	}
+
+	if (retChar == '7' && shift == 1) {
+		return '&';
+	}
+
 	if (ctrl == 1 && retChar == 'c') {
 		return 0;
 	}
@@ -79,8 +89,16 @@ char getCharFromKeyboard() {
 
 void ctrl_c_handler() { // TODO
 	//  CTRL + C
-	// killForegroundProcess();
+	killForegroundProcess();
 	driver_printStr("\nCTRL + C\n", (Color) {0xFF, 0x00, 0x00});
+	// killCurrentProcess(0);
+	return;
+}
+
+void ctrl_d_handler() {
+	//  CTRL + D
+	// Termina el proceso actual
+	driver_printStr("\nCTRL + D\n", (Color) {0xFF, 0x00, 0x00});
 	killCurrentProcess(0);
 	return;
 }

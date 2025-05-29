@@ -33,7 +33,7 @@ static char *register_names[17] = {"RIP", "RAX", "RBX", "RCX", "RDX", "RSI",
 								   "R11", "R12", "R13", "R14", "R15"};
 
 void printChar(char c) {
-	u_sys_write(STDOUT, c);
+	u_sys_write(STDOUT, &c, 1);
 }
 
 void printInteger(int n) {
@@ -57,7 +57,13 @@ void drawSquare(int x, int y, uint32_t fillColor) {
 
 char getChar() {
 	char c;
-	u_sys_read(STDIN, &c);
+	u_sys_read(STDIN, &c, 1);
+	return c;
+}
+
+int getCharInt() {
+	char c;
+	u_sys_read(STDIN, &c, 1);
 	return c;
 }
 
@@ -85,7 +91,7 @@ void printStrColor(char *str, Color fnt) {
 
 void printStr(char *str) {
 	for (int i = 0; str[i]; i++) {
-		u_sys_write(STDOUT, str[i]);
+		printChar(str[i]);
 	}
 }
 
@@ -187,6 +193,11 @@ int create_process(MainFunction code, char **args, char *name,
 	return u_sys_create_process(code, args, name, priority, fileDescriptors);
 }
 
+int create_process_with_fds(MainFunction code, char **args, char *name,
+							uint8_t priority, int16_t fileDescriptors[]) {
+	return u_sys_create_process(code, args, name, priority, fileDescriptors);
+}
+
 int kill_process(uint64_t pid) {
 	return u_sys_kill_process(pid);
 }
@@ -217,4 +228,16 @@ int wait_pid(uint16_t pid) {
 
 int ps() {
 	return u_sys_ps();
+}
+
+int pipeOpen(uint16_t pid, uint8_t mode) {
+	return u_sys_pipeOpen(pid, mode);
+}
+
+int pipeClose(uint16_t pid) {
+	return u_sys_pipeClose(pid);
+}
+
+int getPipe() {
+	return u_sys_getPipe();
 }

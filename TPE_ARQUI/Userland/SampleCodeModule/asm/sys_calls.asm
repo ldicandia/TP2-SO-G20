@@ -23,6 +23,9 @@ GLOBAL u_sys_get_pid
 GLOBAL u_sys_yield
 GLOBAL u_sys_wait_pid
 GLOBAL u_sys_ps
+GLOBAL u_sys_pipeOpen
+GLOBAL u_sys_pipeClose
+GLOBAL u_sys_getPipe
 
 section .text
 
@@ -145,5 +148,21 @@ u_sys_wait_pid:
 
 u_sys_ps:
     mov rax, 0x18
+    int 0x80
+    ret
+
+
+u_sys_pipeOpen:
+    mov rax, 0x19
+    int 0x80
+    ret
+
+u_sys_pipeClose:
+    mov rax, 0x1A
+    int 0x80
+    ret
+
+u_sys_getPipe:
+    mov rax, 0x1B
     int 0x80
     ret

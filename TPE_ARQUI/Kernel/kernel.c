@@ -14,6 +14,7 @@
 #include <test_mm.h>
 #include <test_processes.h>
 #include <interrupts.h>
+#include <pipeManager.h>
 
 #define DEV_NULL -1
 #define STDIN 0
@@ -63,6 +64,7 @@ void initializeKernelBinary() {
 	createMemoryManager((void *) MEMORY_MANAGER_ADDRESS,
 						sampleDataModuleAddress + userlandSize, availableMem);
 	createScheduler();
+	createPipeManager();
 }
 
 int idle(int argc, char **argv);

@@ -4,9 +4,9 @@
 #include <color.h>
 #include <stdint.h>
 
-extern uint64_t u_sys_read(uint64_t fd, char *buf);
+extern uint64_t u_sys_read(uint64_t fd, char *buf, uint64_t len);
 
-extern uint64_t u_sys_write(uint64_t fd, const char buf);
+extern uint64_t u_sys_write(uint64_t fd, char *buf, uint64_t len);
 
 extern uint64_t u_sys_write_color(uint64_t fd, const char buf, Color color);
 
@@ -59,5 +59,11 @@ extern uint64_t u_sys_yield();
 extern uint64_t u_sys_wait_pid(uint16_t pid);
 
 extern uint64_t u_sys_ps();
+
+extern uint64_t u_sys_pipeOpen(uint16_t pid, uint8_t mode);
+
+extern uint64_t u_sys_pipeClose(uint16_t pid);
+
+extern uint64_t u_sys_getPipe();
 
 #endif

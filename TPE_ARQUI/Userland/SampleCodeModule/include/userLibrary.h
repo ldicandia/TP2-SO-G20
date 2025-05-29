@@ -54,6 +54,9 @@ void freeMemory(void *address);
 int create_process(MainFunction code, char **args, char *name,
 				   uint8_t priority);
 
+int create_process_with_fds(MainFunction code, char **args, char *name,
+							uint8_t priority, int16_t fileDescriptors[]);
+
 int kill_process(uint64_t pid);
 
 int set_prio(uint64_t pid, uint64_t newPrio);
@@ -69,5 +72,13 @@ int yield();
 int wait_pid(uint16_t pid);
 
 int ps();
+
+int pipeOpen(uint16_t pid, uint8_t mode);
+
+int pipeClose(uint16_t pid);
+
+int getPipe();
+
+int getCharInt();
 
 #endif // USER_LIBRARY_H

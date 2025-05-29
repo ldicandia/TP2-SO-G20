@@ -37,10 +37,6 @@ TODO list
 
   - mem: Imprime el estado de la memoria.
 
-  - ps: Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
-  prioridad, stack y base pointer, foreground y cualquier otra variable que consideren
-  necesaria.
-
   - loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
 
   - cat: Imprime el stdin tal como lo recibe.
@@ -52,7 +48,9 @@ TODO list
   - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
 
   DONE: 
-  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas)
+  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas) Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
+  prioridad, stack y base pointer, foreground y cualquier otra variable que consideren
+  necesaria.
 
   + kill
 
