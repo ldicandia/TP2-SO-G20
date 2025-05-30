@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <videoDriver.h>
+#include <shared.h>
 
 #define MAX_BLOCKS 1024 // Máxima cantidad de bloques a trackear
 

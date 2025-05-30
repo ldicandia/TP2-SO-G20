@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <userLibrary.h>
 #include <user_time.h>
-#include "../../Kernel/include/memoryManager.h"
+#include <shared.h>
 
 #include "./include/sys_calls.h"
 

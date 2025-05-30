@@ -3,7 +3,7 @@
 
 #include <color.h>
 #include <stdint.h>
-#include "../../../Kernel/include/memoryManager.h"
+#include <shared.h>
 
 extern uint64_t u_sys_read(uint64_t fd, char *buf, uint64_t len);
 

@@ -5,7 +5,7 @@
 #include "memoryManager.h"
 #include <stdint.h>
 #include <stddef.h>
-#include <videoDriver.h>
+#include <shared.h>
 
 #define MIN_EXP 5 // Minimum block size is 2^5 = 32 bytes
 #define LEVELS 32 //cant de tamanos distintos de bloques, desde 2^5 hasta 2^36

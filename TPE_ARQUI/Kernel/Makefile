@@ -18,7 +18,7 @@ $(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM)
 
 
 %.o: %.c
-	$(GCC) $(GCCFLAGS) $(MM) -fno-pie -no-pie -I./include -c $< -o $@
+	$(GCC) $(GCCFLAGS) $(MM) -fno-pie -no-pie -I./include -I../Shared -c $< -o $@
 
 %.o : %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@

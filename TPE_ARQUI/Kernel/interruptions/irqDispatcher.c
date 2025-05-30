@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>
-#include <memoryManager.h>
+#include <shared.h>
 #include <process.h>
 #include <schedule.h>
 #include <pipeManager.h>

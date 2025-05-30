@@ -4,7 +4,7 @@
 #include <color.h>
 #include <stdint.h>
 #include <userLibrary.h>
-#include "../../../Kernel/include/memoryManager.h"
+#include <shared.h>
 
 
 typedef int (*MainFunction)(int argc, char **args);

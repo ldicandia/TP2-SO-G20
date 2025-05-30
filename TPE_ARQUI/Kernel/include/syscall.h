@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <process.h>
 #include <schedule.h>
-#include <memoryManager.h>
+#include <shared.h>
 
 // System call prototypes
 int64_t my_getpid();
