@@ -22,14 +22,22 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 	int8_t inc;
 	int8_t use_sem;
 
-	if (argc != 3)
+	for (size_t i = 0; i < argc; i++) {
+		printStr("Argument ");
+		printInteger(i);
+		printStr(": ");
+		printStr(argv[i]);
+		printStr("\n");
+	}
+
+	if (argc != 4)
 		return -1;
 
-	if ((n = satoi(argv[0])) <= 0)
+	if ((n = satoi(argv[1])) <= 0)
 		return -1;
-	if ((inc = satoi(argv[1])) == 0)
+	if ((inc = satoi(argv[2])) == 0)
 		return -1;
-	if ((use_sem = satoi(argv[2])) < 0)
+	if ((use_sem = satoi(argv[3])) < 0)
 		return -1;
 
 	if (use_sem)
@@ -53,27 +61,38 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 	return 0;
 }
 
+//{"name", "argv[1]", "argv[2]", "argv[3]"}
+
 uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 	uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
+	printStr("\n");
+	for (size_t i = 0; i < argc; i++) {
+		printStr("Argument ");
+		printInteger(i);
+		printStr(": ");
+		printStr(argv[i]);
+		printStr("\n");
+	}
 
-	if (argc != 2)
+	if (argc != 3)
 		return -1;
 
-	char *argvDec[] = {argv[0], "-1", argv[1], NULL};
-	char *argvInc[] = {argv[0], "1", argv[1], NULL};
+	char *argvDec[] = {"my_processDec", argv[1], "-1", argv[2], NULL};
+	char *argvInc[] = {"my_processInc", argv[1], "1", argv[2], NULL};
 
 	global = 0;
 
 	uint64_t i;
 	for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-		pids[i] = create_process((MainFunction) my_process_inc, argvDec, "my_process_inc", 3);
-		pids[i + TOTAL_PAIR_PROCESSES] =
-			create_process((MainFunction) my_process_inc, argvInc, "my_process_inc", 3);
+		pids[i] = create_process((MainFunction) my_process_inc, argvDec,
+								 "my_process_inc", 3);
+		pids[i + TOTAL_PAIR_PROCESSES] = create_process(
+			(MainFunction) my_process_inc, argvInc, "my_process_inc", 3);
 	}
 
 	for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-		user_sem_wait(pids[i]);
-		user_sem_wait(pids[i + TOTAL_PAIR_PROCESSES]);
+		wait_pid(pids[i]);
+		wait_pid(pids[i + TOTAL_PAIR_PROCESSES]);
 	}
 
 	printStr("Final value: \n");

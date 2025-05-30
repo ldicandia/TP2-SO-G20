@@ -1,5 +1,4 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 
 #include "shell.h"
 
@@ -48,9 +47,9 @@ char buffer[MAX_BUFFER] = {0};
 char *command_names[] = {
 	"help",		  "time",		   "clear",		"snake 1",	 "snake 2",
 	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
-	"testMemory", "testProcesses", "testPrio",	"ps",		 "mem",
-	"loop",		  "kill",		   "nice",		"block",	 "ws",
-	"filter"};
+	"testMemory", "testProcesses", "testPrio",	"testSync",	 "ps",
+	"mem",		  "loop",		   "kill",		"nice",		 "block",
+	"ws",		  "filter"};
 
 int atoi(const char *str) {
 	int res	 = 0;
@@ -103,7 +102,7 @@ static int _ps_wrap(int argc, char **argv) {
 	return 0;
 }
 static int _mem_wrap(int argc, char **argv) {
-	// mem(); // asume que existe mem()
+	// mem_command();
 	return 0;
 }
 static int _loop_wrap(int argc, char **argv) {
@@ -174,6 +173,7 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) test_mm,
 											(MainFunction) test_processes,
 											(MainFunction) test_prio,
+											(MainFunction) test_sync,
 											_ps_wrap,
 											_mem_wrap,
 											_loop_wrap,
@@ -278,10 +278,9 @@ void shell() {
 
 	char *argsTest[] = {"test_sync", NULL};
 
-   // create_process((MainFunction) test_sync, argsTest, "test_sync", 4);
+	// create_process((MainFunction) test_sync, argsTest, "test_sync", 4);
 
-	test_sync(2, (char *[]){"1000", "1", NULL});
-	// BBBBBBBBBAABBBBBBBBAABBBBB
+	// test_sync(3, (char *[]) {"test", "1000", "1", NULL});
 
 	// char *argsA[] = {"endless_loopA", NULL};
 	// char *argsB[] = {"endless_loopB", NULL};

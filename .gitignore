@@ -5,3 +5,21 @@ x64BareBones-master/compile.sh
 
 .gdb_history
 .bash_history
+
+#Binary Files
+*.bin
+*.sys
+*.elf
+
+#The images
+*.img
+*.qcow2
+*.vmdk
+
+#Object files
+*.o
+
+.bash_history
+.gdbinit
+.gdb_history
+settings.json
