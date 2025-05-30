@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <videoDriver.h>
+
 
 #define MEMORY_MANAGER_ADDRESS 0x50000
 #define SYSTEM_VARIABLES 0x5A00
@@ -35,6 +35,6 @@ typedef struct MemoryInfo {
 } MemoryInfo;
 
 // Devuelve una copia de la info de memoria actual (el caller debe liberar si es heap, o devolver estática)
-MemoryInfo * getMemoryInfo(); 
-void printMemoryInfo(const MemoryInfo *info);
+void getMemoryInfo(MemoryInfo *info); 
+
 #endif

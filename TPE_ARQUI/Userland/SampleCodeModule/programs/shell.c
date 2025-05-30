@@ -103,7 +103,7 @@ static int _ps_wrap(int argc, char **argv) {
 	return 0;
 }
 static int _mem_wrap(int argc, char **argv) {
-	// mem(); // asume que existe mem()
+	mem_command();
 	return 0;
 }
 static int _loop_wrap(int argc, char **argv) {
@@ -543,4 +543,19 @@ void shell_snake_1() {
 
 void shell_snake_2() {
 	snake(2);
+}
+
+void mem_command() {
+    MemoryInfo info;
+    if (user_mem(&info) != 0) {
+        printStr("Error obteniendo info de memoria\n");
+        return;
+    }
+    printStr("\n[Memory Info]\n");
+    printStr("Total: "); printInteger(info.totalMemory); printStr(" bytes\n");
+    printStr("Usada: "); printInteger(info.usedMemory); printStr(" bytes\n");
+    printStr("Libre: "); printInteger(info.freeMemory); printStr(" bytes\n");
+    printStr("Bloques usados: "); printInteger(info.usedBlocks); printStr("\n");
+    printStr("Bloques libres: "); printInteger(info.freeBlocks); printStr("\n");
+    printStr("Bloques totales: "); printInteger(info.totalBlocks); printStr("\n");
 }
