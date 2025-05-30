@@ -11,6 +11,7 @@
 #include <test_processes.h>
 #include <test_prio.h>
 #include <sys_calls.h>
+#include <test_sync.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
@@ -275,6 +276,11 @@ void shell() {
 
 	// testProcesses();
 
+	char *argsTest[] = {"test_sync", NULL};
+
+   // create_process((MainFunction) test_sync, argsTest, "test_sync", 4);
+
+	test_sync(2, (char *[]){"1000", "1", NULL});
 	// BBBBBBBBBAABBBBBBBBAABBBBB
 
 	// char *argsA[] = {"endless_loopA", NULL};

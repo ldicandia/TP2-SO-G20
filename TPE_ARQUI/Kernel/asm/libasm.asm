@@ -4,6 +4,8 @@ GLOBAL getMinutes
 GLOBAL getHours
 GLOBAL spkIn
 GLOBAL spkOut
+GLOBAL acquire
+GLOBAL release
 
 section .text
 	
@@ -95,5 +97,17 @@ spkOut:
 	mov rsp, rbp
 	pop rbp
 	ret
+
+acquire:
+    mov al, 1
+.spin:
+    xchg al, [rdi]
+    test al, al
+    jnz .spin
+    ret
+
+release:
+    mov byte [rdi], 0
+    ret
 
 

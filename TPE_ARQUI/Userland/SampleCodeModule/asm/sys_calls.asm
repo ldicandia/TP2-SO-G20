@@ -26,6 +26,10 @@ GLOBAL u_sys_ps
 GLOBAL u_sys_pipeOpen
 GLOBAL u_sys_pipeClose
 GLOBAL u_sys_getPipe
+GLOBAL u_sys_sem_wait
+GLOBAL u_sys_sem_post
+GLOBAL u_sys_sem_open
+GLOBAL u_sys_sem_close
 
 section .text
 
@@ -164,5 +168,26 @@ u_sys_pipeClose:
 
 u_sys_getPipe:
     mov rax, 0x1B
+    int 0x80
+    ret
+
+
+u_sys_sem_wait:
+    mov rax, 0x1C
+    int 0x80
+    ret
+
+u_sys_sem_post:
+    mov rax, 0x1D
+    int 0x80
+    ret
+
+u_sys_sem_open:
+    mov rax, 0x1E
+    int 0x80
+    ret
+
+u_sys_sem_close:
+    mov rax, 0x1F
     int 0x80
     ret

@@ -81,4 +81,9 @@ int getPipe();
 
 int getCharInt();
 
+int user_sem_open(uint16_t sem_id, uint64_t initialValue);
+int user_sem_wait(uint16_t sem_id);
+int user_sem_post(uint16_t sem_id);
+int user_sem_close(uint16_t sem_id);
+
 #endif // USER_LIBRARY_H

@@ -17,6 +17,7 @@
 #define EOF (-1)
 #define DEV_NULL -1
 
+#include <semaphore.h>
 #define SYS_CALLS_QTY 3
 
 extern uint8_t hasInforeg;
@@ -285,6 +286,27 @@ static uint64_t sys_ps() {
 	return 1;
 }
 
+static uint64_t sys_sem_wait(uint16_t sem_id) {
+	my_sem_wait(sem_id);
+	return 1;
+}
+
+static uint64_t sys_sem_post(uint16_t sem_id) {
+	my_sem_post(sem_id);
+	return 1;
+}
+
+static uint64_t sys_sem_open(uint16_t sem_id, uint64_t initialValue) {
+	if (initialValue < 0) {
+		return -1;
+	}
+	return my_sem_open(sem_id, initialValue);
+}
+
+static uint64_t sys_sem_close(uint16_t sem_id) {
+	return my_sem_close(sem_id);
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,				// 0
@@ -315,6 +337,10 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_pipeOpen,			// 25
 	(void *) sys_pipeClose,			// 26
 	(void *) sys_getPipe,			// 27
+	(void *) sys_sem_wait,			// 28
+	(void *) sys_sem_post,			// 29
+	(void *) sys_sem_open,			// 30
+	(void *) sys_sem_close,			// 31
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,
