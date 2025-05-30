@@ -4,8 +4,6 @@
 #include <color.h>
 #include <stdint.h>
 #include <userLibrary.h>
-#include "../../../Kernel/include/memoryManager.h"
-
 
 typedef int (*MainFunction)(int argc, char **args);
 
@@ -87,7 +85,5 @@ int user_sem_open(uint16_t sem_id, uint64_t initialValue);
 int user_sem_wait(uint16_t sem_id);
 int user_sem_post(uint16_t sem_id);
 int user_sem_close(uint16_t sem_id);
-
-int user_mem(MemoryInfo *info);
 
 #endif // USER_LIBRARY_H

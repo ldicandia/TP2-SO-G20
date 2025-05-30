@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <process.h>
 #include <schedule.h>
-#include <memoryManager.h>
 
 // System call prototypes
 int64_t my_getpid();
@@ -19,6 +18,5 @@ int64_t my_sem_post(char *sem_id);
 int64_t my_sem_close(char *sem_id);
 int64_t my_yield();
 int64_t my_wait(int64_t pid);
-int64_t my_getMemoryInfo(MemoryInfo *userInfo);
 
 #endif // SYSCALL_H
