@@ -37,4 +37,6 @@ void drawChar(char letter, Color color);
 
 void drawSquare(int x, int y, uint32_t fillColor);
 
+void initVideoDriver();
+
 #endif

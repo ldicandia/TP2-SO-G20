@@ -14,7 +14,7 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 21
+#define COMMANDS_SIZE 22
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2

@@ -11,7 +11,6 @@
 #include <memoryManager.h>
 #include <process.h>
 #include <schedule.h>
-#include <test_mm.h>
 #include <test_processes.h>
 #include <interrupts.h>
 #include <pipeManager.h>
@@ -64,6 +63,9 @@ void initializeKernelBinary() {
 	createMemoryManager((void *) MEMORY_MANAGER_ADDRESS,
 						sampleDataModuleAddress + userlandSize, availableMem);
 	createScheduler();
+	initSemaphores();
+	initVideoDriver();
+	// initializeKeyboard();
 	createPipeManager();
 }
 

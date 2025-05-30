@@ -1,6 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <videoDriver.h>
+#include <semaphore.h> // Asegúrate de incluir el encabezado del semáforo
 
 Color WHITE = {255, 255, 255};
 
@@ -127,7 +128,17 @@ void driver_backspace() {
 	}
 }
 
+uint16_t drawCharSemaphore = 0;
+
+void initVideoDriver() {
+	// Inicializar el semáforo con un valor inicial de 1
+	// my_sem_open(drawCharSemaphore, 1);
+}
+
 void drawChar(char letter, Color color) {
+	// Adquirir el semáforo antes de modificar los recursos compartidos
+	// my_sem_wait(drawCharSemaphore);
+
 	if (cursorX >=
 		VBE_mode_info->width - (VBE_mode_info->width % (8 * charSize))) {
 		cursorX = 0;
@@ -152,6 +163,9 @@ void drawChar(char letter, Color color) {
 		}
 	}
 	cursorX += 8 * charSize;
+
+	// Liberar el semáforo después de modificar los recursos compartidos
+	// my_sem_post(drawCharSemaphore);
 }
 
 void driver_newLine() {

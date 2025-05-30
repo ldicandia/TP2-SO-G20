@@ -8,8 +8,10 @@
 #include "videoDriver.h"
 #include <process.h>
 #include <schedule.h>
+#include <semaphore.h>
 
 #define EOF (-1)
+#define KEYBOARD_SEM 1 // ID del semáforo para el teclado
 
 unsigned char scanCode = 0;
 static char retChar	   = 0;
@@ -19,6 +21,10 @@ static int ctrl		   = 0;
 
 // Agrega esta variable global para indicar actividad del teclado
 static int keyboardActivity = 0;
+
+void initializeKeyboard() {
+	// my_sem_open(0, 0);
+}
 
 static const char hexMapPressed[256] = {
 	0,	  0,   '1',	 '2',  '3', '4', '5', '6', '7', '8', '9',
@@ -58,9 +64,11 @@ void keyboard_master(uint8_t keyPressed) {
 	if (scanCode == 0x3A) {
 		capsLock = (capsLock + 1) % 2;
 	}
+	// my_sem_post(KEYBOARD_SEM);
 }
 
 char getCharFromKeyboard() {
+	// my_sem_wait(KEYBOARD_SEM);
 	if (scanCode > 0x80 || scanCode == 0x0F) {
 		retChar = 0;
 	}

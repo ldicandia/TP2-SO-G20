@@ -15,4 +15,6 @@ void clearScanCode();
 
 int checkKeyboardActivity();
 
+void initializeKeyboard();
+
 #endif

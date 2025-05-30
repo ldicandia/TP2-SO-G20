@@ -44,6 +44,7 @@ SchedulerADT createScheduler() {
 	scheduler->killFgProcess	= 0;
 	scheduler->currentPid		= 0;
 	scheduler->currentLevel		= 0;
+	scheduler->qtyProcesses		= 0; ////OJO CON ESTO
 	return scheduler;
 }
 
@@ -428,6 +429,7 @@ int32_t unblockProcess(uint16_t pid) {
 
 	// detach & free old
 	removeNode(scheduler->blockedProcesses, node);
+	// freeMemory(node);
 
 	// mark READY & re-enqueue with a new node
 	set_status(process, READY);
@@ -565,7 +567,6 @@ int8_t changeFD(uint16_t pid, uint8_t position, int16_t newFd) {
 	setFileDescriptor(process, position, newFd);
 	return 0;
 }
-
 
 ProcessADT getCurrentProcess() {
 	SchedulerADT scheduler = getSchedulerADT();
