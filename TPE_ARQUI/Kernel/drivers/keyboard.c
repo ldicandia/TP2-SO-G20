@@ -23,7 +23,7 @@ static int ctrl		   = 0;
 static int keyboardActivity = 0;
 
 void initializeKeyboard() {
-	// my_sem_open(0, 0);
+	my_sem_open(1, 0);
 }
 
 static const char hexMapPressed[256] = {
@@ -64,11 +64,11 @@ void keyboard_master(uint8_t keyPressed) {
 	if (scanCode == 0x3A) {
 		capsLock = (capsLock + 1) % 2;
 	}
-	// my_sem_post(KEYBOARD_SEM);
+	my_sem_post(1);
 }
 
 char getCharFromKeyboard() {
-	// my_sem_wait(KEYBOARD_SEM);
+	my_sem_wait(1);
 	if (scanCode > 0x80 || scanCode == 0x0F) {
 		retChar = 0;
 	}

@@ -6,6 +6,9 @@ GLOBAL spkIn
 GLOBAL spkOut
 GLOBAL acquire
 GLOBAL release
+GLOBAL _xadd
+GLOBAL _xchg
+
 
 section .text
 	
@@ -101,13 +104,24 @@ spkOut:
 acquire:
     mov al, 1
 .spin:
-    xchg al, [rdi]
+    pause                   ; evita busy-polling agresivo
+    xchg al, [rdi]          ; atomic test&set
     test al, al
     jnz .spin
     ret
 
 release:
-    mov byte [rdi], 0
+    sfence                  ; full store fence (release semantics)
+    mov byte [rdi], 0       ; unlock
     ret
 
+_xadd:
+    mov rax, rsi            ; valor a sumar
+    lock xadd [rdi], rax    ; atomic fetch-and-add
+    ret
+
+_xchg:
+    mov rax, rsi            ; valor a intercambiar
+    lock xchg [rdi], rax    ; atomic swap
+    ret
 

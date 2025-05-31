@@ -15,6 +15,7 @@ typedef struct Semaphore {
 	int value;
 	uint8_t lock;
 	LinkedListADT waitingQueue;
+	LinkedListADT mutexQueue;
 } Semaphore;
 
 typedef struct SemaphoreCDT {
@@ -39,13 +40,54 @@ static SemaphoreCDT *getSemaphoreManager() {
 static void my_sem_init(Semaphore *sem, int initialValue) {
 	sem->value		  = initialValue;
 	sem->waitingQueue = createLinkedListADT();
+	sem->mutexQueue	  = createLinkedListADT();
 	sem->lock		  = 0;
+}
+
+static void resumeFirstAvailableProcess(LinkedListADT queue) {
+	Node *n;
+	while ((n = getFirst(queue))) {
+		removeNode(queue, n);
+		ProcessADT p = (ProcessADT) n->data;
+		freeMemory(n);
+		if (processIsAlive(get_pid(p))) {
+			setStatus(get_pid(p), READY);
+			break;
+		}
+	}
+}
+
+static int down(Semaphore *sem) {
+	acquire(&sem->lock);
+	sem->value--;
+	if (sem->value < 0) {
+		ProcessADT cur = getCurrentProcess();
+		appendElement(sem->waitingQueue, cur);
+		setStatus(get_pid(cur), BLOCKED);
+		release(&sem->lock);
+		yield();
+	}
+	else {
+		release(&sem->lock);
+	}
+	return 0;
+}
+
+static int up(Semaphore *sem) {
+	acquire(&sem->lock);
+	sem->value++;
+	if (sem->value <= 0) {
+		resumeFirstAvailableProcess(sem->waitingQueue);
+	}
+	release(&sem->lock);
+	return 0;
 }
 
 int my_sem_open(uint16_t sem_id, int initialValue) {
 	SemaphoreCDT *mgr = getSemaphoreManager();
-	if (sem_id >= MAX_SEMAPHORES)
+	if (sem_id >= MAX_SEMAPHORES) {
 		return 0;
+	}
 
 	acquire(&globalSemLock);
 	if (!mgr->semaphores[sem_id]) {
@@ -85,20 +127,7 @@ void my_sem_wait(uint16_t sem_id) {
 	if (!s)
 		return;
 
-	acquire(&s->lock);
-	s->value--;
-	if (s->value < 0) {
-		ProcessADT cur = getCurrentProcess();
-		if (cur) {
-			setStatus(get_pid(cur), BLOCKED);
-			appendElement(s->waitingQueue, cur);
-		}
-		release(&s->lock);
-		yield();
-	}
-	else {
-		release(&s->lock);
-	}
+	down(s);
 }
 
 void my_sem_post(uint16_t sem_id) {
@@ -109,15 +138,5 @@ void my_sem_post(uint16_t sem_id) {
 	if (!s)
 		return;
 
-	acquire(&s->lock);
-	s->value++;
-	if (s->value <= 0) {
-		Node *n = getFirst(s->waitingQueue);
-		if (n) {
-			ProcessADT p = (ProcessADT) n->data;
-			setStatus(get_pid(p), READY);
-			freeMemory(n);
-		}
-	}
-	release(&s->lock);
+	up(s);
 }

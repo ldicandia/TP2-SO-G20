@@ -18,4 +18,8 @@ int strcpy(char *dest, const char *origin);
 
 int strlen(const char *str);
 
+int _xchg(int *lock, int value);
+
+int _xadd(int inc, int *value);
+
 #endif

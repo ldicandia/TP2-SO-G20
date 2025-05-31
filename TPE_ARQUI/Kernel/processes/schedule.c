@@ -429,7 +429,7 @@ int32_t unblockProcess(uint16_t pid) {
 
 	// detach & free old
 	removeNode(scheduler->blockedProcesses, node);
-	// freeMemory(node);
+	freeMemory(node);
 
 	// mark READY & re-enqueue with a new node
 	set_status(process, READY);

@@ -22,13 +22,13 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 	int8_t inc;
 	int8_t use_sem;
 
-	for (size_t i = 0; i < argc; i++) {
-		printStr("Argument ");
-		printInteger(i);
-		printStr(": ");
-		printStr(argv[i]);
-		printStr("\n");
-	}
+	// for (size_t i = 0; i < argc; i++) {
+	// 	printStr("Argument ");
+	// 	printInteger(i);
+	// 	printStr(": ");
+	// 	printStr(argv[i]);
+	// 	printStr("\n");
+	// }
 
 	if (argc != 4)
 		return -1;
@@ -65,14 +65,14 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 
 uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 	uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
-	printStr("\n");
-	for (size_t i = 0; i < argc; i++) {
-		printStr("Argument ");
-		printInteger(i);
-		printStr(": ");
-		printStr(argv[i]);
-		printStr("\n");
-	}
+	// printStr("\n");
+	// for (size_t i = 0; i < argc; i++) {
+	// 	printStr("Argument ");
+	// 	printInteger(i);
+	// 	printStr(": ");
+	// 	printStr(argv[i]);
+	// 	printStr("\n");
+	// }
 
 	if (argc != 3)
 		return -1;

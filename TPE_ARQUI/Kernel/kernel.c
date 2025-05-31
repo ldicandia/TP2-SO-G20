@@ -64,8 +64,7 @@ void initializeKernelBinary() {
 						sampleDataModuleAddress + userlandSize, availableMem);
 	createScheduler();
 	initSemaphores();
-	initVideoDriver();
-	// initializeKeyboard();
+	initializeKeyboard();
 	createPipeManager();
 }
 
