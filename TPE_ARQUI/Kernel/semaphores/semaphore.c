@@ -1,4 +1,4 @@
-#include "semaphore.h"
+#include <semaphoreManager.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h> // <-- para memset

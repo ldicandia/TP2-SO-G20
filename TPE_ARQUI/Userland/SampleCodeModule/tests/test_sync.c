@@ -22,14 +22,6 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 	int8_t inc;
 	int8_t use_sem;
 
-	// for (size_t i = 0; i < argc; i++) {
-	// 	printStr("Argument ");
-	// 	printInteger(i);
-	// 	printStr(": ");
-	// 	printStr(argv[i]);
-	// 	printStr("\n");
-	// }
-
 	if (argc != 4)
 		return -1;
 
@@ -41,7 +33,7 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 		return -1;
 
 	if (use_sem)
-		if (!user_sem_open(SEM_ID, 1)) {
+		if (user_sem_open(SEM_ID, 1) == -1) {
 			printStr("test_sync: ERROR opening semaphore\n");
 			return -1;
 		}
@@ -55,9 +47,6 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 			user_sem_post(SEM_ID);
 	}
 
-	if (use_sem)
-		user_sem_close(SEM_ID);
-
 	return 0;
 }
 
@@ -65,14 +54,15 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 
 uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 	uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
-	// printStr("\n");
-	// for (size_t i = 0; i < argc; i++) {
-	// 	printStr("Argument ");
-	// 	printInteger(i);
-	// 	printStr(": ");
-	// 	printStr(argv[i]);
-	// 	printStr("\n");
-	// }
+
+	// agregado para que funcione con nuestra implementación de semáforos
+	int8_t useSem = satoi(argv[2]);
+	if (useSem) {
+		if (user_sem_open(SEM_ID, 1) == -1) {
+			printStr("test_sync: ERROR creating semaphore\n");
+			return -1;
+		}
+	}
 
 	if (argc != 3)
 		return -1;
@@ -84,15 +74,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 
 	uint64_t i;
 	for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-		// pids[i] = create_process((MainFunction) my_process_inc, argvDec,
-		// 						 "my_process_inc", 3);
-
 		pids[i] = create_process((MainFunction) my_process_inc, argvDec,
 								 "my_process_dec", 3);
-
-		// pids[i + TOTAL_PAIR_PROCESSES] = create_process(
-		// 	(MainFunction) my_process_inc, argvInc, "my_process_inc", 3);
-
 		pids[i + TOTAL_PAIR_PROCESSES] = create_process(
 			(MainFunction) my_process_inc, argvInc, "my_process_inc", 3);
 	}
@@ -104,6 +87,9 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 
 	printStr("Final value: \n");
 	printInteger(global);
+
+	if (useSem)
+		user_sem_close(SEM_ID);
 
 	return 0;
 }

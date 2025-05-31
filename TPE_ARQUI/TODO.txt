@@ -3,15 +3,17 @@ TODO list
 
 = KERNEL:
 
-  - semaforos
-
   - copia de la memoria (para mem)
+
+  - arreglar memory manager no buddy
 
   DONE:
 
+  + semaforos
+
   + pipes (falta q funcione ps, pasar los prints al Userland)
 
-  + memory (revisar buddy)
+  + memory 
 
   + process 
 
@@ -59,9 +61,11 @@ TODO list
 
   + test_mm 
 
-  + test_processes (sin el debug mode, se queda sin memoria)
+  + test_processes 
 
   + test_prio
+
+  + test_sync
 
   + nueva shell de procesos (falta foreground)
 

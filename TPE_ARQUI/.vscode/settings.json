@@ -14,7 +14,9 @@
         "iosfwd": "c",
         "new": "c",
         "ostream": "c",
-        "streambuf": "c"
+        "streambuf": "c",
+        "semaphore.h": "c",
+        "semaphoremanager.h": "c"
     },
     "makefile.configureOnOpen": false
 }

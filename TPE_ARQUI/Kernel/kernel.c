@@ -11,6 +11,7 @@
 #include <memoryManager.h>
 #include <process.h>
 #include <schedule.h>
+#include <semaphoreManager.h>
 #include <test_processes.h>
 #include <interrupts.h>
 #include <pipeManager.h>

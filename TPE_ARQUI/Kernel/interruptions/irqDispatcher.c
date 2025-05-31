@@ -17,7 +17,7 @@
 #define EOF (-1)
 #define DEV_NULL -1
 
-#include <semaphore.h>
+#include <semaphoreManager.h>
 #define SYS_CALLS_QTY 3
 
 extern uint8_t hasInforeg;
