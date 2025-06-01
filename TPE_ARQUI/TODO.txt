@@ -28,20 +28,20 @@ TODO list
     sistema en general ya que en la mayoría de los casos es necesario ejecutar
     más de 1 proceso.
 
-    -  Deberá permitir conectar 2 procesos mediante un pipe, por ejemplo, bash
+  - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
+
+  DONE: 
+
+  +  Deberá permitir conectar 2 procesos mediante un pipe, por ejemplo, bash
     hace esto al agregar el símbolo “|” entre los 2 programas a ejecutar. No es
     necesario que permita conectar más de 2 procesos con pipes, es decir, p1 |
     p2 | p3.
 
-    - ctrl + D (envio de EOF)
+  + cat: Imprime el stdin tal como lo recibe (falta EOF).
 
-  - cat: Imprime el stdin tal como lo recibe (falta EOF).
+  + wc: Cuenta la cantidad de líneas del input. (falta EOF)
 
-  - wc: Cuenta la cantidad de líneas del input. (falta EOF)
-
-  - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
-
-  DONE: 
+  + ctrl + D (envio de EOF)
 
   + loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
 
