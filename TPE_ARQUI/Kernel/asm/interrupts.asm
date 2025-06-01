@@ -26,6 +26,7 @@ GLOBAL _initialize_stack_frame
 EXTERN getStackBase
 EXTERN keyboard_master
 EXTERN ctrl_c_handler
+EXTERN ctrl_d_handler
 EXTERN timer_master
 EXTERN sys_master
 EXTERN exception_master
@@ -231,12 +232,21 @@ _interrupt_keyboardHandler:
 
     ; Ctrl+C detection
     cmp byte [ctrl_pressed], 1
-    jne .checkTab
-		cmp al, 0x2E     ; 'C' key
-    jne .checkTab
+    jne .checkCtrlD
+    cmp al, 0x2E     ; 'C' key
+    jne .checkCtrlD
     ; Call ctrl_c_handler if Ctrl+C is pressed
     call ctrl_c_handler
     jmp .keyboardContinue
+
+.checkCtrlD:
+    cmp byte [ctrl_pressed], 1
+    jne .checkTab
+    cmp al, 0x20     ; 'D' key
+    jne .checkTab
+    ; Call ctrl_d_handler if Ctrl+D is pressed
+    call ctrl_d_handler
+    jmp .endInterrupt
 
 .checkTab:
     cmp byte [left_shift], 1 
@@ -275,7 +285,7 @@ _interrupt_keyboardHandler:
 .keyboardContinue:
     call keyboard_master
 
-
+.endInterrupt:
     endOfHardwareInterrupt
     popState
     iretq

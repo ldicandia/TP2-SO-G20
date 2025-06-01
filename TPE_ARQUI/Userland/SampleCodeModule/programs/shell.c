@@ -203,6 +203,7 @@ static int filter(int argc, char **argv) { // filter vowels
 
 	// si fue '\n', lo imprimimos y volvemos al shell
 	if (c == '\n') {
+		printStr("Ending Filter");
 		printChar('\n');
 	}
 	return 0;

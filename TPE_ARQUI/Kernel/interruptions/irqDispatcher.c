@@ -89,7 +89,6 @@ static uint64_t sys_write(uint64_t fd, char *buffer, uint64_t len) {
 	int16_t fdVal = (fd < BUILT_IN_DESCRIPTORS) ?
 						getCurrentProcessFileDescriptor((uint8_t) fd) :
 						(int16_t) fd;
-
 	if (fdVal >= BUILT_IN_DESCRIPTORS) {
 		return writePipe(getPid(), fdVal, buffer, len);
 	}

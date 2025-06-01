@@ -67,7 +67,12 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
 	framebuffer[offset + 2] = (hexColor >> 16) & 0xFF;
 }
 
+#define EOF (-1)
+
 void driver_printChar(char c, Color color) {
+	if ((int) c == EOF)
+		return;
+
 	switch (c) {
 		case '\n':
 			driver_newLine();

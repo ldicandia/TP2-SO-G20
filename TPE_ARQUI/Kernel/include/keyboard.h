@@ -11,6 +11,8 @@ unsigned char getScanCode();
 
 void ctrl_c_handler();
 
+void ctrl_d_handler();
+
 void clearScanCode();
 
 int checkKeyboardActivity();
