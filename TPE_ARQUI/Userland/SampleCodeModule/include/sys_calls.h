@@ -75,4 +75,6 @@ extern uint64_t u_sys_sem_open(uint16_t sem_id, uint64_t initialValue);
 
 extern uint64_t u_sys_sem_close(uint16_t sem_id);
 
+extern uint64_t u_sys_getMemoryInfo(MemoryInfo *info);
+
 #endif

@@ -258,3 +258,7 @@ int user_sem_open(uint16_t sem_id, uint64_t initialValue) {
 int user_sem_close(uint16_t sem_id) {
 	return u_sys_sem_close(sem_id);
 }
+
+int user_mem(MemoryInfo *info) {
+	return u_sys_getMemoryInfo(info);
+}

@@ -11,6 +11,7 @@
 #include <process.h>
 #include <schedule.h>
 #include <pipeManager.h>
+#include <memoryManager.h>
 
 #undef EOF
 #undef DEV_NULL
@@ -307,6 +308,14 @@ static uint64_t sys_sem_close(uint16_t sem_id) {
 	return my_sem_close(sem_id);
 }
 
+static uint64_t sys_get_memory_info(uint64_t userInfoPtr) {
+	if (userInfoPtr == 0)
+		return -1;
+	MemoryInfo *userInfo = (MemoryInfo *) userInfoPtr;
+	getMemoryInfo(userInfo);
+	return 0;
+}
+
 static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 								 uint64_t) = {
 	(void *) sys_read,				// 0
@@ -341,6 +350,7 @@ static uint64_t (*sys_masters[])(uint64_t, uint64_t, uint64_t, uint64_t,
 	(void *) sys_sem_post,			// 29
 	(void *) sys_sem_open,			// 30
 	(void *) sys_sem_close,			// 31
+	(void *) sys_get_memory_info,	// 32
 };
 
 uint64_t sys_master(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10,

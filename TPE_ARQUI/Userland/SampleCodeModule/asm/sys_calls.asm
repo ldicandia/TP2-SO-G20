@@ -30,6 +30,7 @@ GLOBAL u_sys_sem_wait
 GLOBAL u_sys_sem_post
 GLOBAL u_sys_sem_open
 GLOBAL u_sys_sem_close
+GLOBAL u_sys_getMemoryInfo
 
 section .text
 
@@ -189,5 +190,10 @@ u_sys_sem_open:
 
 u_sys_sem_close:
     mov rax, 0x1F
+    int 0x80
+    ret
+
+u_sys_getMemoryInfo:
+    mov rax, 0x20
     int 0x80
     ret

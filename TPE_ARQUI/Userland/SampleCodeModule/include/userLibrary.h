@@ -87,4 +87,6 @@ int user_sem_wait(uint16_t sem_id);
 int user_sem_post(uint16_t sem_id);
 int user_sem_close(uint16_t sem_id);
 
+int user_mem(MemoryInfo *info);
+
 #endif // USER_LIBRARY_H
