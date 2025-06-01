@@ -7,6 +7,8 @@
 
 #include "./include/sys_calls.h"
 
+typedef enum { BLOCKED = 0, READY, RUNNING, ZOMBIE, DEAD } ProcessStatus;
+
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -228,7 +230,48 @@ int wait_pid(uint16_t pid) {
 }
 
 int ps() {
-	return u_sys_ps();
+	char *statusNames[4]	   = {"BLOCKED", "READY", "RUNNING", "ZOMBIE"};
+	ProcessInfoList *snapshots = (ProcessInfoList *) u_sys_ps();
+	printStrColor("\n\n========================================================"
+				  "==========================\n",
+				  WHITE);
+	for (int i = 0; i < snapshots->length; i++) {
+		ProcessInfo *snapshot = &snapshots->snapshotList[i];
+		// printf("%s\n", statusNames[snapshot->status]);
+
+		printStr("\n");
+		printStrColor("PID: ", LIGHT_GREEN);
+		printInteger(snapshot->pid);
+		printStr(" ");
+		printStrColor("Name:", LIGHT_GREEN);
+		printStr(snapshot->name);
+		printStr(" ");
+		printStrColor("Status:", LIGHT_GREEN);
+		printStr(statusNames[snapshot->status]);
+		printStr(" ");
+		printStrColor("Priority:", LIGHT_GREEN);
+		printInteger(snapshot->priority);
+		printStr(" ");
+		printStrColor("Memory Used:", LIGHT_GREEN);
+		printInteger(snapshot->memoryUsed);
+		printStr("\n\n");
+		printStrColor("Stack Pointer:", LIGHT_GREEN);
+		printHex(snapshot->stackPointer);
+		printStr(" ");
+		printStrColor("Base Pointer:", LIGHT_GREEN);
+		printHex(snapshot->basePointer);
+		printStr(" ");
+		printStrColor("Foreground:", LIGHT_GREEN);
+		printInteger(snapshot->foreground);
+		printStr("\n\n");
+		printStrColor("========================================================"
+					  "==========================\n",
+					  WHITE);
+		// free(snapshots->snapshotList[i].name);
+	}
+	freeMemory(snapshots->snapshotList);
+	freeMemory(snapshots);
+	return 0;
 }
 
 int pipeOpen(uint16_t pid, uint8_t mode) {

@@ -3,8 +3,6 @@ TODO list
 
 = KERNEL:
 
-  - copia de la memoria (para mem)
-
   - arreglar memory manager no buddy
 
   DONE:
@@ -37,21 +35,19 @@ TODO list
 
     - ctrl + D (envio de EOF)
 
-  - mem: Imprime el estado de la memoria.
+  - cat: Imprime el stdin tal como lo recibe (falta EOF).
 
-  - loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
-
-  - cat: Imprime el stdin tal como lo recibe.
-
-  - wc: Cuenta la cantidad de líneas del input.
+  - wc: Cuenta la cantidad de líneas del input. (falta EOF)
 
   - phylo: Implementa el problema de los filósofos comensales... (ver consigna)
 
   DONE: 
-  + ps (esta conectado, no imprime zombies, tmp foreground y un par de cosas mas) pasar los prints al userland para q funcione el pipeo 
-  Imprime la lista de todos los procesos con sus propiedades: nombre, ID,
-  prioridad, stack y base pointer, foreground y cualquier otra variable que consideren
-  necesaria.
+
+  + loop: Imprime su ID con un saludo cada una determinada cantidad de segundos.
+
+  + mem: Imprime el estado de la memoria.
+
+  + ps 
 
   + kill (chequear, no funciona bien)
 

@@ -7,6 +7,7 @@
 #include <schedule.h>
 #include <stdlib.h>
 #include <videoDriver.h>
+#include <shared.h>
 
 #define QTY_READY_LEVELS 5
 #define MAX_PRIORITY 4
@@ -441,6 +442,45 @@ int32_t unblockProcess(uint16_t pid) {
 	// force reschedule
 	scheduler->remainingQuantum = 0;
 	return 0;
+}
+
+ProcessInfoList *getProcessInfoList() {
+	SchedulerADT scheduler			= getSchedulerADT();
+	ProcessInfoList *snapshotsArray = allocMemory(sizeof(ProcessInfoList));
+	if (snapshotsArray == NULL) {
+		return NULL; // Error al asignar memoria
+	}
+
+	ProcessInfo *psArray =
+		allocMemory(scheduler->qtyProcesses * sizeof(ProcessInfo));
+	if (psArray == NULL) {
+		freeMemory(snapshotsArray);
+		return NULL; // Error al asignar memoria
+	}
+
+	int processIndex = 0;
+
+	// Cargar información del proceso IDLE
+	loadInfo(&psArray[processIndex++],
+			 (ProcessADT) scheduler->processes[IDLE_PID]->data);
+
+	// Cargar información de los procesos en los niveles de prioridad
+	for (int lvl = QTY_READY_LEVELS; lvl >= 0; lvl--) {
+		begin(scheduler->levels[lvl]);
+		while (hasNext(scheduler->levels[lvl])) {
+			ProcessADT nextProcess = (ProcessADT) next(scheduler->levels[lvl]);
+			loadInfo(&psArray[processIndex], nextProcess);
+			processIndex++;
+			if (get_status(nextProcess) != ZOMBIE) {
+				getZombiesInfo(processIndex, psArray, nextProcess);
+				processIndex += getLength(getZombieChildren(nextProcess));
+			}
+		}
+	}
+
+	snapshotsArray->length		 = scheduler->qtyProcesses;
+	snapshotsArray->snapshotList = psArray;
+	return snapshotsArray;
 }
 
 //=======================TODO=======================//

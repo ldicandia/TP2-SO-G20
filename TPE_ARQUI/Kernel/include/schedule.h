@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <process.h>
+#include <shared.h>
 
 #define MAX_PROCESSES (1 << 12)
 #define QTY_READY_LEVELS 5
@@ -47,7 +48,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue);
 uint16_t getpid();
 
 // Obtiene un snapshot de los procesos
-// ProcessSnapshotList *getProcessSnapshot();
+ProcessInfoList *getProcessInfoList();
 
 // Obtiene el valor de retorno de un proceso zombie
 int32_t getZombieRetValue(uint16_t pid);

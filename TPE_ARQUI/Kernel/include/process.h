@@ -2,6 +2,7 @@
 #define _PROCESS_H
 #include <stdint.h>
 #include <linkedListADT.h>
+#include <shared.h>
 #define BUILT_IN_DESCRIPTORS 3 // stdin, stdout, stderr
 #define STDIN 0
 #define STDOUT 1
@@ -75,5 +76,10 @@ void incrementWaitingTime(ProcessADT process);
 uint16_t getWaitingTime(ProcessADT process);
 
 void setWaitingTime(ProcessADT process, uint16_t waitingTime);
+
+ProcessInfo *loadInfo(ProcessInfo *snapshot, ProcessADT process);
+
+int getZombiesInfo(int processIndex, ProcessInfo psArray[],
+				   ProcessADT nextProcess);
 
 #endif

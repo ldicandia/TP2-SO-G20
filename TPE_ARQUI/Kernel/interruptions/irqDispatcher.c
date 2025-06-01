@@ -277,14 +277,14 @@ static uint64_t sys_getPipe() {
 	return getLastFreePipe();
 }
 
-static uint64_t sys_ps() {
-	// driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
-	// driver_printStr("Error: Priority too high\n", (Color) {0xFF, 0x00,
-	// 0x00});
+// static uint64_t sys_ps() {
+// 	SchedulerADT scheduler = getSchedulerADT();
+// 	printAllProcesses(scheduler);
+// 	return 1;
+// }
 
-	SchedulerADT scheduler = getSchedulerADT();
-	printAllProcesses(scheduler);
-	return 1;
+static ProcessInfoList *sys_ps() {
+	return getProcessInfoList();
 }
 
 static uint64_t sys_sem_wait(uint16_t sem_id) {

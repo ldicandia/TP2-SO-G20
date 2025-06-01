@@ -14,7 +14,7 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 22
+#define COMMANDS_SIZE 23
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -49,7 +49,7 @@ char *command_names[] = {
 	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
 	"testMemory", "testProcesses", "testPrio",	"testSync",	 "ps",
 	"mem",		  "loop",		   "kill",		"nice",		 "block",
-	"ws",		  "filter"};
+	"wc",		  "filter",		   "cat"};
 
 int atoi(const char *str) {
 	int res	 = 0;
@@ -98,7 +98,7 @@ static int _dec_wrap(int argc, char **argv) {
 	return 0;
 }
 static int _ps_wrap(int argc, char **argv) {
-	ps(); // asume que existe ps()
+	ps();
 	return 0;
 }
 static int _mem_wrap(int argc, char **argv) {
@@ -128,8 +128,20 @@ static int _mem_wrap(int argc, char **argv) {
 	printStr("\n");
 	return 0;
 }
-static int _loop_wrap(int argc, char **argv) {
-	// infiniteLoop(0, NULL);
+static int loop(int argc, char **argv) {
+	if (argc < 2) {
+		printStr("\nUsage: loop <miliseconds>");
+		return -1;
+	}
+	printStr("\ninicio PID: ");
+	printInteger(getpid());
+	printStr("\n");
+	while (1) {
+		printStr("Hola desde PID: ");
+		printInteger(getpid());
+		printStr("\n");
+		sleep_miliseconds(atoi(argv[1]));
+	}
 	return 0;
 }
 static int _kill_wrap(int argc, char **argv) {
@@ -157,8 +169,22 @@ static int _block_wrap(int argc, char **argv) {
 
 	return 0;
 }
-static int _ws_wrap(int argc, char **argv) {
-	// ws(); // muestra working set
+static int wc(int argc, char **argv) {
+	int lineCount = 0;
+	char c;
+
+	// Leer caracteres hasta EOF
+	while ((c = getCharInt()) != EOF) {
+		if (c == '\n') {
+			lineCount++;
+		}
+		printChar(c);
+	}
+
+	// Imprimir el resultado
+	printStr("Line count: ");
+	printInteger(lineCount);
+	printChar('\n');
 	return 0;
 }
 
@@ -182,6 +208,14 @@ static int filter(int argc, char **argv) { // filter vowels
 	return 0;
 }
 
+static int cat(int argc, char **argv) {
+	char c;
+	while ((c = getCharInt()) != EOF) {
+		printChar(c);
+	}
+	return 0;
+}
+
 // 2) Cambiamos el array de handlers para que apunte a MainFunction:
 MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) user_time,
@@ -199,12 +233,13 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) test_sync,
 											_ps_wrap,
 											_mem_wrap,
-											_loop_wrap,
+											(MainFunction) loop,
 											_kill_wrap,
 											_nice_wrap,
 											_block_wrap,
-											_ws_wrap,
-											(MainFunction) filter};
+											(MainFunction) wc,
+											(MainFunction) filter,
+											(MainFunction) cat};
 
 void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
@@ -367,7 +402,7 @@ void help() {
 	// nuevos comandos
 	printStrColor("\n ps                       list processes", WHITE);
 	printStrColor("\n mem                      show memory info", WHITE);
-	printStrColor("\n loop                     launch infinite loop", WHITE);
+	printStrColor("\n loop <sleep ms>          launch infinite loop", WHITE);
 	printStrColor("\n kill <pid>               terminate a process", WHITE);
 	printStrColor("\n nice <pid> <prio>        change process priority", WHITE);
 	printStrColor("\n block <pid>              block a process", WHITE);

@@ -10,6 +10,7 @@
 #include <schedule.h>
 #include <linkedListADT.h>
 #include <pipeManager.h>
+#include <shared.h>
 
 #define STACK_SIZE (1 << 12) // 4KB stack size
 
@@ -118,6 +119,26 @@ void freeProcess(ProcessADT process) {
 
 int processIsWaiting(ProcessADT process, uint16_t pidToWait) {
 	return process->waitingForPid == pidToWait && process->status == BLOCKED;
+}
+
+ProcessInfo *loadInfo(ProcessInfo *snapshot, ProcessADT process) {
+	snapshot->name = allocMemory(strlen(process->name) + 1);
+	strcpy(snapshot->name, process->name);
+	snapshot->pid		   = process->pid;
+	snapshot->stackPointer = (uint64_t) process->stackBase;
+	snapshot->priority	   = process->priority;
+	snapshot->status	   = process->status;
+	snapshot->foreground   = process->fileDescriptors[STDIN] == STDIN;
+	return snapshot;
+}
+
+int getZombiesInfo(int processIndex, ProcessInfo psArray[],
+				   ProcessADT nextProcess) {
+	LinkedListADT zombieChildren = nextProcess->zombieChildren;
+	begin(zombieChildren);
+	while (hasNext(zombieChildren))
+		loadInfo(&psArray[processIndex++], (ProcessADT) next(zombieChildren));
+	return processIndex;
 }
 
 //==============================================================================================================
