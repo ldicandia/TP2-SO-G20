@@ -1,14 +1,16 @@
 MM ?= -DBUDDY
 
-all: bootloader kernel userland image
+all: shared bootloader kernel userland image
 
+shared:
+	cd Shared; make all
 bootloader:
 	cd Bootloader; make all
 
-kernel:
+kernel: shared
 	cd Kernel; make all MM=$(MM)
 
-userland:
+userland: shared
 	cd Userland; make all
 
 image: kernel bootloader userland
@@ -25,6 +27,7 @@ clean:
 	cd Image; make clean
 	cd Kernel; make clean
 	cd Userland; make clean
+	cd Shared; make clean
 	find . -type f -name "*.Zone.Identifier" -exec rm -f {} +
 	rm -f Shared/*.o
 

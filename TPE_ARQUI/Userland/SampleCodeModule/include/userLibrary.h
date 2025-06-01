@@ -4,6 +4,7 @@
 #include <color.h>
 #include <stdint.h>
 #include <userLibrary.h>
+#include <shared.h>
 
 typedef int (*MainFunction)(int argc, char **args);
 

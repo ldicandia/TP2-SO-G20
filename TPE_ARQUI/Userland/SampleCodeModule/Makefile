@@ -15,7 +15,7 @@ $(MODULE): $(OBJECTS) $(OBJECTS_SHARED) $(OBJECTS_ASM)
 	$(GCC) $(GCCFLAGS) -I./include -T sampleCodeModule.ld -Wl,--oformat=elf64-x86-64 _loader.c $(OBJECTS_ASM) $(OBJECTS) $(OBJECTS_SHARED) -o ../0000-sampleCodeModule.elf 
 
 %.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I./include -I../../Shared -c $< -o $@
 
 obj/%.asm.o: asm/%.asm
 	mkdir -p obj

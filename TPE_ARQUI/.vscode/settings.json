@@ -15,8 +15,8 @@
         "new": "c",
         "ostream": "c",
         "streambuf": "c",
-        "semaphore.h": "c",
-        "semaphoremanager.h": "c"
+        "stdlib.h": "c",
+        "sys_calls.h": "c"
     },
     "makefile.configureOnOpen": false
 }
