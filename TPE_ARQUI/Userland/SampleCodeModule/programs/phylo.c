@@ -4,40 +4,69 @@
 #include <userLibrary.h>
 #include <phylo.h>
 
+#define MUTEX 30
+#define MAX_PHILOSOPHERS 32
+#define MIN_PHILOSOPHERS 3
+
 static int numPhilosophers = 5;
 static State states[MAX_PHILOSOPHERS];
 static int semaphores[MAX_PHILOSOPHERS];
 
-static char *intToChar(int n) {
-	static char buffer[2];
-	if (n < 0 || n > 9) {
-		buffer[0] = '?'; // Error case
-		buffer[1] = '\0';
-		return buffer;
+static char *intToChar(int i) {
+	static char buffer[12]; // Enough space for 32-bit integer
+	int j = 0;
+
+	if (i < 0) {
+		buffer[j++] = '-';
+		i			= -i;
 	}
-	buffer[0] = '0' + n; // Convert int to char
-	buffer[1] = '\0';
+
+	if (i == 0) {
+		buffer[j++] = '0';
+	}
+
+	while (i > 0) {
+		buffer[j++] = (i % 10) + '0';
+		i /= 10;
+	}
+
+	buffer[j] = '\0';
+
+	// Reverse the string
+	for (int k = 0; k < j / 2; k++) {
+		char temp		  = buffer[k];
+		buffer[k]		  = buffer[j - k - 1];
+		buffer[j - k - 1] = temp;
+	}
+
 	return buffer;
 }
 
+static int mutex;
+
 void initPhilosophers() {
-	for (int i = 0; i < MAX_PHILOSOPHERS; i++) {
+	mutex = user_sem_open(MUTEX, 1);
+	for (int i = 0; i < 5; i++) {
 		states[i]	  = THINKING;
-		semaphores[i] = user_sem_open(i, 1);
+		semaphores[i] = user_sem_open(i + MUTEX, 0);
 		if (semaphores[i] == -1) {
 			printStr("Error initializing semaphore\n");
 			return;
 		}
 
+		user_sem_wait(MUTEX);
+
 		char *idStr = intToChar(i);
 
 		char *args[] = {"philo", idStr, NULL};
 		int pid =
-			create_process((MainFunction) philosopher, args, "philosopher", 0);
+			create_process((MainFunction) philosopher, args, "philosopher", 3);
 		if (pid == -1) {
 			printStr("Error creating philosopher process\n");
 			return;
 		}
+
+		user_sem_post(MUTEX);
 	}
 }
 
@@ -61,60 +90,72 @@ void test(int philosopher) {
 		states[(philosopher + 1) % numPhilosophers] != EATING) {
 		states[philosopher] = EATING;
 		user_sem_post(semaphores[philosopher]);
+		printTable();
 	}
 }
 
 void takeForks(int philosopher) {
+	user_sem_wait(MUTEX); // lock
 	states[philosopher] = HUNGRY;
 	test(philosopher);
+	user_sem_post(MUTEX); // unlock
 	user_sem_wait(semaphores[philosopher]);
 }
 
 void putForks(int philosopher) {
+	user_sem_wait(MUTEX); // lock
 	states[philosopher] = THINKING;
+	printTable();
 	test((philosopher + numPhilosophers - 1) % numPhilosophers);
 	test((philosopher + 1) % numPhilosophers);
+	user_sem_post(MUTEX); // unlock
 }
 
 int philosopher(int argc, char **argv) {
-	int id = atoi(argv[1]); // Obtener el ID del filósofo desde los argumentos
+	int id = atoi(argv[1]);
 	while (1) {
-		sleep_miliseconds(1000); // Thinking
+		sleep_miliseconds(2000); // Pensar por un tiempo aleatorio
 		takeForks(id);
-		sleep_miliseconds(1000); // Eating
+		sleep_miliseconds(3000); // Comer por un tiempo aleatorio
 		putForks(id);
 	}
-	return 0;
 }
 
 void adjustPhilosophers(char input) {
+	user_sem_wait(MUTEX); // Lock critical section
 	if (input == 'a' && numPhilosophers < MAX_PHILOSOPHERS) {
 		numPhilosophers++;
-		states[numPhilosophers - 1]		= THINKING;
-		semaphores[numPhilosophers - 1] = user_sem_open(numPhilosophers - 1, 1);
+		states[numPhilosophers - 1] = THINKING;
+		semaphores[numPhilosophers - 1] =
+			user_sem_open(numPhilosophers - 1 + MUTEX, 0);
 		if (semaphores[numPhilosophers - 1] == -1) {
 			printStr("Error initializing semaphore for new philosopher\n");
-			numPhilosophers--; // Revertir el cambio si falla
+			numPhilosophers--;
+		}
+		else {
+			char *idStr	 = intToChar(numPhilosophers - 1);
+			char *args[] = {"philo", idStr, NULL};
+			int pid		 = create_process((MainFunction) philosopher, args,
+										  "philosopher", 3);
+			if (pid == -1) {
+				printStr("Error creating philosopher process\n");
+			}
 		}
 	}
-	else if (input == 'r' && numPhilosophers > MIN_PHILOSOPHERS) {
-		numPhilosophers--;
-		user_sem_close(semaphores[numPhilosophers]); // Cerrar el semáforo del
-													 // filósofo eliminado
-	}
+	printTable();
+	user_sem_post(MUTEX); // Unlock critical section
 }
 
 void phylo() {
 	initPhilosophers();
-	printStr("Press 'a' to add a philosopher, 'r' to remove one.\n");
 	clear();
-
+	printStr("Press 'a' to add a philosopher, 'r' to remove one.\n");
 	while (1) {
 		char input = getChar();
 		if (input == 'a' || input == 'r') {
 			adjustPhilosophers(input);
 		}
-		printTable();
-		sleep_miliseconds(500);
+		// printTable();
+		sleep_miliseconds(1);
 	}
 }
