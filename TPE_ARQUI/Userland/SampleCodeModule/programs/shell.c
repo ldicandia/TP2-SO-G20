@@ -1,5 +1,3 @@
-
-
 #include "shell.h"
 
 #include <snake.h>
@@ -15,6 +13,7 @@
 #include "userLibrary.h"
 #define MAX_BUFFER 254
 #define COMMANDS_SIZE 23
+#define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -477,6 +476,16 @@ void readCommand() {
 	if (buffer[0] != '\0') {
 		copy_command(last_command, buffer);
 	}
+
+	int background = 0; // Flag to determine background execution
+	if (buffer[0] == '&') {
+		background = 1;
+		// Shift the buffer to remove the '&'
+		for (int i = 0; buffer[i] != '\0'; i++) {
+			buffer[i] = buffer[i + 1];
+		}
+	}
+
 	if (strchr(buffer, '|')) {
 		// split on '|'
 		char *bar		= strchrAndReturn(buffer, '|');
@@ -523,14 +532,14 @@ void readCommand() {
 
 		printStr("\nSpawning left command: ");
 		printStr(command_names[i1]);
-		int16_t fileDescriptors1[] = {0, pipeId, 2};
+		int16_t fileDescriptors1[] = {STDIN, pipeId, STDERR};
 		// spawn left, redirect its stdout → fds[1]
 		int pid1 = create_process_with_fds(
 			command_func[i1], argv1, command_names[i1], 1, fileDescriptors1);
 
 		printStr("\nSpawning right command: ");
 		printStr(command_names[i2]);
-		int16_t fileDescriptors2[] = {pipeId, 1, 2};
+		int16_t fileDescriptors2[] = {pipeId, STDOUT, STDERR};
 		// spawn right, redirect its stdin ← fds[0]
 		int pid2 = create_process_with_fds(
 			command_func[i2], argv2, command_names[i2], 1, fileDescriptors2);
@@ -547,12 +556,12 @@ void readCommand() {
 
 	for (int i = 0; i < COMMANDS_SIZE; i++) {
 		if (strcmp_shell(buffer, command_names[i])) {
-			// built-ins (índices 0,1,2)
+			// built-ins (indices 0,1,2)
 			if (i <= 2) {
 				command_func[i](0, NULL);
 			}
 			else {
-				// parseo muy sencillo de argumentos
+				// parse arguments
 				char *argv[4] = {NULL};
 				int argc	  = 0;
 				char *tok	  = strtok(buffer, " ");
@@ -561,9 +570,24 @@ void readCommand() {
 					tok			 = strtok(NULL, " ");
 				}
 				argv[argc] = NULL;
-				int pid =
-					create_process(command_func[i], argv, command_names[i], 1);
-				wait_pid(pid); // Espera a que el proceso termine
+
+				// int pid = create_process(command_func[i], argv,
+				// 						 command_names[i], background);
+				// if (background) {
+				// 	wait_pid(pid);
+				// }
+
+				int pid = 0;
+				if (background) {
+					pid = create_process_with_fds(
+						command_func[i], argv, command_names[i], 1,
+						(int16_t[]) {DEV_NULL, STDOUT, STDERR});
+				}
+				else {
+					pid = create_process_with_fds(
+						command_func[i], argv, command_names[i], 1,
+						(int16_t[]) {STDIN, STDOUT, STDERR});
+				}
 			}
 			return;
 		}

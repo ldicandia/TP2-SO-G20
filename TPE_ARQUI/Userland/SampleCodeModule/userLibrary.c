@@ -232,14 +232,13 @@ int wait_pid(uint16_t pid) {
 int ps() {
 	char *statusNames[4]	   = {"BLOCKED", "READY", "RUNNING", "ZOMBIE"};
 	ProcessInfoList *snapshots = (ProcessInfoList *) u_sys_ps();
-	printStrColor("\n\n========================================================"
+	printStrColor("\n========================================================"
 				  "==========================\n",
 				  WHITE);
 	for (int i = 0; i < snapshots->length; i++) {
 		ProcessInfo *snapshot = &snapshots->snapshotList[i];
 		// printf("%s\n", statusNames[snapshot->status]);
-
-		printStr("\n");
+		// printStr("\n");
 		printStrColor("PID: ", LIGHT_GREEN);
 		printInteger(snapshot->pid);
 		printStr(" ");
@@ -254,7 +253,7 @@ int ps() {
 		printStr(" ");
 		printStrColor("Memory Used:", LIGHT_GREEN);
 		printInteger(snapshot->memoryUsed);
-		printStr("\n\n");
+		printStr("\n");
 		printStrColor("Stack Pointer:", LIGHT_GREEN);
 		printHex(snapshot->stackPointer);
 		printStr(" ");
@@ -263,7 +262,7 @@ int ps() {
 		printStr(" ");
 		printStrColor("Foreground:", LIGHT_GREEN);
 		printInteger(snapshot->foreground);
-		printStr("\n\n");
+		printStr("\n");
 		printStrColor("========================================================"
 					  "==========================\n",
 					  WHITE);

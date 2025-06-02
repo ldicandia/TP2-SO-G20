@@ -132,11 +132,7 @@ void keyboard_master(uint8_t keyPressed) {
 
 // Función para obtener un caracter del buffer de teclado
 char getCharFromKeyboard() {
-	char c = keyboard_buffer_pop();
-	if (c == EOF) {
-		driver_printStr("", (Color) {0xFF, 0x00, 0x00});
-	}
-	return c;
+	return keyboard_buffer_pop();
 }
 
 // Handler de Ctrl + C
