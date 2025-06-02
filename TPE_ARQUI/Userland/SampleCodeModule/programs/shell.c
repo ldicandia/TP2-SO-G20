@@ -9,10 +9,11 @@
 #include <test_prio.h>
 #include <sys_calls.h>
 #include <test_sync.h>
+#include <phylo.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 23
+#define COMMANDS_SIZE 24
 #define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
@@ -48,7 +49,7 @@ char *command_names[] = {
 	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
 	"testMemory", "testProcesses", "testPrio",	"testSync",	 "ps",
 	"mem",		  "loop",		   "kill",		"nice",		 "block",
-	"wc",		  "filter",		   "cat"};
+	"wc",		  "filter",		   "cat",		"phylo"};
 
 int atoi(const char *str) {
 	int res	 = 0;
@@ -216,6 +217,11 @@ static int cat(int argc, char **argv) {
 	return 0;
 }
 
+static int phylo_wrap(int argc, char **argv) {
+	phylo();
+	return 0;
+}
+
 // 2) Cambiamos el array de handlers para que apunte a MainFunction:
 MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) user_time,
@@ -239,7 +245,8 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											_block_wrap,
 											(MainFunction) wc,
 											(MainFunction) filter,
-											(MainFunction) cat};
+											(MainFunction) cat,
+											(MainFunction) phylo_wrap};
 
 void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
@@ -406,9 +413,10 @@ void help() {
 	printStrColor("\n kill <pid>               terminate a process", WHITE);
 	printStrColor("\n nice <pid> <prio>        change process priority", WHITE);
 	printStrColor("\n block <pid>              block a process", WHITE);
-	printStrColor("\n ws                       show working set", WHITE);
 	printStrColor("\n filter                   filter vowels from input",
 				  WHITE);
+	printStrColor("\n cat                      prints STDIN", WHITE);
+	printStrColor("\n wc                       counts input lines", WHITE);
 	printStrColor("\n---------------------------------------------------",
 				  WHITE);
 }
@@ -587,6 +595,7 @@ void readCommand() {
 					pid = create_process_with_fds(
 						command_func[i], argv, command_names[i], 1,
 						(int16_t[]) {STDIN, STDOUT, STDERR});
+					wait_pid(pid);
 				}
 			}
 			return;
