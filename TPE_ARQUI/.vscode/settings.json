@@ -17,7 +17,8 @@
         "streambuf": "c",
         "stdlib.h": "c",
         "sys_calls.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "stdint.h": "c"
     },
     "makefile.configureOnOpen": false
 }

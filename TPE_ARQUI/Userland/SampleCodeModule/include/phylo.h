@@ -14,7 +14,7 @@ void printTable();
 void test(int philosopher);
 void takeForks(int philosopher);
 void putForks(int philosopher);
-void philosopher(int philosopher);
+int philosopher(int argc, char **argv);
 void adjustPhilosophers(char input);
 void phylo();
 
