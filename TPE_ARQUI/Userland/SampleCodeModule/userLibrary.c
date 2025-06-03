@@ -153,7 +153,7 @@ void exc_zerodiv() {
 }
 
 void printHex(uint64_t n) {
-	char hexbuf[16];
+	char hexbuf[20] = {0};
 	uint64ToHex(n, hexbuf);
 	printStr(hexbuf);
 }

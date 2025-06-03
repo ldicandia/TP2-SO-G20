@@ -184,9 +184,9 @@ static int wc(int argc, char **argv) {
 	}
 
 	// Imprimir el resultado
-	printStr("Line count: ");
+	printStr("\nLine count: ");
 	printInteger(lineCount);
-	printChar('\n');
+	printStr("\n");
 	return 0;
 }
 
@@ -211,21 +211,10 @@ static int filter(int argc, char **argv) {
 }
 
 static int cat(int argc, char **argv) {
-	char buffer[1024];
-	int i = 0;
 	char c;
-
-	while ((c = getCharInt()) != EOF && i < 1024 - 1) {
-		if (isChar(c) || c == ' ' || c == '\n' || c == '\r' || c == '|' ||
-			c == '&' || c == '=' || '-') {
-			buffer[i++] = c;
-		}
+	while ((c = getCharInt()) != EOF) {
+		printChar(c);
 	}
-	buffer[i] = '\0';
-	for (int j = 0; j < i; j++) {
-		printChar(buffer[j]);
-	}
-
 	return 0;
 }
 
