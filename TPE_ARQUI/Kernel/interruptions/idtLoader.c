@@ -25,11 +25,6 @@ extern void _interrupt_timerTick();
 extern void _exception_divideByZero();
 extern void _exception_invalidOpCode();
 extern void _irq00handler();
-extern void _irq01handler();
-extern void _irq02handler();
-extern void _irq03handler();
-extern void _irq04handler();
-extern void _irq05handler();
 
 DESCR_INT *idt = (DESCR_INT *) 0; // IDT de 255 entradas
 

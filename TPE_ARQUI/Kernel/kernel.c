@@ -4,7 +4,6 @@
 #include <keyboard.h>
 #include <lib.h>
 #include <moduleLoader.h>
-#include <naiveConsole.h>
 #include <stdint.h>
 #include <time.h>
 #include <videoDriver.h>

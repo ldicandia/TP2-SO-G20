@@ -1,11 +1,21 @@
 TODO list
 
 
+= FORMAT :
+
+- pvs-Studio
+
+- snake case
+
+- orden funciones
+
+- TADS
+
 = KERNEL:
 
-  - arreglar memory manager no buddy
-
   DONE:
+
+  + arreglar memory manager no buddy
 
   + semaforos
 

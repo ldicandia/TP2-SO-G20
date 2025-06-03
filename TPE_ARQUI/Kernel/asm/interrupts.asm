@@ -12,11 +12,6 @@ GLOBAL _exception_divideByZero
 GLOBAL _exception_invalidOpCode
 
 GLOBAL _irq00handler
-GLOBAL _irq01handler
-GLOBAL _irq02handler
-GLOBAL _irq03handler
-GLOBAL _irq04handler
-GLOBAL _irq05handler
 GLOBAL forceTimerTick
 
 
@@ -370,27 +365,6 @@ _irq00handler:
 	out 20h, al
 	popState
 	iretq
-;;;;
-
-;Keyboard
-_irq01handler:
-	irqHandlerMaster 1
-
-;Cascade pic never called
-_irq02handler:
-	irqHandlerMaster 2
-
-;Serial Port 2 and 4
-_irq03handler:
-	irqHandlerMaster 3
-
-;Serial Port 1 and 3
-_irq04handler:
-	irqHandlerMaster 4
-
-;USB
-_irq05handler:
-	irqHandlerMaster 5
 
 haltcpu:
 	cli

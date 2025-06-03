@@ -194,26 +194,6 @@ static void syscall_free(void *ptr) {
 	return;
 }
 
-// static int checkParams(uint8_t priority, int16_t fileDescriptors[]) {
-// 	// driver_printStr("\nPriority: ", (Color) {0xAA, 0xFF, 0xFF});
-// 	// driver_printNum(priority, (Color) {0xAA, 0xFF, 0xFF});
-// 	if (priority > MAX_PRIORITY) {
-// 		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
-// 		driver_printStr("Error: Priority too high\n",
-// 						(Color) {0xFF, 0x00, 0x00});
-// 		return -1;
-// 	}
-
-// 	if (fileDescriptors[STDIN] < 0 || fileDescriptors[STDOUT] < 0 ||
-// 		fileDescriptors[STDERR] < 0) {
-// 		driver_printStr("\n[Kernel]: ", (Color) {0xAA, 0xFF, 0xFF});
-// 		driver_printStr("Error: Invalid file descriptor\n",
-// 						(Color) {0xFF, 0x00, 0x00});
-// 		return -1;
-// 	}
-// 	return 1;
-// }
-
 // Create process
 static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 									 uint8_t priority,
@@ -275,12 +255,6 @@ static uint64_t sys_pipeClose(uint16_t pid) {
 static uint64_t sys_getPipe() {
 	return getLastFreePipe();
 }
-
-// static uint64_t sys_ps() {
-// 	SchedulerADT scheduler = getSchedulerADT();
-// 	printAllProcesses(scheduler);
-// 	return 1;
-// }
 
 static ProcessInfoList *sys_ps() {
 	return getProcessInfoList();

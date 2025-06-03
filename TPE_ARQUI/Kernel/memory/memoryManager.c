@@ -1,15 +1,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-// filepath:
-// c:\Users\poloa\OneDrive\Documentos\GitHub\g14-64607-63212-62837\TPE_ARQUI\Kernel\memoryManager.c
 
-// #ifdef USE_BUDDY_MEMORY_MANAGER
-
-// #ifndef BUDDY
 #ifdef OUR
 #include "memoryManager.h"
-// #include "buddyMemoryManager.h"
-
-// #else
 
 #include <defs.h>
 #include <stdint.h>
@@ -17,21 +9,21 @@
 #include <videoDriver.h>
 #include <shared.h>
 
-#define BLOCK_SIZE 32 // Tamaño mínimo de bloque
+#define BLOCK_SIZE 32
 #define HEADER_SIZE sizeof(BlockHeader)
 
 typedef struct BlockHeader {
-	uint64_t size;			  // Tamaño del bloque (sin header)
-	bool is_free;			  // Estado del bloque
-	struct BlockHeader *next; // Siguiente bloque
-	struct BlockHeader *prev; // Bloque anterior
+	uint64_t size;
+	bool is_free;
+	struct BlockHeader *next;
+	struct BlockHeader *prev;
 } BlockHeader;
 
 typedef struct MemoryManagerCDT {
-	BlockHeader *first_block; // Primer bloque de la lista
-	char *heap_start;		  // Inicio del heap
-	char *heap_end;			  // Final del heap
-	uint64_t total_size;	  // Tamaño total del heap
+	BlockHeader *first_block;
+	char *heap_start;
+	char *heap_end;
+	uint64_t total_size;
 } MemoryManagerCDT;
 
 MemoryManagerADT
@@ -43,7 +35,6 @@ createMemoryManager(void *const restrict memoryForMemoryManager,
 	memoryManager->heap_end	  = (char *) managedMemory + memAmount;
 	memoryManager->total_size = memAmount;
 
-	// Crear el primer bloque libre que ocupa todo el heap
 	memoryManager->first_block			= (BlockHeader *) managedMemory;
 	memoryManager->first_block->size	= memAmount - HEADER_SIZE;
 	memoryManager->first_block->is_free = true;
@@ -53,7 +44,6 @@ createMemoryManager(void *const restrict memoryForMemoryManager,
 	return memoryManager;
 }
 
-// Dividir un bloque si es necesario
 static void split_block(BlockHeader *block, uint64_t size) {
 	if (block->size > size + HEADER_SIZE + BLOCK_SIZE) {
 		BlockHeader *new_block =
@@ -71,9 +61,7 @@ static void split_block(BlockHeader *block, uint64_t size) {
 	}
 }
 
-// Fusionar bloques libres adyacentes
 static void coalesce_blocks(BlockHeader *block) {
-	// Fusionar con el siguiente bloque si está libre
 	while (block->next && block->next->is_free) {
 		block->size += block->next->size + HEADER_SIZE;
 		BlockHeader *next = block->next;
@@ -83,7 +71,6 @@ static void coalesce_blocks(BlockHeader *block) {
 		}
 	}
 
-	// Fusionar con el bloque anterior si está libre
 	if (block->prev && block->prev->is_free) {
 		block->prev->size += block->size + HEADER_SIZE;
 		block->prev->next = block->next;
@@ -100,11 +87,9 @@ void *allocMemory(const uint64_t memoryToAllocate) {
 		return NULL;
 	}
 
-	// Alinear el tamaño a múltiplos del tamaño de bloque
 	uint64_t aligned_size =
 		(memoryToAllocate + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
 
-	// Buscar primer bloque libre que sea suficientemente grande (First Fit)
 	BlockHeader *current = memoryManager->first_block;
 	while (current != NULL) {
 		if (current->is_free && current->size >= aligned_size) {
@@ -115,7 +100,7 @@ void *allocMemory(const uint64_t memoryToAllocate) {
 		current = current->next;
 	}
 
-	return NULL; // No hay memoria suficiente
+	return NULL;
 }
 
 MemoryManagerADT getMemoryManager() {
@@ -130,7 +115,6 @@ void freeMemory(void *ptr) {
 	BlockHeader *block = (BlockHeader *) ((char *) ptr - HEADER_SIZE);
 	block->is_free	   = true;
 
-	// Fusionar con bloques adyacentes libres
 	coalesce_blocks(block);
 }
 

@@ -50,7 +50,6 @@ void initializeKeyboard() {
 void keyboard_buffer_push(char c) {
 	int nextHead = (bufferHead + 1) % KEYBOARD_BUFFER_SIZE;
 	if (nextHead == bufferTail) {
-		// Buffer lleno
 		driver_printStr("Keyboard buffer overflow\n",
 						(Color) {0xFF, 0x00, 0x00});
 		return;
@@ -62,7 +61,6 @@ void keyboard_buffer_push(char c) {
 // Obtiene un caracter del buffer
 char keyboard_buffer_pop() {
 	if (bufferHead == bufferTail) {
-		// Buffer vacío
 		return 0;
 	}
 	char c	   = keyboardBuffer[bufferTail];
@@ -115,7 +113,6 @@ void keyboard_master(uint8_t keyPressed) {
 	if (retChar == '7' && shift)
 		retChar = '&';
 
-	// Control de combinaciones especiales
 	if (ctrl && retChar == 'c') {
 		ctrl_c_handler();
 		return;
@@ -126,37 +123,31 @@ void keyboard_master(uint8_t keyPressed) {
 		return;
 	}
 
-	// Si es una tecla normal, la pusheamos al buffer
 	keyboard_buffer_push(retChar);
 }
 
-// Función para obtener un caracter del buffer de teclado
 char getCharFromKeyboard() {
 	return keyboard_buffer_pop();
 }
 
-// Handler de Ctrl + C
 void ctrl_c_handler() {
 	killForegroundProcess();
 	driver_printStr("\nCTRL + C\n", (Color) {0xFF, 0x00, 0x00});
 	return;
 }
 
-// Mantenemos esta función aunque ya no es llamada por el ASM
 void ctrl_d_handler() {
 	driver_printStr("", (Color) {0xFF, 0x00, 0x00});
 	keyboard_buffer_push(EOF);
 	return;
 }
 
-// Para limpiar actividad (opcional)
 int checkKeyboardActivity() {
 	int activity	 = keyboardActivity;
 	keyboardActivity = 0;
 	return activity;
 }
 
-// Borra el buffer (si querés usarlo en algún reset)
 void clearKeyboardBuffer() {
 	bufferHead = bufferTail = 0;
 }

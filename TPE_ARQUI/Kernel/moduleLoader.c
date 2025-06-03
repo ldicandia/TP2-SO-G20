@@ -2,7 +2,6 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <lib.h>
 #include <moduleLoader.h>
-#include <naiveConsole.h>
 #include <stdint.h>
 
 static void loadModule(uint8_t **module, void *targetModuleAddress);

@@ -104,24 +104,24 @@ spkOut:
 acquire:
     mov al, 1
 .spin:
-    pause                   ; evita busy-polling agresivo
-    xchg al, [rdi]          ; atomic test&set
+    pause                   
+    xchg al, [rdi]          
     test al, al
     jnz .spin
     ret
 
 release:
-    sfence                  ; full store fence (release semantics)
-    mov byte [rdi], 0       ; unlock
+    sfence                  
+    mov byte [rdi], 0       
     ret
 
 _xadd:
-    mov rax, rsi            ; valor a sumar
-    lock xadd [rdi], rax    ; atomic fetch-and-add
+    mov rax, rsi            
+    lock xadd [rdi], rax    
     ret
 
 _xchg:
-    mov rax, rsi            ; valor a intercambiar
-    lock xchg [rdi], rax    ; atomic swap
+    mov rax, rsi            
+    lock xchg [rdi], rax   
     ret
 
