@@ -13,7 +13,7 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 24
+#define COMMANDS_SIZE 25
 #define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
@@ -49,7 +49,7 @@ char *command_names[] = {
 	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
 	"testMemory", "testProcesses", "testPrio",	"testSync",	 "ps",
 	"mem",		  "loop",		   "kill",		"nice",		 "block",
-	"wc",		  "filter",		   "cat",		"phylo"};
+	"wc",		  "filter",		   "cat",		"phylo",	 "red"};
 
 int atoi(const char *str) {
 	int res	 = 0;
@@ -188,7 +188,7 @@ static int wc(int argc, char **argv) {
 	return 0;
 }
 
-static int filter(int argc, char **argv) { // filter vowels
+static int filter(int argc, char **argv) {
 	printStr("\nFilter vowels: ");
 	char c;
 	char lastChar = 0;
@@ -201,7 +201,6 @@ static int filter(int argc, char **argv) { // filter vowels
 		}
 	}
 
-	// si fue '\n', lo imprimimos y volvemos al shell
 	if (c == '\n') {
 		printStr("Ending Filter");
 		printChar('\n');
@@ -210,9 +209,28 @@ static int filter(int argc, char **argv) { // filter vowels
 }
 
 static int cat(int argc, char **argv) {
+	char buffer[1024];
+	int i = 0;
+	char c;
+
+	while ((c = getCharInt()) != EOF && i < 1024 - 1) {
+		if (isChar(c) || c == ' ' || c == '\n' || c == '\r' || c == '|' ||
+			c == '&' || c == '=' || '-') {
+			buffer[i++] = c;
+		}
+	}
+	buffer[i] = '\0';
+	for (int j = 0; j < i; j++) {
+		printChar(buffer[j]);
+	}
+
+	return 0;
+}
+
+static int red(int argc, char **argv) {
 	char c;
 	while ((c = getCharInt()) != EOF) {
-		printChar(c);
+		printCharColor(c, (Color) {0x00, 0x00, 0xFF});
 	}
 	return 0;
 }
@@ -246,7 +264,8 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) wc,
 											(MainFunction) filter,
 											(MainFunction) cat,
-											(MainFunction) phylo_wrap};
+											(MainFunction) phylo_wrap,
+											(MainFunction) red};
 
 void infiniteLoop(uint64_t argc, char *argv[]) {
 	while (1) {
@@ -538,14 +557,12 @@ void readCommand() {
 		// create a pipe in the kernel (your own syscall, not libc pipe())
 		int pipeId = getPipe();
 
-		printStr("\nSpawning left command: ");
 		printStr(command_names[i1]);
 		int16_t fileDescriptors1[] = {STDIN, pipeId, STDERR};
 		// spawn left, redirect its stdout → fds[1]
 		int pid1 = create_process_with_fds(
 			command_func[i1], argv1, command_names[i1], 1, fileDescriptors1);
 
-		printStr("\nSpawning right command: ");
 		printStr(command_names[i2]);
 		int16_t fileDescriptors2[] = {pipeId, STDOUT, STDERR};
 		// spawn right, redirect its stdin ← fds[0]

@@ -156,6 +156,6 @@ void phylo() {
 			adjustPhilosophers(input);
 		}
 		// printTable();
-		sleep_miliseconds(1);
+		// sleep_miliseconds(100);
 	}
 }

@@ -8,7 +8,7 @@
 
 typedef int (*MainFunction)(int argc, char **args);
 
-void printChar(char c);
+char printChar(char c);
 
 char getChar();
 

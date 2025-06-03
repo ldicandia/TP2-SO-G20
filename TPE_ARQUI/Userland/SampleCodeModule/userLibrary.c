@@ -35,8 +35,9 @@ static char *register_names[17] = {"RIP", "RAX", "RBX", "RCX", "RDX", "RSI",
 								   "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10",
 								   "R11", "R12", "R13", "R14", "R15"};
 
-void printChar(char c) {
+char printChar(char c) {
 	u_sys_write(STDOUT, &c, 1);
+	return c;
 }
 
 void printInteger(int n) {

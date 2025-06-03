@@ -20,6 +20,11 @@ int endless_loop1(int argc, char **argv) {
 
 // int create_process(void *code, char **args, char *name, uint8_t priority);
 
+#define DEV_NULL -1 // Assuming DEV_NULL is defined as 3 in your system
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 int test_processes(uint64_t argc, char *argv[]) {
 	printStr("\nEntered Testing Processes...\n");
 	uint64_t rq;
@@ -44,8 +49,9 @@ int test_processes(uint64_t argc, char *argv[]) {
 	while (1) {
 		for (rq = 0; rq < max_processes; rq++) {
 			char *args[]  = {"endless_loop", NULL};
-			p_rqs[rq].pid = create_process((MainFunction) endless_loop1, args,
-										   "endless_loop", 0);
+			p_rqs[rq].pid = create_process_with_fds(
+				(MainFunction) endless_loop1, args, "endless_loop", 0,
+				(int16_t[]) {DEV_NULL, STDOUT, STDERR});
 
 			if (p_rqs[rq].pid == -1) {
 				printStr("test_processes: ERROR creating process\n");

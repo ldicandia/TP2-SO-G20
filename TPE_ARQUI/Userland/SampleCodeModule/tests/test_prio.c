@@ -64,6 +64,11 @@ void endless_pid(int argc, char **argv) {
 	}
 }
 
+#define DEV_NULL -1 // Assuming DEV_NULL is defined as 3 in your system
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 int test_prio() {
 	int64_t pids[TOTAL_PROCESSES];
 	uint64_t i;
@@ -72,8 +77,10 @@ int test_prio() {
 
 	for (i = 0; i < TOTAL_PROCESSES; i++) {
 		char *args_pid[] = {"endless_loopA", intToChar(i), NULL};
-		pids[i] =
-			create_process((MainFunction) endless_pid, args_pid, "print_A", 2);
+
+		pids[i] = create_process_with_fds(
+			(MainFunction) endless_pid, args_pid, "print_A", 2,
+			(int16_t[]) {DEV_NULL, STDOUT, STDERR});
 	}
 
 	bussy_wait(WAIT);

@@ -23,6 +23,4 @@ MemoryManagerADT getMemoryManager(void);
 
 void freeMemory(void *ptr);
 
-
-
 #endif
