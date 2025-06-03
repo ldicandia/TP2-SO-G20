@@ -17,22 +17,21 @@
 #include <videoDriver.h>
 #include <shared.h>
 
-#define MAX_BLOCKS 1024 // Máxima cantidad de bloques a trackear
+#define BLOCK_SIZE 32 // Tamaño mínimo de bloque
+#define HEADER_SIZE sizeof(BlockHeader)
 
-#define RED (Color){0x00, 0x00, 0xFF}
+typedef struct BlockHeader {
+	uint64_t size;			  // Tamaño del bloque (sin header)
+	bool is_free;			  // Estado del bloque
+	struct BlockHeader *next; // Siguiente bloque
+	struct BlockHeader *prev; // Bloque anterior
+} BlockHeader;
 
-// Estructura de tracking de memoria asignada
-typedef struct MemoryBlock {
-	void *address;
-	uint64_t size;
-} MemoryBlock;
-
-// Estructura del memory manager
 typedef struct MemoryManagerCDT {
-	char *nextAddress;	 // Siguiente dirección disponible para asignación
-	char *endAddress;	 // Fin del área de memoria gestionada
-	MemoryBlock *blocks; // Array de bloques asignados
-	uint16_t blockCount; // Cantidad actual de bloques usados
+	BlockHeader *first_block; // Primer bloque de la lista
+	char *heap_start;		  // Inicio del heap
+	char *heap_end;			  // Final del heap
+	uint64_t total_size;	  // Tamaño total del heap
 } MemoryManagerCDT;
 
 MemoryManagerADT
@@ -40,112 +39,127 @@ createMemoryManager(void *const restrict memoryForMemoryManager,
 					void *const restrict managedMemory, uint64_t memAmount) {
 	MemoryManagerADT memoryManager = (MemoryManagerADT) memoryForMemoryManager;
 
-	// Reservamos al inicio un espacio para los bloques
-	memoryManager->blocks = (MemoryBlock *) managedMemory;
+	memoryManager->heap_start = (char *) managedMemory;
+	memoryManager->heap_end	  = (char *) managedMemory + memAmount;
+	memoryManager->total_size = memAmount;
 
-	memoryManager->blockCount = 0;
-
-	// Espacio restante para asignación real al usuario
-	char *startOfUserMemory =
-		(char *) managedMemory + sizeof(MemoryBlock) * MAX_BLOCKS;
-
-	memoryManager->nextAddress = startOfUserMemory;
-	memoryManager->endAddress  = (char *) managedMemory + memAmount;
+	// Crear el primer bloque libre que ocupa todo el heap
+	memoryManager->first_block			= (BlockHeader *) managedMemory;
+	memoryManager->first_block->size	= memAmount - HEADER_SIZE;
+	memoryManager->first_block->is_free = true;
+	memoryManager->first_block->next	= NULL;
+	memoryManager->first_block->prev	= NULL;
 
 	return memoryManager;
 }
 
-// Asumimos que esta dirección está seteada correctamente en la parte del kernel
-MemoryManagerADT getMemoryManager() {
-	return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
+// Dividir un bloque si es necesario
+static void split_block(BlockHeader *block, uint64_t size) {
+	if (block->size > size + HEADER_SIZE + BLOCK_SIZE) {
+		BlockHeader *new_block =
+			(BlockHeader *) ((char *) block + HEADER_SIZE + size);
+		new_block->size	   = block->size - size - HEADER_SIZE;
+		new_block->is_free = true;
+		new_block->next	   = block->next;
+		new_block->prev	   = block;
+
+		if (block->next) {
+			block->next->prev = new_block;
+		}
+		block->next = new_block;
+		block->size = size;
+	}
 }
 
-// Agrega un bloque al array de tracking
-static void addBlock(MemoryManagerADT memoryManager, void *address,
-					 uint64_t size) {
-	if (memoryManager->blockCount >= MAX_BLOCKS) {
-		driver_printStr("addBlock error: max blocks reached\n", RED);
-		return;
-	}
-	memoryManager->blocks[memoryManager->blockCount].address = address;
-	memoryManager->blocks[memoryManager->blockCount].size	 = size;
-	memoryManager->blockCount++;
-}
-
-// Elimina un bloque del tracking si coincide con la dirección dada
-static bool removeBlock(MemoryManagerADT memoryManager, void *address) {
-	if (memoryManager == NULL || address == NULL) {
-		driver_printStr("removeBlock error: null argument\n", RED);
-		return false;
-	}
-	for (int i = 0; i < memoryManager->blockCount; i++) {
-		if (memoryManager->blocks[i].address == address) {
-			// Reemplazamos el bloque eliminado con el último bloque
-			memoryManager->blocks[i] =
-				memoryManager->blocks[memoryManager->blockCount - 1];
-			memoryManager->blockCount--;
-			return true;
+// Fusionar bloques libres adyacentes
+static void coalesce_blocks(BlockHeader *block) {
+	// Fusionar con el siguiente bloque si está libre
+	while (block->next && block->next->is_free) {
+		block->size += block->next->size + HEADER_SIZE;
+		BlockHeader *next = block->next;
+		block->next		  = next->next;
+		if (next->next) {
+			next->next->prev = block;
 		}
 	}
-	// driver_printStr("removeBlock warning: block not found\n", RED);
-	return false; // No encontrado
+
+	// Fusionar con el bloque anterior si está libre
+	if (block->prev && block->prev->is_free) {
+		block->prev->size += block->size + HEADER_SIZE;
+		block->prev->next = block->next;
+		if (block->next) {
+			block->next->prev = block->prev;
+		}
+	}
 }
 
-// Asigna memoria y guarda el bloque
 void *allocMemory(const uint64_t memoryToAllocate) {
 	MemoryManagerADT memoryManager = getMemoryManager();
 
 	if (memoryToAllocate == 0 || memoryManager == NULL) {
-		driver_printStr(
-			"allocMemory error: invalid size or uninitialized manager\n", RED);
 		return NULL;
 	}
 
-	if (memoryManager->nextAddress + memoryToAllocate >
-		memoryManager->endAddress) {
-		driver_printStr("allocMemory error: insufficient memory\n", RED);
-		return NULL;
+	// Alinear el tamaño a múltiplos del tamaño de bloque
+	uint64_t aligned_size =
+		(memoryToAllocate + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
+
+	// Buscar primer bloque libre que sea suficientemente grande (First Fit)
+	BlockHeader *current = memoryManager->first_block;
+	while (current != NULL) {
+		if (current->is_free && current->size >= aligned_size) {
+			current->is_free = false;
+			split_block(current, aligned_size);
+			return (char *) current + HEADER_SIZE;
+		}
+		current = current->next;
 	}
 
-	void *allocation = memoryManager->nextAddress;
-	memoryManager->nextAddress += memoryToAllocate;
-
-	addBlock(memoryManager, allocation, memoryToAllocate);
-
-	return allocation;
+	return NULL; // No hay memoria suficiente
 }
 
-// Libera un bloque asignado
+MemoryManagerADT getMemoryManager() {
+	return (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
+}
+
 void freeMemory(void *ptr) {
 	if (ptr == NULL) {
-		driver_printStr("freeMemory error: null pointer\n", RED);
 		return;
 	}
 
-	MemoryManagerADT memoryManager = getMemoryManager();
-	removeBlock(memoryManager, ptr);
+	BlockHeader *block = (BlockHeader *) ((char *) ptr - HEADER_SIZE);
+	block->is_free	   = true;
+
+	// Fusionar con bloques adyacentes libres
+	coalesce_blocks(block);
 }
 
 void getMemoryInfo(MemoryInfo *info) {
-	// static MemoryInfo *info;
-	MemoryManagerADT mm = getMemoryManager(); // recibe la direccion de memoria.
-	// if (!mm || !info) return;
+	MemoryManagerADT mm = getMemoryManager();
+	if (!mm || !info)
+		return;
 
-	uint64_t total = mm->endAddress - (char *) mm->blocks;
-	uint64_t used  = 0;
-	for (int i = 0; i < mm->blockCount; i++) {
-		used += mm->blocks[i].size;
+	uint64_t used		 = 0;
+	uint64_t free_blocks = 0;
+	uint64_t used_blocks = 0;
+
+	BlockHeader *current = mm->first_block;
+	while (current != NULL) {
+		if (current->is_free) {
+			free_blocks++;
+		}
+		else {
+			used += current->size;
+			used_blocks++;
+		}
+		current = current->next;
 	}
-	info->totalMemory = total;
-	info->usedMemory  = used;
-	info->freeMemory  = total - used;
-	info->usedBlocks  = mm->blockCount;
-	info->freeBlocks =
-		MAX_BLOCKS -
-		mm->blockCount; // No hay bloques libres en el simple manager
-	info->totalBlocks = MAX_BLOCKS; // Total de bloques gestionados
-	// return &info;
-	return;
-}
 
+	info->totalMemory = mm->total_size;
+	info->usedMemory  = used;
+	info->freeMemory  = mm->total_size - used;
+	info->usedBlocks  = used_blocks;
+	info->freeBlocks  = free_blocks;
+	info->totalBlocks = used_blocks + free_blocks;
+}
 #endif

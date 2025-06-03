@@ -18,7 +18,8 @@
         "stdlib.h": "c",
         "sys_calls.h": "c",
         "typeinfo": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "random": "c"
     },
     "makefile.configureOnOpen": false
 }
