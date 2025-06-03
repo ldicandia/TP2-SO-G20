@@ -5,8 +5,8 @@ OBJS = shared.o
 
 all: libshared.a
 
-shared.o: shared.c shared.h
-	$(CC) $(CFLAGS) -c shared.c -o shared.o
+#shared.o: shared.c shared.h
+#	$(CC) $(CFLAGS) -c shared.c -o shared.o
 
 libshared.a: $(OBJS)
 	ar rcs libshared.a $(OBJS)
