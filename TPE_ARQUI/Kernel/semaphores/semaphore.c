@@ -10,8 +10,9 @@
 #include "process.h"
 #include "interrupts.h"
 #include "memoryManager.h"
+#include <globals.h>
+
 #define MAX_SEMAPHORES 64
-#define SEMAPHORE_MANAGER_ADDRESS 0x70000
 
 typedef struct Semaphore {
 	int value;

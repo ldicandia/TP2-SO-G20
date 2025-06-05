@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define PIPE_SIZE (1 << 12)
+#include <globals.h>
 
 typedef struct PipeManagerCDT *PipeManagerADT;
 

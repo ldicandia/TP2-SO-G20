@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <videoDriver.h>
 
-#define MEMORY_MANAGER_ADDRESS 0x50000
-#define SYSTEM_VARIABLES 0x5A00
+#include <globals.h>
 
 typedef struct MemoryManagerCDT *MemoryManagerADT;
 

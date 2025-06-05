@@ -4,14 +4,7 @@
 #include <stdint.h>
 #include <process.h>
 #include <shared.h>
-
-#define MAX_PROCESSES (1 << 12)
-#define QTY_READY_LEVELS 5
-#define MAX_PRIORITY 4
-#define MIN_PRIORITY 0
-#define BLOCKED_INDEX QTY_READY_LEVELS
-#define IDLE_PID 0
-#define QUANTUM_COEF 2
+#include <globals.h>
 
 typedef struct SchedulerCDT *SchedulerADT;
 

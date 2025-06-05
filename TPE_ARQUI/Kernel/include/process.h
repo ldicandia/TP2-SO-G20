@@ -3,13 +3,7 @@
 #include <stdint.h>
 #include <linkedListADT.h>
 #include <shared.h>
-#define BUILT_IN_DESCRIPTORS 3 // stdin, stdout, stderr
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
-#define READ 0
-#define WRITE 1
+#include <globals.h>
 
 typedef enum { BLOCKED = 0, READY, RUNNING, ZOMBIE, DEAD } ProcessStatus;
 

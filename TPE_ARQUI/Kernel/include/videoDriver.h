@@ -2,12 +2,7 @@
 #define VIDEO_DRIVER_H
 #include <bitMap.h>
 #include <stdint.h>
-
-typedef struct {
-	uint8_t b;
-	uint8_t g;
-	uint8_t r;
-} Color;
+#include <globals.h>
 
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);
 

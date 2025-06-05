@@ -14,13 +14,9 @@
 #include <schedule.h>
 #include <pipeManager.h>
 #include <memoryManager.h>
-
-#undef EOF
-#undef DEV_NULL
-#define EOF (-1)
-#define DEV_NULL -1
-
+#include <globals.h>
 #include <semaphoreManager.h>
+
 #define SYS_CALLS_QTY 3
 
 extern uint8_t hasInforeg;

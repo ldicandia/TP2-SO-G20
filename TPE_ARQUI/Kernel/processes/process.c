@@ -13,8 +13,7 @@
 #include <linkedListADT.h>
 #include <pipeManager.h>
 #include <shared.h>
-
-#define STACK_SIZE (1 << 12) // 4KB stack size
+#include <globals.h>
 
 typedef struct ProcessCDT {
 	uint16_t pid;

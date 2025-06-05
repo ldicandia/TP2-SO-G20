@@ -63,6 +63,11 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 		return -1;
 	}
 
+	if ((satoi(argv[1]) <= 0) || (satoi(argv[1]) > 50)) {
+		printStr("\nn must be between 1 and 50\n");
+		return -1;
+	}
+
 	// agregado para que funcione con nuestra implementación de semáforos
 	int8_t useSem = satoi(argv[2]);
 	if (useSem) {

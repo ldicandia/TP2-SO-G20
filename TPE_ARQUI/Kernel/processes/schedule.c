@@ -10,17 +10,9 @@
 #include <stdlib.h>
 #include <videoDriver.h>
 #include <shared.h>
+#include <globals.h>
 
-#define QTY_READY_LEVELS 5
-#define MAX_PRIORITY 4
-#define MIN_PRIORITY 0
-#define BLOCKED_INDEX QTY_READY_LEVELS
-#define MAX_PROCESSES (1 << 12)
-#define IDLE_PID 0
-#define QUANTUM_COEF 2
 #define AGING_THRESHOLD 10 // Threshold for aging processes
-
-#define SCHEDULER_ADDRESS 0x60000
 
 typedef struct SchedulerCDT {
 	Node *processes[MAX_PROCESSES];

@@ -16,11 +16,7 @@
 #include <test_processes.h>
 #include <interrupts.h>
 #include <pipeManager.h>
-
-#define DEV_NULL -1
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
+#include <globals.h>
 
 extern uint8_t text;
 extern uint8_t rodata;

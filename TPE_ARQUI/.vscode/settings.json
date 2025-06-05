@@ -19,7 +19,10 @@
         "sys_calls.h": "c",
         "typeinfo": "c",
         "stdint.h": "c",
-        "random": "c"
+        "random": "c",
+        "videodriver.h": "c",
+        "stdio.h": "c",
+        "globals.h": "c"
     },
     "makefile.configureOnOpen": false
 }
