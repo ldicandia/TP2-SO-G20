@@ -12,6 +12,9 @@
 #include <sys_calls.h>
 #include <test_sync.h>
 #include <phylo.h>
+#include <builtin.h>
+#include <process_commands.h>
+#include <string_lib.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
@@ -21,7 +24,6 @@
 #define STDOUT 1
 #define STDERR 2
 
-// Añadido: buffer para último comando y función de copia
 static char last_command[MAX_BUFFER + 1] = {0};
 
 static void copy_command(char *dest, const char *src) {
@@ -38,201 +40,19 @@ typedef int (*MainFunction)(int argc, char **args);
 static void printLine(char c);
 int linePos = 0;
 char lastc;
-int lastEnter			  = 0;
-char line[MAX_BUFFER + 1] = {0};
-
+int lastEnter				   = 0;
+char line[MAX_BUFFER + 1]	   = {0};
 char command[MAX_BUFFER + 1]   = {0};
 char parameter[MAX_BUFFER + 1] = {0};
+char buffer[MAX_BUFFER]		   = {0};
+char *command_names[]		   = {
+	 "help",	   "time",			"clear",	 "snake 1",	  "snake 2",
+	 "inforeg",	   "zerodiv",		"invopcode", "increment", "decrement",
+	 "testMemory", "testProcesses", "testPrio",	 "testSync",  "ps",
+	 "mem",		   "loop",			"kill",		 "nice",	  "block",
+	 "wc",		   "filter",		"cat",		 "phylo",	  "red"};
 
-char buffer[MAX_BUFFER] = {0};
-
-char *command_names[] = {
-	"help",		  "time",		   "clear",		"snake 1",	 "snake 2",
-	"inforeg",	  "zerodiv",	   "invopcode", "increment", "decrement",
-	"testMemory", "testProcesses", "testPrio",	"testSync",	 "ps",
-	"mem",		  "loop",		   "kill",		"nice",		 "block",
-	"wc",		  "filter",		   "cat",		"phylo",	 "red"};
-
-int atoi(const char *str) {
-	int res	 = 0;
-	int sign = 1;
-
-	if (*str == '-') {
-		sign = -1;
-		str++;
-	}
-
-	while (*str >= '0' && *str <= '9') {
-		res = res * 10 + (*str - '0');
-		str++;
-	}
-
-	return sign * res;
-}
-
-// 1) Creamos los wrappers para los comandos “externos”:
-static int _shell_snake_1(int argc, char **argv) {
-	snake(1);
-	return 0;
-}
-static int _shell_snake_2(int argc, char **argv) {
-	snake(2);
-	return 0;
-}
-static int _inforeg_wrap(int argc, char **argv) {
-	inforeg();
-	return 0;
-}
-static int _zerodiv_wrap(int argc, char **argv) {
-	exc_zerodiv();
-	return 0;
-}
-static int _invop_wrap(int argc, char **argv) {
-	exc_invopcode();
-	return 0;
-}
-static int _inc_wrap(int argc, char **argv) {
-	increment_size_char();
-	return 0;
-}
-static int _dec_wrap(int argc, char **argv) {
-	decrement_size_char();
-	return 0;
-}
-static int _ps_wrap(int argc, char **argv) {
-	ps();
-	return 0;
-}
-static int _mem_wrap(int argc, char **argv) {
-	MemoryInfo info;
-	if (user_mem(&info) != 0) { // usa user_mem
-		printStr("Error obteniendo info de memoria\n");
-		return 1;
-	}
-	printStr("\n[Memory Info]\n");
-	printStr("Total: ");
-	printInteger(info.totalMemory);
-	printStr(" bytes\n");
-	printStr("Usada: ");
-	printInteger(info.usedMemory);
-	printStr(" bytes\n");
-	printStr("Libre: ");
-	printInteger(info.freeMemory);
-	printStr(" bytes\n");
-	printStr("Bloques usados: ");
-	printInteger(info.usedBlocks);
-	printStr("\n");
-	printStr("Bloques libres: ");
-	printInteger(info.freeBlocks);
-	printStr("\n");
-	printStr("Bloques totales: ");
-	printInteger(info.totalBlocks);
-	printStr("\n");
-	return 0;
-}
-static int loop(int argc, char **argv) {
-	if (argc < 2) {
-		printStr("\nUsage: loop <miliseconds>");
-		return -1;
-	}
-	printStr("\ninicio PID: ");
-	printInteger(getpid());
-	printStr("\n");
-	while (1) {
-		printStr("Hola desde PID: ");
-		printInteger(getpid());
-		printStr("\n");
-		sleep_miliseconds(atoi(argv[1]));
-	}
-	return 0;
-}
-static int _kill_wrap(int argc, char **argv) {
-	if (argc < 2) {
-		printStr("\nUsage: kill <pid>");
-		return -1;
-	}
-	kill_process(atoi(argv[1]));
-	return 0;
-}
-static int _nice_wrap(int argc, char **argv) {
-	if (argc < 3) {
-		printStr("\nUsage: nice <pid> <prio>");
-		return -1;
-	}
-	set_prio(atoi(argv[1]), atoi(argv[2]));
-	return 0;
-}
-static int _block_wrap(int argc, char **argv) {
-	if (argc < 2) {
-		printStr("\nUsage: block <pid>");
-		return -1;
-	}
-	block(atoi(argv[1]));
-
-	return 0;
-}
-static int wc(int argc, char **argv) {
-	int lineCount = 0;
-	char c;
-
-	// Leer caracteres hasta EOF
-	while ((c = getCharInt()) != EOF) {
-		if (c == '\n') {
-			lineCount++;
-		}
-		printChar(c);
-	}
-
-	// Imprimir el resultado
-	printStr("\nLine count: ");
-	printInteger(lineCount);
-	printStr("\n");
-	return 0;
-}
-
-static int filter(int argc, char **argv) {
-	printStr("\nFilter vowels: ");
-	char c;
-	char lastChar = 0;
-	while ((c = getCharInt()) != EOF) {
-		if (lastChar != c &&
-			!(c == 'a' || c == 'A' || c == 'e' || c == 'E' || c == 'i' ||
-			  c == 'I' || c == 'o' || c == 'O' || c == 'u' || c == 'U')) {
-			printChar(c);
-			lastChar = c;
-		}
-	}
-
-	if (c == '\n') {
-		printStr("Ending Filter");
-		printChar('\n');
-	}
-	return 0;
-}
-
-static int cat(int argc, char **argv) {
-	char c;
-	while ((c = getCharInt()) != EOF) {
-		printChar(c);
-	}
-	return 0;
-}
-
-static int red(int argc, char **argv) {
-	char c;
-	while ((c = getCharInt()) != EOF) {
-		printCharColor(c, (Color) {0x00, 0x00, 0xFF});
-	}
-	return 0;
-}
-
-static int phylo_wrap(int argc, char **argv) {
-	phylo();
-	return 0;
-}
-
-// 2) Cambiamos el array de handlers para que apunte a MainFunction:
-MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
+MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help,
 											(MainFunction) user_time,
 											(MainFunction) clear,
 											_shell_snake_1,
@@ -258,89 +78,6 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help, // built-ins
 											(MainFunction) phylo_wrap,
 											(MainFunction) red};
 
-void infiniteLoop(uint64_t argc, char *argv[]) {
-	while (1) {
-		printChar('a');
-		yield();
-	}
-}
-
-void test_prio_wrapper(uint64_t argc, char *argv[]) {
-	argc		= 1;
-	int64_t pid = test_prio();
-	if (pid == -1) {
-		printStr("\nError creating processes test\n");
-	}
-	else {
-		printStr("\nProcesses test created with PID: ");
-		printInteger(pid);
-		printStr("\n");
-	}
-}
-
-void endless_A(int argc, char **argv) {
-	while (1) {
-		printStr("A");
-		for (int i = 0; i < 100000000; i++)
-			;
-		yield(); // Cede el control manualmente
-	}
-}
-
-void endless_B(int argc, char **argv) {
-	while (1) {
-		printStr("B");
-		for (int i = 0; i < 100000000; i++)
-			;
-		yield(); // No hace yield, depende del quantum para ser expulsado
-	}
-}
-
-static int strlen(const char *str) {
-	int len = 0;
-	while (str[len] != '\0') {
-		len++;
-	}
-	return len;
-}
-
-#define READ 0
-#define WRITE 1
-
-#define TEST_PIPE 200
-static int testWriter(int argc, char **argv) {
-	pipeOpen(TEST_PIPE, WRITE);
-	char *message = "***SECRET MESSAGE FROM WRITER***                   ";
-	printStr("Soy el escritor, enviando mensaje...\n");
-	u_sys_write(TEST_PIPE, message, strlen(message) + 1);
-	pipeClose(TEST_PIPE);
-	return 0;
-}
-
-#define TEST_BUFFER_LEN 100
-static int testReader(int argc, char **argv) {
-	pipeOpen(TEST_PIPE, READ);
-	char received[TEST_BUFFER_LEN] = {0};
-	u_sys_read(TEST_PIPE, received, TEST_BUFFER_LEN);
-	printStr("Soy el lector, mensaje:");
-	printStr(received);
-	printStr("\n");
-	pipeClose(TEST_PIPE);
-	return 0;
-}
-
-int testNamedPipes(int argc, char **argv) {
-	char *paramsReader[] = {"test_reader", NULL};
-	uint16_t pidReader =
-		create_process((void *) &testReader, paramsReader, "test_reader", 4);
-	char *paramsWriter[] = {"test_writer", NULL};
-	uint16_t pidWriter =
-		create_process((void *) &testWriter, paramsWriter, "test_writer", 4);
-	wait_pid(pidReader);
-	wait_pid(pidWriter);
-	return 0;
-}
-
 void shell() {
 	printStrColor("\nITBA Shell Group 20\n", (Color) {0xFF, 0xFF, 0x00});
 	printStrColor("ALFIERI - DI CANDIA - DIAZ VARELA\n",
@@ -358,7 +95,6 @@ void shell() {
 }
 
 static void printLine(char c) {
-	// Si se escribe '=' al inicio, recupero el último comando
 	if (c == '=' && lastEnter == 0 && last_command[0] != '\0') {
 		int i = 0;
 		while (last_command[i]) {
@@ -370,7 +106,9 @@ static void printLine(char c) {
 		return;
 	}
 
-	if (isChar(c) || isDigit(c) || c == ' ' || c == '|' || c == '&') {
+	if (isChar(c) || isDigit(c) || c == ' ' || c == '|' || c == '&' ||
+		c == '-' || c == '_' || c == '/' || c == '.' || c == ',' || c == ':' ||
+		c == '\\' || c == '=') {
 		buffer[lastEnter] = c;
 		lastEnter++;
 	}
@@ -397,97 +135,15 @@ static void printLine(char c) {
 	lastc = c;
 }
 
-void help() {
-	static Color WHITE = {0xFF, 0xFF, 0xFF};
-	printStrColor("\n--------------------| MANUAL |--------------------",
-				  WHITE);
-	printStrColor("\n time                     shows actual time", WHITE);
-	printStrColor("\n clear                    clears the screen", WHITE);
-	printStrColor("\n snake [qty players]      starts de Snake game", WHITE);
-	printStrColor(
-		"\n inforeg                  after SHIFT + TAB prints regsiter's",
-		WHITE);
-	printStrColor("\n zerodiv                  division by zero exception test",
-				  WHITE);
-	printStrColor(
-		"\n invopcode                tests the invalid operation code", WHITE);
-	printStrColor("\n increment                increase letter size", WHITE);
-	printStrColor("\n decrement                decrease letter size", WHITE);
-	printStrColor("\n testMemory [size]        tests memory allocation", WHITE);
-	printStrColor("\n testProcesses [size]     tests process creation", WHITE);
-	printStrColor("\n testPrio                 tests process priority", WHITE);
-	// nuevos comandos
-	printStrColor("\n ps                       list processes", WHITE);
-	printStrColor("\n mem                      show memory info", WHITE);
-	printStrColor("\n loop <sleep ms>          launch infinite loop", WHITE);
-	printStrColor("\n kill <pid>               terminate a process", WHITE);
-	printStrColor("\n nice <pid> <prio>        change process priority", WHITE);
-	printStrColor("\n block <pid>              block a process", WHITE);
-	printStrColor("\n filter                   filter vowels from input",
-				  WHITE);
-	printStrColor("\n cat                      prints STDIN", WHITE);
-	printStrColor("\n wc                       counts input lines", WHITE);
-	printStrColor("\n---------------------------------------------------",
-				  WHITE);
-}
-
 static int strcmp_shell(const char *str, const char *cmd) {
 	int i = 0;
-	// comparamos mientras cmd no termine
 	while (cmd[i] != '\0') {
 		if (str[i] != cmd[i]) {
 			return 0;
 		}
 		i++;
 	}
-	// tras coincidir todo cmd, str[i] debe ser espacio o '\0'
 	return (str[i] == ' ' || str[i] == '\0');
-}
-
-static int strchr(const char *str, char c) {
-	while (*str) {
-		if (*str == c) {
-			return 1;
-		}
-		str++;
-	}
-	return 0;
-}
-
-static char *strchrAndReturn(const char *str, char c) {
-	while (*str) {
-		if (*str == c) {
-			return (char *) str;
-		}
-		str++;
-	}
-	return NULL;
-}
-
-static char *strtok(char *str, const char *delim) {
-	static char *last = NULL;
-	if (str == NULL) {
-		str = last;
-	}
-	if (str == NULL) {
-		return NULL;
-	}
-	while (*str && strchr(delim, *str)) {
-		str++;
-	}
-	if (*str == '\0') {
-		last = NULL;
-		return NULL;
-	}
-	char *start = str;
-	while (*str && !strchr(delim, *str)) {
-		str++;
-	}
-	if (*str) {
-		*str++ = '\0';
-	}
-	last = str;
-	return start;
 }
 
 void readCommand() {
@@ -495,17 +151,15 @@ void readCommand() {
 		copy_command(last_command, buffer);
 	}
 
-	int background = 0; // Flag to determine background execution
+	int background = 0;
 	if (buffer[0] == '&') {
 		background = 1;
-		// Shift the buffer to remove the '&'
 		for (int i = 0; buffer[i] != '\0'; i++) {
 			buffer[i] = buffer[i + 1];
 		}
 	}
 
 	if (strchr(buffer, '|')) {
-		// split on '|'
 		char *bar		= strchrAndReturn(buffer, '|');
 		*bar			= '\0';
 		char *left_cmd	= buffer;
@@ -513,26 +167,22 @@ void readCommand() {
 		while (*right_cmd == ' ')
 			right_cmd++;
 
-		// parse each side into argv arrays
 		char *argv1[5] = {NULL}, *argv2[5] = {NULL};
 		int argc1 = 0, argc2 = 0;
 		char *tok;
-		// left side
 		tok = strtok(left_cmd, " ");
 		while (tok && argc1 < 4) {
 			argv1[argc1++] = tok;
 			tok			   = strtok(NULL, " ");
 		}
 		argv1[argc1] = NULL;
-		// right side
-		tok = strtok(right_cmd, " ");
+		tok			 = strtok(right_cmd, " ");
 		while (tok && argc2 < 4) {
 			argv2[argc2++] = tok;
 			tok			   = strtok(NULL, " ");
 		}
 		argv2[argc2] = NULL;
 
-		// locate handlers by name
 		int i1 = -1, i2 = -1;
 		for (int i = 0; i < COMMANDS_SIZE; i++) {
 			if (strcmp_shell(argv1[0], command_names[i]))
@@ -544,27 +194,21 @@ void readCommand() {
 			notFound();
 			return;
 		}
-
-		// create a pipe in the kernel (your own syscall, not libc pipe())
 		int pipeId = getPipe();
 
-		printStr(command_names[i1]);
 		int16_t fileDescriptors1[] = {STDIN, pipeId, STDERR};
 		// spawn left, redirect its stdout → fds[1]
 		int pid1 = create_process_with_fds(
 			command_func[i1], argv1, command_names[i1], 1, fileDescriptors1);
 
-		printStr(command_names[i2]);
 		int16_t fileDescriptors2[] = {pipeId, STDOUT, STDERR};
 		// spawn right, redirect its stdin ← fds[0]
 		int pid2 = create_process_with_fds(
 			command_func[i2], argv2, command_names[i2], 1, fileDescriptors2);
 
-		// // close both ends in the shell
 		pipeClose(pid1);
 		pipeClose(pid2);
 
-		// wait both
 		wait_pid(pid1);
 		wait_pid(pid2);
 		return;
@@ -572,12 +216,10 @@ void readCommand() {
 
 	for (int i = 0; i < COMMANDS_SIZE; i++) {
 		if (strcmp_shell(buffer, command_names[i])) {
-			// built-ins (indices 0,1,2)
 			if (i <= 2) {
 				command_func[i](0, NULL);
 			}
 			else {
-				// parse arguments
 				char *argv[4] = {NULL};
 				int argc	  = 0;
 				char *tok	  = strtok(buffer, " ");
@@ -586,12 +228,6 @@ void readCommand() {
 					tok			 = strtok(NULL, " ");
 				}
 				argv[argc] = NULL;
-
-				// int pid = create_process(command_func[i], argv,
-				// 						 command_names[i], background);
-				// if (background) {
-				// 	wait_pid(pid);
-				// }
 
 				int pid = 0;
 				if (background) {
@@ -610,17 +246,4 @@ void readCommand() {
 		}
 	}
 	notFound();
-}
-
-void notFound() {
-	printStr("\n command not found. Try using 'help'");
-	return;
-}
-
-void shell_snake_1() {
-	snake(1);
-}
-
-void shell_snake_2() {
-	snake(2);
 }

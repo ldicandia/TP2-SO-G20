@@ -57,6 +57,12 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 	uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
+	// check params
+	if (argc < 2 || argc > 3) {
+		printStr("\nUsage: test_sync <n> [use_sem]\n");
+		return -1;
+	}
+
 	// agregado para que funcione con nuestra implementación de semáforos
 	int8_t useSem = satoi(argv[2]);
 	if (useSem) {

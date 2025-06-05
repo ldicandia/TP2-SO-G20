@@ -15,7 +15,7 @@ static State states[MAX_PHILOSOPHERS];
 static int semaphores[MAX_PHILOSOPHERS];
 
 static char *intToChar(int i) {
-	static char buffer[12]; // Enough space for 32-bit integer
+	static char buffer[12];
 	int j = 0;
 
 	if (i < 0) {
@@ -34,7 +34,6 @@ static char *intToChar(int i) {
 
 	buffer[j] = '\0';
 
-	// Reverse the string
 	for (int k = 0; k < j / 2; k++) {
 		char temp		  = buffer[k];
 		buffer[k]		  = buffer[j - k - 1];
@@ -97,34 +96,34 @@ void test(int philosopher) {
 }
 
 void takeForks(int philosopher) {
-	user_sem_wait(MUTEX); // lock
+	user_sem_wait(MUTEX);
 	states[philosopher] = HUNGRY;
 	test(philosopher);
-	user_sem_post(MUTEX); // unlock
+	user_sem_post(MUTEX);
 	user_sem_wait(semaphores[philosopher]);
 }
 
 void putForks(int philosopher) {
-	user_sem_wait(MUTEX); // lock
+	user_sem_wait(MUTEX);
 	states[philosopher] = THINKING;
 	printTable();
 	test((philosopher + numPhilosophers - 1) % numPhilosophers);
 	test((philosopher + 1) % numPhilosophers);
-	user_sem_post(MUTEX); // unlock
+	user_sem_post(MUTEX);
 }
 
 int philosopher(int argc, char **argv) {
 	int id = atoi(argv[1]);
 	while (1) {
-		sleep_miliseconds(2000); // Pensar por un tiempo aleatorio
+		sleep_miliseconds(2000);
 		takeForks(id);
-		sleep_miliseconds(3000); // Comer por un tiempo aleatorio
+		sleep_miliseconds(3000);
 		putForks(id);
 	}
 }
 
 void adjustPhilosophers(char input) {
-	user_sem_wait(MUTEX); // Lock critical section
+	user_sem_wait(MUTEX);
 	if (input == 'a' && numPhilosophers < MAX_PHILOSOPHERS) {
 		numPhilosophers++;
 		states[numPhilosophers - 1] = THINKING;
@@ -145,7 +144,7 @@ void adjustPhilosophers(char input) {
 		}
 	}
 	printTable();
-	user_sem_post(MUTEX); // Unlock critical section
+	user_sem_post(MUTEX);
 }
 
 void phylo() {
@@ -157,7 +156,5 @@ void phylo() {
 		if (input == 'a' || input == 'r') {
 			adjustPhilosophers(input);
 		}
-		// printTable();
-		// sleep_miliseconds(100);
 	}
 }
