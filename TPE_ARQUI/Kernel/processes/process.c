@@ -18,22 +18,20 @@
 typedef struct ProcessCDT {
 	uint16_t processId;
 	uint16_t parentProcessId;
-	uint16_t targetWaitPid; // espera especificamente a un hijo
-	void *stackBaseAddr;	// base del stack
-	void *stackCurrentPos;	// top del  stack
+	char *processName;
+	void *stackBaseAddr;
+	void *stackCurrentPos;
 	char **argumentsArray;
-	char *processName; // nombre del proceso, para q sea mas facil de
-					   // identificar q x su pid
-	uint8_t cannotBeKilled;
-	uint8_t processPriority;
+	MainFunction codeFunction;
 	ProcessStatus currentStatus;
-	int16_t descriptorTable[BUILT_IN_DESCRIPTORS];
-	int32_t exitValue;
+	uint8_t processPriority;
+	uint8_t cannotBeKilled;
 	int hasBeenInitialized;
-	LinkedListADT deadChildrenList;
+	int32_t exitValue;
+	int16_t descriptorTable[BUILT_IN_DESCRIPTORS];
+	uint16_t targetWaitPid;
 	uint16_t blockedTime;
-
-	// creo q aca nos faltaria una lista de zombieChildren;
+	LinkedListADT deadChildrenList;
 } ProcessCDT;
 
 //=== UTILITY FUNCTIONS ===
