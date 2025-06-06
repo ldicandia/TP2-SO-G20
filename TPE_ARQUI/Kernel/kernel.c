@@ -63,7 +63,7 @@ void initializeKernelBinary() {
 	createScheduler();
 	initSemaphores();
 	initializeKeyboard();
-	createPipeManager();
+	setupPipeManager();
 }
 
 int idle(int argc, char **argv);

@@ -53,8 +53,8 @@ static void resumeFirstAvailableProcess(LinkedListADT queue) {
 		removeNode(queue, n);
 		ProcessADT p = (ProcessADT) n->data;
 		freeMemory(n);
-		if (processIsAlive(get_pid(p))) {
-			setStatus(get_pid(p), READY);
+		if (processIsAlive(getProcessId(p))) {
+			setStatus(getProcessId(p), READY);
 			break;
 		}
 	}
@@ -66,7 +66,7 @@ static int down(Semaphore *sem) {
 	if (sem->value < 0) {
 		ProcessADT cur = getCurrentProcess();
 		appendElement(sem->waitingQueue, cur);
-		setStatus(get_pid(cur), BLOCKED);
+		setStatus(getProcessId(cur), BLOCKED);
 		release(&sem->lock);
 		yield();
 	}

@@ -7,20 +7,21 @@
 
 typedef struct PipeManagerCDT *PipeManagerADT;
 
-PipeManagerADT createPipeManager();
+PipeManagerADT setupPipeManager();
 
-int16_t getLastFreePipe();
+int16_t requestNewPipeHandle();
 
-int8_t pipeOpen(uint16_t id, uint8_t mode);
+int8_t acquirePipeAccess(uint16_t id, uint8_t mode);
 
-int8_t pipeOpenForPid(uint16_t pid, uint16_t id, uint8_t mode);
+int8_t grantPipeAccessToProcess(uint16_t pid, uint16_t id, uint8_t mode);
 
-int8_t pipeClose(uint16_t id);
+int8_t releasePipeAccess(uint16_t id);
 
-int8_t pipeCloseForPid(uint16_t pid, uint16_t id);
+int8_t revokePipeAccessFromProcess(uint16_t pid, uint16_t id);
 
-int64_t readPipe(uint16_t id, char *destinationBuffer, uint64_t len);
+int64_t retrievePipeData(uint16_t id, char *destinationBuffer, uint64_t len);
 
-int64_t writePipe(uint16_t pid, uint16_t id, char *sourceBuffer, uint64_t len);
+int64_t transmitPipeData(uint16_t pid, uint16_t id, char *sourceBuffer,
+						 uint64_t len);
 
 #endif

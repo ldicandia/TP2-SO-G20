@@ -276,11 +276,11 @@ int ps() {
 	return 0;
 }
 
-int pipeOpen(uint16_t pid, uint8_t mode) {
+int acquirePipeAccess(uint16_t pid, uint8_t mode) {
 	return u_sys_pipeOpen(pid, mode);
 }
 
-int pipeClose(uint16_t pid) {
+int releasePipeAccess(uint16_t pid) {
 	return u_sys_pipeClose(pid);
 }
 

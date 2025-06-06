@@ -74,9 +74,9 @@ int wait_pid(uint16_t pid);
 
 int ps();
 
-int pipeOpen(uint16_t pid, uint8_t mode);
+int acquirePipeAccess(uint16_t pid, uint8_t mode);
 
-int pipeClose(uint16_t pid);
+int releasePipeAccess(uint16_t pid);
 
 int getPipe();
 

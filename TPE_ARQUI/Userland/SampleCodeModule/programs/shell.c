@@ -206,8 +206,8 @@ void readCommand() {
 		int pid2 = create_process_with_fds(
 			command_func[i2], argv2, command_names[i2], 1, fileDescriptors2);
 
-		pipeClose(pid1);
-		pipeClose(pid2);
+		releasePipeAccess(pid1);
+		releasePipeAccess(pid2);
 
 		wait_pid(pid1);
 		wait_pid(pid2);

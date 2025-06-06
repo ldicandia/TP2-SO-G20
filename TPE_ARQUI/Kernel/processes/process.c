@@ -16,261 +16,300 @@
 #include <globals.h>
 
 typedef struct ProcessCDT {
-	uint16_t pid;
-	uint16_t parentPid;
-	uint16_t waitingForPid; // espera especificamente a un hijo
-	void *stackBase;		// base del stack
-	void *stackPos;			// top del  stack
-	char **argv;
-	char *name; // nombre del proceso, para q sea mas facil de identificar q x
-				// su pid
-	uint8_t unkillable;
-	uint8_t priority;
-	ProcessStatus status;
-	int16_t fileDescriptors[BUILT_IN_DESCRIPTORS];
-	int32_t retValue;
-	int initialized;
-	LinkedListADT zombieChildren;
-	uint16_t waitingTime;
+	uint16_t processId;
+	uint16_t parentProcessId;
+	uint16_t targetWaitPid; // espera especificamente a un hijo
+	void *stackBaseAddr;	// base del stack
+	void *stackCurrentPos;	// top del  stack
+	char **argumentsArray;
+	char *processName; // nombre del proceso, para q sea mas facil de
+					   // identificar q x su pid
+	uint8_t cannotBeKilled;
+	uint8_t processPriority;
+	ProcessStatus currentStatus;
+	int16_t descriptorTable[BUILT_IN_DESCRIPTORS];
+	int32_t exitValue;
+	int hasBeenInitialized;
+	LinkedListADT deadChildrenList;
+	uint16_t blockedTime;
 
 	// creo q aca nos faltaria una lista de zombieChildren;
 } ProcessCDT;
 
-static char **allocArguments(char **args) {
-	int argc = stringArrayLen(args), totalArgsLen = 0;
-	int argsLen[argc];
-	for (int i = 0; i < argc; i++) {
-		argsLen[i] = strlen(args[i]) + 1;
-		totalArgsLen += argsLen[i];
+//=== UTILITY FUNCTIONS ===
+
+static char **allocArguments(char **inputArgs) {
+	int argumentCount = stringArrayLen(inputArgs), totalArgumentsLength = 0;
+	int individualArgsLength[argumentCount];
+	for (int i = 0; i < argumentCount; i++) {
+		individualArgsLength[i] = strlen(inputArgs[i]) + 1;
+		totalArgumentsLength += individualArgsLength[i];
 	}
-	char **newArgsArray =
-		(char **) allocMemory(totalArgsLen + sizeof(char **) * (argc + 1));
-	char *charPosition = (char *) newArgsArray + (sizeof(char **) * (argc + 1));
-	for (int i = 0; i < argc; i++) {
-		newArgsArray[i] = charPosition;
-		memcpy(charPosition, args[i], argsLen[i]);
-		charPosition += argsLen[i];
+	char **newArgumentsArray = (char **) allocMemory(
+		totalArgumentsLength + sizeof(char **) * (argumentCount + 1));
+	char *stringPosition =
+		(char *) newArgumentsArray + (sizeof(char **) * (argumentCount + 1));
+	for (int i = 0; i < argumentCount; i++) {
+		newArgumentsArray[i] = stringPosition;
+		memcpy(stringPosition, inputArgs[i], individualArgsLength[i]);
+		stringPosition += individualArgsLength[i];
 	}
-	newArgsArray[argc] = NULL;
-	return newArgsArray;
+	newArgumentsArray[argumentCount] = NULL;
+	return newArgumentsArray;
 }
 
-void processWrapper(MainFunction code, char **args) {
-	if (args[0] == NULL) {
+void processWrapper(MainFunction codeFunction, char **argumentsArray) {
+	if (argumentsArray[0] == NULL) {
 		driver_printStr("Error: args is NULL\n", (Color) {0xFF, 0x00, 0x00});
 		killCurrentProcess(-1);
 	}
-	// driver_printStr(args[0], (Color) {0xFF, 0x00, 0x00});
-	int len		 = stringArrayLen(args);
-	int retValue = code(len, args);
-	killCurrentProcess(retValue);
-}
-
-static void assignFileDescriptor(ProcessADT process, uint8_t fdIndex,
-								 int16_t fdValue, uint8_t mode) {
-	process->fileDescriptors[fdIndex] = fdValue;
-	if (fdValue >= BUILT_IN_DESCRIPTORS)
-		pipeOpenForPid(process->pid, fdValue, mode);
-}
-
-static void closeFileDescriptor(uint16_t pid, int16_t fdValue) {
-	if (fdValue >= BUILT_IN_DESCRIPTORS)
-		pipeCloseForPid(pid, fdValue);
-}
-
-void closeFileDescriptors(ProcessADT process) {
-	closeFileDescriptor(process->pid, process->fileDescriptors[STDIN]);
-	closeFileDescriptor(process->pid, process->fileDescriptors[STDOUT]);
-	closeFileDescriptor(process->pid, process->fileDescriptors[STDERR]);
-}
-
-void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
-				 MainFunction code, char **args, char *name, uint8_t priority,
-				 int16_t fileDescriptors[], uint8_t unkillable) {
-	process->pid		   = pid;
-	process->parentPid	   = parentPid;
-	process->waitingForPid = 0;
-	process->waitingTime   = 0;
-	process->stackBase	   = allocMemory(STACK_SIZE);
-	process->argv		   = allocArguments(args);
-	process->name		   = allocMemory(strlen(name) + 1);
-	strcpy(process->name, name);
-	process->priority = priority;
-	void *stackEnd	  = (void *) ((uint64_t) process->stackBase + STACK_SIZE);
-	process->stackPos = _initialize_stack_frame(&processWrapper, code, stackEnd,
-												(void *) process->argv);
-	process->status	  = READY;
-	process->zombieChildren = createLinkedListADT();
-	process->unkillable		= unkillable;
-
-	assignFileDescriptor(process, STDIN, fileDescriptors[STDIN], READ);
-	assignFileDescriptor(process, STDOUT, fileDescriptors[STDOUT], WRITE);
-	assignFileDescriptor(process, STDERR, fileDescriptors[STDERR], WRITE);
-}
-
-void freeProcess(ProcessADT process) {
-	if (process == NULL)
-		return;
-	freeLinkedListADT(process->zombieChildren);
-	freeMemory(process->stackBase);
-	freeMemory(process->name);
-	freeMemory(process->argv);
-	freeMemory(process);
-}
-
-int processIsWaiting(ProcessADT process, uint16_t pidToWait) {
-	return process->waitingForPid == pidToWait && process->status == BLOCKED;
-}
-
-ProcessInfo *loadInfo(ProcessInfo *snapshot, ProcessADT process) {
-	snapshot->name = allocMemory(strlen(process->name) + 1);
-	strcpy(snapshot->name, process->name);
-	snapshot->pid		   = process->pid;
-	snapshot->stackPointer = (uint64_t) process->stackBase;
-	snapshot->priority	   = process->priority;
-	snapshot->status	   = process->status;
-	snapshot->foreground   = process->fileDescriptors[STDIN] == STDIN;
-	return snapshot;
-}
-
-int getZombiesInfo(int processIndex, ProcessInfo psArray[],
-				   ProcessADT nextProcess) {
-	LinkedListADT zombieChildren = nextProcess->zombieChildren;
-	begin(zombieChildren);
-	while (hasNext(zombieChildren))
-		loadInfo(&psArray[processIndex++], (ProcessADT) next(zombieChildren));
-	return processIndex;
-}
-
-//==============================================================================================================
-
-uint16_t get_pid(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 or an invalid PID if the process is NULL
-	return process->pid;
-}
-
-void set_stackPos(ProcessADT process, void *stackPos) {
-	if (process != NULL)
-		process->stackPos = stackPos;
-}
-
-void set_status(ProcessADT process, ProcessStatus status) {
-	if (process != NULL)
-		process->status = status;
-}
-
-ProcessStatus get_status(ProcessADT process) {
-	if (process == NULL)
-		return DEAD; // Return DEAD or an appropriate default status if process
-					 // is NULL
-	return process->status;
-}
-
-uint8_t get_priority(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 or a default priority if process is NULL
-	return process->priority;
-}
-
-void set_priority(ProcessADT process, uint8_t priority) {
-	if (process != NULL)
-		process->priority = priority;
-}
-
-int16_t get_fileDescriptor(ProcessADT process, uint8_t fdIndex) {
-	if (process == NULL || fdIndex >= BUILT_IN_DESCRIPTORS)
-		return -1; // Return -1 for invalid process or index
-	return process->fileDescriptors[fdIndex];
-}
-
-// make get_stackPos
-void *get_stackPos(ProcessADT process) {
-	if (process == NULL)
-		return NULL; // Return NULL if the process is NULL
-	return process->stackPos;
-}
-
-int32_t get_retValue(ProcessADT process) {
-	if (process == NULL)
-		return -1; // Return -1 or an appropriate default value if process is
-				   // NULL
-	return process->retValue;
-}
-void set_retValue(ProcessADT process, int32_t retValue) {
-	if (process != NULL)
-		process->retValue = retValue;
-}
-void set_initialized(ProcessADT process, int initialized) {
-	process->initialized = initialized;
-}
-
-int get_initialized(ProcessADT process) {
-	return process->initialized;
-}
-
-void *get_stackBase(ProcessADT process) {
-	if (process == NULL)
-		return NULL; // Return NULL if the process is NULL
-	return process->stackBase;
+	// driver_printStr(argumentsArray[0], (Color) {0xFF, 0x00, 0x00});
+	int argumentCount	   = stringArrayLen(argumentsArray);
+	int processReturnValue = codeFunction(argumentCount, argumentsArray);
+	killCurrentProcess(processReturnValue);
 }
 
 int64_t sizeofProcess() {
 	return sizeof(ProcessCDT);
 }
 
-char *getName(ProcessADT process) {
-	if (process == NULL)
-		return NULL; // Return NULL if the process is NULL
-	return process->name;
+//=== FILE DESCRIPTOR MANAGEMENT ===
+
+static void assignFileDescriptor(ProcessADT processPtr, uint8_t descriptorIndex,
+								 int16_t descriptorValue, uint8_t accessMode) {
+	processPtr->descriptorTable[descriptorIndex] = descriptorValue;
+	if (descriptorValue >= BUILT_IN_DESCRIPTORS)
+		grantPipeAccessToProcess(processPtr->processId, descriptorValue,
+								 accessMode);
 }
 
-uint8_t isUnkillable(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 if the process is NULL
-	return process->unkillable;
+static void closeFileDescriptor(uint16_t processId, int16_t descriptorValue) {
+	if (descriptorValue >= BUILT_IN_DESCRIPTORS)
+		revokePipeAccessFromProcess(processId, descriptorValue);
 }
 
-LinkedListADT getZombieChildren(ProcessADT process) {
-	if (process == NULL)
-		return NULL; // Return NULL if the process is NULL
-	return process->zombieChildren;
+void closeFileDescriptors(ProcessADT processPtr) {
+	closeFileDescriptor(processPtr->processId,
+						processPtr->descriptorTable[STDIN]);
+	closeFileDescriptor(processPtr->processId,
+						processPtr->descriptorTable[STDOUT]);
+	closeFileDescriptor(processPtr->processId,
+						processPtr->descriptorTable[STDERR]);
 }
 
-uint16_t getParentPid(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 if the process is NULL
-	return process->parentPid;
+int16_t getProcessFileDescriptor(ProcessADT processPtr,
+								 uint8_t descriptorIndex) {
+	if (processPtr == NULL || descriptorIndex >= BUILT_IN_DESCRIPTORS)
+		return -1;
+	return processPtr->descriptorTable[descriptorIndex];
 }
 
-uint16_t getWaitingForPid(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 if the process is NULL
-	return process->waitingForPid;
+void setFileDescriptor(ProcessADT processPtr, uint8_t descriptorIndex,
+					   int16_t descriptorValue) {
+	if (processPtr != NULL && descriptorIndex < BUILT_IN_DESCRIPTORS)
+		processPtr->descriptorTable[descriptorIndex] = descriptorValue;
 }
 
-void setWaitingForPid(ProcessADT process, uint16_t pid) {
-	if (process != NULL)
-		process->waitingForPid = pid;
+//=== PROCESS LIFECYCLE ===
+
+void initProcess(ProcessADT processPtr, uint16_t processId,
+				 uint16_t parentProcessId, MainFunction codeFunction,
+				 char **argumentsArray, char *processName,
+				 uint8_t processPriority, int16_t descriptorTable[],
+				 uint8_t cannotBeKilled) {
+	processPtr->processId		= processId;
+	processPtr->parentProcessId = parentProcessId;
+	processPtr->targetWaitPid	= 0;
+	processPtr->blockedTime		= 0;
+	processPtr->stackBaseAddr	= allocMemory(STACK_SIZE);
+	processPtr->argumentsArray	= allocArguments(argumentsArray);
+	processPtr->processName		= allocMemory(strlen(processName) + 1);
+	strcpy(processPtr->processName, processName);
+	processPtr->processPriority = processPriority;
+	void *stackEndAddr =
+		(void *) ((uint64_t) processPtr->stackBaseAddr + STACK_SIZE);
+	processPtr->stackCurrentPos =
+		_initialize_stack_frame(&processWrapper, codeFunction, stackEndAddr,
+								(void *) processPtr->argumentsArray);
+	processPtr->currentStatus	 = READY;
+	processPtr->deadChildrenList = createLinkedListADT();
+	processPtr->cannotBeKilled	 = cannotBeKilled;
+
+	assignFileDescriptor(processPtr, STDIN, descriptorTable[STDIN], READ);
+	assignFileDescriptor(processPtr, STDOUT, descriptorTable[STDOUT], WRITE);
+	assignFileDescriptor(processPtr, STDERR, descriptorTable[STDERR], WRITE);
 }
 
-void setFileDescriptor(ProcessADT process, uint8_t fdIndex, int16_t fdValue) {
-	if (process != NULL && fdIndex < BUILT_IN_DESCRIPTORS)
-		process->fileDescriptors[fdIndex] = fdValue;
+void freeProcess(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return;
+	freeLinkedListADT(processPtr->deadChildrenList);
+	freeMemory(processPtr->stackBaseAddr);
+	freeMemory(processPtr->processName);
+	freeMemory(processPtr->argumentsArray);
+	freeMemory(processPtr);
 }
 
-void incrementWaitingTime(ProcessADT process) {
-	if (process != NULL)
-		process->waitingTime++;
+//=== PROCESS ID ===
+
+uint16_t getProcessId(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->processId;
 }
 
-uint16_t getWaitingTime(ProcessADT process) {
-	if (process == NULL)
-		return 0; // Return 0 if the process is NULL
-	return process->waitingTime;
+uint16_t getParentPid(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->parentProcessId;
 }
 
-void setWaitingTime(ProcessADT process, uint16_t waitingTime) {
-	if (process != NULL)
-		process->waitingTime = waitingTime;
+//=== PROCESS NAME ===
+
+char *getName(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return NULL;
+	return processPtr->processName;
+}
+
+//=== PROCESS STATUS ===
+
+ProcessStatus getProcessStatus(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return DEAD;
+	return processPtr->currentStatus;
+}
+
+void setProcessStatus(ProcessADT processPtr, ProcessStatus processStatus) {
+	if (processPtr != NULL)
+		processPtr->currentStatus = processStatus;
+}
+
+//=== PROCESS PRIORITY ===
+
+uint8_t getProcessPriority(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->processPriority;
+}
+
+void setProcessPriority(ProcessADT processPtr, uint8_t priorityLevel) {
+	if (processPtr != NULL)
+		processPtr->processPriority = priorityLevel;
+}
+
+//=== STACK MANAGEMENT ===
+
+void *getProcessStackPosition(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return NULL;
+	return processPtr->stackCurrentPos;
+}
+
+void setProcessStackPosition(ProcessADT processPtr, void *stackPosition) {
+	if (processPtr != NULL)
+		processPtr->stackCurrentPos = stackPosition;
+}
+
+void *getProcessStackBase(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return NULL;
+	return processPtr->stackBaseAddr;
+}
+
+//=== PROCESS RETURN VALUE ===
+
+int32_t getProcessReturnValue(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return -1;
+	return processPtr->exitValue;
+}
+
+void setProcessReturnValue(ProcessADT processPtr, int32_t returnValue) {
+	if (processPtr != NULL)
+		processPtr->exitValue = returnValue;
+}
+
+//=== PROCESS INITIALIZATION ===
+
+int getProcessInitializationStatus(ProcessADT processPtr) {
+	return processPtr->hasBeenInitialized;
+}
+
+void setProcessInitialized(ProcessADT processPtr, int initializationFlag) {
+	processPtr->hasBeenInitialized = initializationFlag;
+}
+
+//=== PROCESS PROPERTIES ===
+
+uint8_t isUnkillable(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->cannotBeKilled;
+}
+
+//=== WAITING MANAGEMENT ===
+
+uint16_t getWaitingForPid(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->targetWaitPid;
+}
+
+void setWaitingForPid(ProcessADT processPtr, uint16_t processId) {
+	if (processPtr != NULL)
+		processPtr->targetWaitPid = processId;
+}
+
+uint16_t getWaitingTime(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return 0;
+	return processPtr->blockedTime;
+}
+
+void setWaitingTime(ProcessADT processPtr, uint16_t waitingTimeValue) {
+	if (processPtr != NULL)
+		processPtr->blockedTime = waitingTimeValue;
+}
+
+void incrementWaitingTime(ProcessADT processPtr) {
+	if (processPtr != NULL)
+		processPtr->blockedTime++;
+}
+
+int isProcessWaitingFor(ProcessADT processPtr, uint16_t pidToWaitFor) {
+	return processPtr->targetWaitPid == pidToWaitFor &&
+		   processPtr->currentStatus == BLOCKED;
+}
+
+//=== ZOMBIE CHILDREN MANAGEMENT ===
+
+LinkedListADT getZombieChildren(ProcessADT processPtr) {
+	if (processPtr == NULL)
+		return NULL;
+	return processPtr->deadChildrenList;
+}
+
+//=== PROCESS INFO ===
+
+ProcessInfo *loadInfo(ProcessInfo *infoSnapshot, ProcessADT processPtr) {
+	infoSnapshot->name = allocMemory(strlen(processPtr->processName) + 1);
+	strcpy(infoSnapshot->name, processPtr->processName);
+	infoSnapshot->pid		   = processPtr->processId;
+	infoSnapshot->stackPointer = (uint64_t) processPtr->stackBaseAddr;
+	infoSnapshot->priority	   = processPtr->processPriority;
+	infoSnapshot->status	   = processPtr->currentStatus;
+	infoSnapshot->foreground   = processPtr->descriptorTable[STDIN] == STDIN;
+	return infoSnapshot;
+}
+
+int collectZombieProcessInfo(int currentProcessIndex,
+							 ProcessInfo processStatusArray[],
+							 ProcessADT nextProcessPtr) {
+	LinkedListADT deadChildrenList = nextProcessPtr->deadChildrenList;
+	begin(deadChildrenList);
+	while (hasNext(deadChildrenList))
+		loadInfo(&processStatusArray[currentProcessIndex++],
+				 (ProcessADT) next(deadChildrenList));
+	return currentProcessIndex;
 }

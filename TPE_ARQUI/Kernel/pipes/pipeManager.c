@@ -51,7 +51,7 @@ static Pipe *getPipeById(PipeManagerADT pipeManager, uint16_t id) {
 	return pipeManager->pipes[index];
 }
 
-PipeManagerADT createPipeManager() {
+PipeManagerADT setupPipeManager() {
 	PipeManagerADT pipeManager = (PipeManagerADT) PIPE_MANAGER_ADDRESS;
 	for (int i = 0; i < MAX_PIPES; i++)
 		pipeManager->pipes[i] = NULL;
@@ -60,7 +60,7 @@ PipeManagerADT createPipeManager() {
 	return pipeManager;
 }
 
-int16_t getLastFreePipe() {
+int16_t requestNewPipeHandle() {
 	PipeManagerADT pipeManager = getPipeManager();
 	if (pipeManager->qtyPipes >= MAX_PIPES)
 		return -1;
@@ -73,11 +73,11 @@ int16_t getLastFreePipe() {
 	return pipeManager->lastFreePipe + BUILT_IN_DESCRIPTORS;
 }
 
-int8_t pipeOpen(uint16_t id, uint8_t mode) {
-	return pipeOpenForPid(getPid(), id, mode);
+int8_t acquirePipeAccess(uint16_t id, uint8_t mode) {
+	return grantPipeAccessToProcess(getPid(), id, mode);
 }
 
-int8_t pipeOpenForPid(uint16_t pid, uint16_t id, uint8_t mode) {
+int8_t grantPipeAccessToProcess(uint16_t pid, uint16_t id, uint8_t mode) {
 	int16_t index;
 	if ((index = getPipeIndexById(id)) == -1)
 		return -1;
@@ -97,11 +97,11 @@ int8_t pipeOpenForPid(uint16_t pid, uint16_t id, uint8_t mode) {
 	return 0;
 }
 
-int8_t pipeClose(uint16_t id) {
-	return pipeCloseForPid(getPid(), id);
+int8_t releasePipeAccess(uint16_t id) {
+	return revokePipeAccessFromProcess(getPid(), id);
 }
 
-int8_t pipeCloseForPid(uint16_t pid, uint16_t id) {
+int8_t revokePipeAccessFromProcess(uint16_t pid, uint16_t id) {
 	PipeManagerADT pipeManager = getPipeManager();
 	int16_t index;
 	if ((index = getPipeIndexById(id)) == -1)
@@ -112,7 +112,7 @@ int8_t pipeCloseForPid(uint16_t pid, uint16_t id) {
 
 	if (pid == pipe->inputPid) {
 		char eofString[1] = {EOF};
-		writePipe(pid, id, eofString, 1);
+		transmitPipeData(pid, id, eofString, 1);
 	}
 	else if (pid == pipe->outputPid) {
 		freePipe(pipeManager->pipes[index]);
@@ -139,7 +139,8 @@ static Pipe *createPipe() {
 	return pipe;
 }
 
-int64_t writePipe(uint16_t pid, uint16_t id, char *sourceBuffer, uint64_t len) {
+int64_t transmitPipeData(uint16_t pid, uint16_t id, char *sourceBuffer,
+						 uint64_t len) {
 	PipeManagerADT pipeManager = getPipeManager();
 	Pipe *pipe				   = getPipeById(pipeManager, id);
 	if (pipe == NULL || pipe->inputPid != pid || len == 0)
@@ -171,7 +172,7 @@ int64_t writePipe(uint16_t pid, uint16_t id, char *sourceBuffer, uint64_t len) {
 	return writtenBytes;
 }
 
-int64_t readPipe(uint16_t id, char *destinationBuffer, uint64_t len) {
+int64_t retrievePipeData(uint16_t id, char *destinationBuffer, uint64_t len) {
 	PipeManagerADT pipeManager = getPipeManager();
 	Pipe *pipe				   = getPipeById(pipeManager, id);
 	if (pipe == NULL || pipe->outputPid != getPid() || len == 0)

@@ -16,38 +16,38 @@ void initProcess(ProcessADT process, uint16_t pid, uint16_t parentPid,
 				 uint8_t priority, int16_t fileDescriptors[],
 				 uint8_t unkillable);
 
-int processIsWaiting(ProcessADT process, uint16_t pidToWait);
+int isProcessWaitingFor(ProcessADT process, uint16_t pidToWait);
 
 void freeProcess(ProcessADT process);
 
 void closeFileDescriptors(ProcessADT process);
 
 // New function declarations
-uint16_t get_pid(ProcessADT process);
+uint16_t getProcessId(ProcessADT process);
 
-void set_stackPos(ProcessADT process, void *stackPos);
+void setProcessStackPosition(ProcessADT process, void *stackPos);
 
-void set_status(ProcessADT process, ProcessStatus status);
+void setProcessStatus(ProcessADT process, ProcessStatus status);
 
-ProcessStatus get_status(ProcessADT process);
+ProcessStatus getProcessStatus(ProcessADT process);
 
-uint8_t get_priority(ProcessADT process);
+uint8_t getProcessPriority(ProcessADT process);
 
-void set_priority(ProcessADT process, uint8_t priority);
+void setProcessPriority(ProcessADT process, uint8_t priority);
 
-int16_t get_fileDescriptor(ProcessADT process, uint8_t fdIndex);
+int16_t getProcessFileDescriptor(ProcessADT process, uint8_t fdIndex);
 
-void *get_stackPos(ProcessADT process);
+void *getProcessStackPosition(ProcessADT process);
 
-int32_t get_retValue(ProcessADT process);
+int32_t getProcessReturnValue(ProcessADT process);
 
-void set_retValue(ProcessADT process, int32_t retValue);
+void setProcessReturnValue(ProcessADT process, int32_t retValue);
 
-void set_initialized(ProcessADT process, int initialized);
+void setProcessInitialized(ProcessADT process, int initialized);
 
-int get_initialized(ProcessADT process);
+int getProcessInitializationStatus(ProcessADT process);
 
-void *get_stackBase(ProcessADT process);
+void *getProcessStackBase(ProcessADT process);
 
 int64_t sizeofProcess();
 
@@ -73,7 +73,7 @@ void setWaitingTime(ProcessADT process, uint16_t waitingTime);
 
 ProcessInfo *loadInfo(ProcessInfo *snapshot, ProcessADT process);
 
-int getZombiesInfo(int processIndex, ProcessInfo psArray[],
-				   ProcessADT nextProcess);
+int collectZombieProcessInfo(int processIndex, ProcessInfo psArray[],
+							 ProcessADT nextProcess);
 
 #endif

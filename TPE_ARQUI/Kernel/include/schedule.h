@@ -16,8 +16,6 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority);
 
 int8_t setStatus(uint16_t pid, uint8_t newStatus);
 
-ProcessStatus getProcessStatus(uint16_t pid);
-
 void *schedule(void *prevStackPointer);
 
 uint16_t createProcess(MainFunction code, char **args, char *name,

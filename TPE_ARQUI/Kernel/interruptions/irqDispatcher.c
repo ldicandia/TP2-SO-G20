@@ -68,7 +68,7 @@ static int64_t sys_read(uint64_t fd, char *buff, uint64_t len) {
 						(int16_t) fd;
 
 	if (fdVal >= BUILT_IN_DESCRIPTORS) {
-		return readPipe(fdVal, buff, len);
+		return retrievePipeData(fdVal, buff, len);
 	}
 	else if (fdVal == STDIN) {
 		for (uint64_t i = 0; i < len; i++) {
@@ -88,7 +88,7 @@ static uint64_t sys_write(uint64_t fd, char *buffer, uint64_t len) {
 						getCurrentProcessFileDescriptor((uint8_t) fd) :
 						(int16_t) fd;
 	if (fdVal >= BUILT_IN_DESCRIPTORS) {
-		return writePipe(getPid(), fdVal, buffer, len);
+		return transmitPipeData(getPid(), fdVal, buffer, len);
 	}
 	else if (fdVal == STDOUT || fdVal == STDERR) {
 		driver_printStr(buffer, WHITE);
@@ -104,7 +104,7 @@ static uint64_t sys_write_color(uint64_t fd, char buffer, Color fnt) {
 						(int16_t) fd;
 	if (fdVal >= BUILT_IN_DESCRIPTORS) {
 		// envío el carácter coloreado al pipe
-		return writePipe(getPid(), fdVal, &buffer, 1);
+		return transmitPipeData(getPid(), fdVal, &buffer, 1);
 	}
 	// si no, va a pantalla
 	else if (fdVal == STDOUT || fdVal == STDERR) {
@@ -240,18 +240,18 @@ static uint64_t sys_pipeOpen(uint16_t pid, uint8_t mode) {
 	if (pid < 0) {
 		return -1;
 	}
-	return pipeOpen(pid, mode);
+	return acquirePipeAccess(pid, mode);
 }
 
 static uint64_t sys_pipeClose(uint16_t pid) {
 	if (pid < 0) {
 		return -1;
 	}
-	return pipeClose(pid);
+	return releasePipeAccess(pid);
 }
 
 static uint64_t sys_getPipe() {
-	return getLastFreePipe();
+	return requestNewPipeHandle();
 }
 
 static ProcessInfoList *sys_ps() {
