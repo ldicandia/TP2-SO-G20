@@ -37,14 +37,24 @@ typedef struct ProcessCDT {
 //=== UTILITY FUNCTIONS ===
 
 static char **allocArguments(char **inputArgs) {
+	if (inputArgs == NULL) {
+		return NULL;
+	}
+
 	int argumentCount = stringArrayLen(inputArgs), totalArgumentsLength = 0;
 	int individualArgsLength[argumentCount];
 	for (int i = 0; i < argumentCount; i++) {
+		if (inputArgs[i] == NULL) {
+			return NULL;
+		}
 		individualArgsLength[i] = strlen(inputArgs[i]) + 1;
 		totalArgumentsLength += individualArgsLength[i];
 	}
 	char **newArgumentsArray = (char **) allocMemory(
 		totalArgumentsLength + sizeof(char **) * (argumentCount + 1));
+	if (newArgumentsArray == NULL) {
+		return NULL;
+	}
 	char *stringPosition =
 		(char *) newArgumentsArray + (sizeof(char **) * (argumentCount + 1));
 	for (int i = 0; i < argumentCount; i++) {
@@ -57,6 +67,11 @@ static char **allocArguments(char **inputArgs) {
 }
 
 void processWrapper(MainFunction codeFunction, char **argumentsArray) {
+	if (codeFunction == NULL || argumentsArray == NULL) {
+		driver_printStr("Error: function or args is NULL\n",
+						(Color) {0xFF, 0x00, 0x00});
+		killCurrentProcess(-1);
+	}
 	if (argumentsArray[0] == NULL) {
 		driver_printStr("Error: args is NULL\n", (Color) {0xFF, 0x00, 0x00});
 		killCurrentProcess(-1);
@@ -75,6 +90,9 @@ int64_t sizeofProcess() {
 
 static void assignFileDescriptor(ProcessADT processPtr, uint8_t descriptorIndex,
 								 int16_t descriptorValue, uint8_t accessMode) {
+	if (processPtr == NULL || descriptorIndex >= BUILT_IN_DESCRIPTORS) {
+		return;
+	}
 	processPtr->descriptorTable[descriptorIndex] = descriptorValue;
 	if (descriptorValue >= BUILT_IN_DESCRIPTORS)
 		grantPipeAccessToProcess(processPtr->processId, descriptorValue,
@@ -87,6 +105,9 @@ static void closeFileDescriptor(uint16_t processId, int16_t descriptorValue) {
 }
 
 void closeFileDescriptors(ProcessADT processPtr) {
+	if (processPtr == NULL) {
+		return;
+	}
 	closeFileDescriptor(processPtr->processId,
 						processPtr->descriptorTable[STDIN]);
 	closeFileDescriptor(processPtr->processId,
@@ -115,6 +136,11 @@ void initProcess(ProcessADT processPtr, uint16_t processId,
 				 char **argumentsArray, char *processName,
 				 uint8_t processPriority, int16_t descriptorTable[],
 				 uint8_t cannotBeKilled) {
+	if (processPtr == NULL || codeFunction == NULL || argumentsArray == NULL ||
+		processName == NULL || descriptorTable == NULL) {
+		return;
+	}
+
 	processPtr->processId		= processId;
 	processPtr->parentProcessId = parentProcessId;
 	processPtr->targetWaitPid	= 0;
@@ -231,10 +257,16 @@ void setProcessReturnValue(ProcessADT processPtr, int32_t returnValue) {
 //=== PROCESS INITIALIZATION ===
 
 int getProcessInitializationStatus(ProcessADT processPtr) {
+	if (processPtr == NULL) {
+		return 0;
+	}
 	return processPtr->hasBeenInitialized;
 }
 
 void setProcessInitialized(ProcessADT processPtr, int initializationFlag) {
+	if (processPtr == NULL) {
+		return;
+	}
 	processPtr->hasBeenInitialized = initializationFlag;
 }
 
@@ -276,6 +308,9 @@ void incrementWaitingTime(ProcessADT processPtr) {
 }
 
 int isProcessWaitingFor(ProcessADT processPtr, uint16_t pidToWaitFor) {
+	if (processPtr == NULL) {
+		return 0;
+	}
 	return processPtr->targetWaitPid == pidToWaitFor &&
 		   processPtr->currentStatus == BLOCKED;
 }
@@ -291,6 +326,9 @@ LinkedListADT getZombieChildren(ProcessADT processPtr) {
 //=== PROCESS INFO ===
 
 ProcessInfo *loadInfo(ProcessInfo *infoSnapshot, ProcessADT processPtr) {
+	if (infoSnapshot == NULL || processPtr == NULL) {
+		return NULL;
+	}
 	infoSnapshot->name = allocMemory(strlen(processPtr->processName) + 1);
 	strcpy(infoSnapshot->name, processPtr->processName);
 	infoSnapshot->pid		   = processPtr->processId;
@@ -304,6 +342,9 @@ ProcessInfo *loadInfo(ProcessInfo *infoSnapshot, ProcessADT processPtr) {
 int collectZombieProcessInfo(int currentProcessIndex,
 							 ProcessInfo processStatusArray[],
 							 ProcessADT nextProcessPtr) {
+	if (processStatusArray == NULL || nextProcessPtr == NULL) {
+		return currentProcessIndex;
+	}
 	LinkedListADT deadChildrenList = nextProcessPtr->deadChildrenList;
 	begin(deadChildrenList);
 	while (hasNext(deadChildrenList))

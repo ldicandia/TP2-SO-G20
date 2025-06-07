@@ -15,15 +15,15 @@
 #define AGING_THRESHOLD 10
 
 typedef struct SchedulerCDT {
-	Node *processes[MAX_PROCESSES];
-	uint16_t qtyProcesses;
-	uint16_t nextUnusedPid;
-	LinkedListADT levels[QTY_READY_LEVELS];
+	Node *processTable[MAX_PROCESSES];
+	uint16_t processCount;
+	uint16_t nextAvailablePid;
+	LinkedListADT readyLevels[QTY_READY_LEVELS];
 	LinkedListADT blockedProcesses;
 	uint16_t currentPid;
 	uint8_t currentLevel;
 	int8_t remainingQuantum;
-	int8_t killFgProcess;
+	int8_t shouldKillForegroundProcess;
 } SchedulerCDT;
 
 extern void forceTimerTick();
@@ -35,15 +35,15 @@ extern void forceTimerTick();
 SchedulerADT createScheduler() {
 	SchedulerADT scheduler = (SchedulerADT) SCHEDULER_ADDRESS;
 	for (int i = 0; i < MAX_PROCESSES; i++)
-		scheduler->processes[i] = NULL;
+		scheduler->processTable[i] = NULL;
 	for (int i = 0; i < QTY_READY_LEVELS; i++)
-		scheduler->levels[i] = createLinkedListADT();
-	scheduler->blockedProcesses = createLinkedListADT();
-	scheduler->nextUnusedPid	= 0;
-	scheduler->killFgProcess	= 0;
-	scheduler->currentPid		= 0;
-	scheduler->currentLevel		= 0;
-	scheduler->qtyProcesses		= 0;
+		scheduler->readyLevels[i] = createLinkedListADT();
+	scheduler->blockedProcesses			   = createLinkedListADT();
+	scheduler->nextAvailablePid			   = 0;
+	scheduler->shouldKillForegroundProcess = 0;
+	scheduler->currentPid				   = 0;
+	scheduler->currentLevel				   = 0;
+	scheduler->processCount				   = 0;
 	return scheduler;
 }
 
@@ -58,16 +58,18 @@ SchedulerADT getSchedulerADT() {
 static uint16_t getNextPid(SchedulerADT scheduler) {
 	ProcessADT process = NULL;
 	for (int i = 0; i < QTY_READY_LEVELS; i++) {
-		int lvl = (scheduler->currentLevel + i) % QTY_READY_LEVELS;
-		if (!isEmpty(scheduler->levels[lvl])) {
-			Node *node = getFirst(scheduler->levels[lvl]);
+		int currentLevelIndex =
+			(scheduler->currentLevel + i) % QTY_READY_LEVELS;
+		if (!isEmpty(scheduler->readyLevels[currentLevelIndex])) {
+			Node *node = getFirst(scheduler->readyLevels[currentLevelIndex]);
 			process	   = node->data;
-			if (getLength(scheduler->levels[lvl]) > 1) {
-				removeNode(scheduler->levels[lvl], node);
-				appendNode(scheduler->levels[lvl], node);
+			if (getLength(scheduler->readyLevels[currentLevelIndex]) > 1) {
+				removeNode(scheduler->readyLevels[currentLevelIndex], node);
+				appendNode(scheduler->readyLevels[currentLevelIndex], node);
 			}
 
-			scheduler->currentLevel = (lvl + 1) % QTY_READY_LEVELS;
+			scheduler->currentLevel =
+				(currentLevelIndex + 1) % QTY_READY_LEVELS;
 
 			return getProcessId(process);
 		}
@@ -76,20 +78,20 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 }
 
 void applyAging(SchedulerADT scheduler) {
-	for (int lvl = 0; lvl < MAX_PRIORITY; lvl++) {
-		Node *node = getFirst(scheduler->levels[lvl]);
-		while (node != NULL) {
-			ProcessADT process = node->data;
-			node			   = node->next;
+	for (int levelIndex = 0; levelIndex < MAX_PRIORITY; levelIndex++) {
+		Node *currentNode = getFirst(scheduler->readyLevels[levelIndex]);
+		while (currentNode != NULL) {
+			ProcessADT process = currentNode->data;
+			currentNode		   = currentNode->next;
 
 			incrementWaitingTime(process);
 
 			if (getWaitingTime(process) >= AGING_THRESHOLD) {
-				removeNode(scheduler->levels[lvl],
-						   scheduler->processes[getProcessId(process)]);
-				setProcessPriority(process, lvl + 1);
-				appendNode(scheduler->levels[lvl + 1],
-						   scheduler->processes[getProcessId(process)]);
+				removeNode(scheduler->readyLevels[levelIndex],
+						   scheduler->processTable[getProcessId(process)]);
+				setProcessPriority(process, levelIndex + 1);
+				appendNode(scheduler->readyLevels[levelIndex + 1],
+						   scheduler->processTable[getProcessId(process)]);
 				setWaitingTime(process, 0);
 			}
 		}
@@ -107,7 +109,7 @@ void *schedule(void *prevStackPointer) {
 	}
 
 	ProcessADT currentProcess;
-	Node *currentProcessNode = scheduler->processes[scheduler->currentPid];
+	Node *currentProcessNode = scheduler->processTable[scheduler->currentPid];
 
 	if (currentProcessNode != NULL) {
 		currentProcess = (ProcessADT) currentProcessNode->data;
@@ -122,11 +124,11 @@ void *schedule(void *prevStackPointer) {
 
 	// applyAging(scheduler);
 	scheduler->currentPid = getNextPid(scheduler);
-	currentProcess		  = scheduler->processes[scheduler->currentPid]->data;
+	currentProcess = scheduler->processTable[scheduler->currentPid]->data;
 
-	if (scheduler->killFgProcess &&
+	if (scheduler->shouldKillForegroundProcess &&
 		getProcessFileDescriptor(currentProcess, STDIN) == STDIN) {
-		scheduler->killFgProcess = 0;
+		scheduler->shouldKillForegroundProcess = 0;
 		if (killCurrentProcess(-1) != -1)
 			forceTimerTick();
 	}
@@ -154,7 +156,7 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[],
 					   uint8_t unkillable) {
 	SchedulerADT scheduler = getSchedulerADT();
-	if (scheduler->qtyProcesses >= MAX_PROCESSES) {
+	if (scheduler->processCount >= MAX_PROCESSES) {
 		driver_printStr("Error: Too many processes\n",
 						(Color) {0xFF, 0x00, 0x00});
 		return -1;
@@ -166,43 +168,44 @@ uint16_t createProcess(MainFunction code, char **args, char *name,
 						(Color) {0xFF, 0x00, 0x00});
 		return -1;
 	}
-	initProcess(process, scheduler->nextUnusedPid, scheduler->currentPid, code,
-				args, name, priority, fileDescriptors, unkillable);
+	initProcess(process, scheduler->nextAvailablePid, scheduler->currentPid,
+				code, args, name, priority, fileDescriptors, unkillable);
 
 	Node *processNode;
 	if (getProcessId(process) != IDLE_PID) {
-		processNode = appendElement(
-			scheduler->levels[getProcessPriority(process)], (void *) process);
+		processNode =
+			appendElement(scheduler->readyLevels[getProcessPriority(process)],
+						  (void *) process);
 	}
 	else {
 		processNode		  = allocMemory(sizeof(Node));
 		processNode->data = (void *) process;
 	}
-	scheduler->processes[getProcessId(process)] = processNode;
-	while (scheduler->processes[scheduler->nextUnusedPid] != NULL)
-		scheduler->nextUnusedPid =
-			(scheduler->nextUnusedPid + 1) % MAX_PROCESSES;
-	scheduler->qtyProcesses++;
+	scheduler->processTable[getProcessId(process)] = processNode;
+	while (scheduler->processTable[scheduler->nextAvailablePid] != NULL)
+		scheduler->nextAvailablePid =
+			(scheduler->nextAvailablePid + 1) % MAX_PROCESSES;
+	scheduler->processCount++;
 	return getProcessId(process);
 }
 
 static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie) {
 	uint16_t zombiePid = getProcessId(zombie);
-	Node *zombieNode   = scheduler->processes[zombiePid];
+	Node *zombieNode   = scheduler->processTable[zombiePid];
 
 	if (zombiePid == 1)
 		return;
 
-	scheduler->qtyProcesses--;
-	scheduler->processes[zombiePid] = NULL;
+	scheduler->processCount--;
+	scheduler->processTable[zombiePid] = NULL;
 
-	if (scheduler->qtyProcesses == 0) {
-		scheduler->nextUnusedPid = 2;
+	if (scheduler->processCount == 0) {
+		scheduler->nextAvailablePid = 2;
 	}
 
-	else if (zombiePid < scheduler->nextUnusedPid &&
-			 scheduler->processes[zombiePid] == NULL) {
-		scheduler->nextUnusedPid = zombiePid;
+	else if (zombiePid < scheduler->nextAvailablePid &&
+			 scheduler->processTable[zombiePid] == NULL) {
+		scheduler->nextAvailablePid = zombiePid;
 	}
 
 	freeProcess(zombie);
@@ -220,7 +223,7 @@ int32_t killCurrentProcess(int32_t retValue) {
 
 int32_t killProcess(uint16_t pid, int32_t retValue) {
 	SchedulerADT scheduler	= getSchedulerADT();
-	Node *processToKillNode = scheduler->processes[pid];
+	Node *processToKillNode = scheduler->processTable[pid];
 	if (processToKillNode == NULL)
 		return -1;
 
@@ -235,7 +238,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 		removeNode(scheduler->blockedProcesses, processToKillNode);
 	}
 	else {
-		removeNode(scheduler->levels[getProcessPriority(processToKill)],
+		removeNode(scheduler->readyLevels[getProcessPriority(processToKill)],
 				   processToKillNode);
 	}
 
@@ -248,7 +251,7 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 					  (ProcessADT) next(getZombieChildren(processToKill)));
 	}
 
-	Node *parentNode = scheduler->processes[getParentPid(processToKill)];
+	Node *parentNode = scheduler->processTable[getParentPid(processToKill)];
 	if (parentNode != NULL &&
 		getProcessStatus((ProcessADT) parentNode->data) != ZOMBIE) {
 		ProcessADT parent = (ProcessADT) parentNode->data;
@@ -266,8 +269,8 @@ int32_t killProcess(uint16_t pid, int32_t retValue) {
 }
 
 void killForegroundProcess() {
-	SchedulerADT scheduler	 = getSchedulerADT();
-	scheduler->killFgProcess = 1;
+	SchedulerADT scheduler				   = getSchedulerADT();
+	scheduler->shouldKillForegroundProcess = 1;
 	forceTimerTick();
 }
 
@@ -278,7 +281,7 @@ void killForegroundProcess() {
 int32_t blockProcess(uint16_t pid) {
 	SchedulerADT scheduler = getSchedulerADT();
 
-	Node *node = scheduler->processes[pid];
+	Node *node = scheduler->processTable[pid];
 
 	if (node == NULL)
 		return -1;
@@ -290,14 +293,14 @@ int32_t blockProcess(uint16_t pid) {
 		return 0;
 
 	setProcessStatus(process, BLOCKED);
-	removeNode(scheduler->levels[getProcessPriority(process)], node);
+	removeNode(scheduler->readyLevels[getProcessPriority(process)], node);
 	appendNode(scheduler->blockedProcesses, node);
 	return 0;
 }
 
 int32_t unblockProcess(uint16_t pid) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *node			   = scheduler->processes[pid];
+	Node *node			   = scheduler->processTable[pid];
 	if (!node)
 		return -1;
 
@@ -311,9 +314,9 @@ int32_t unblockProcess(uint16_t pid) {
 
 	setProcessStatus(process, READY);
 	Node *newNode = appendElement(
-		scheduler->levels[getProcessPriority(process)], (void *) process);
-	scheduler->processes[pid]	= newNode;
-	scheduler->remainingQuantum = 0;
+		scheduler->readyLevels[getProcessPriority(process)], (void *) process);
+	scheduler->processTable[pid] = newNode;
+	scheduler->remainingQuantum	 = 0;
 	return 0;
 }
 
@@ -327,7 +330,7 @@ int checkPriority(uint8_t priority) {
 
 int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *node			   = scheduler->processes[pid];
+	Node *node			   = scheduler->processTable[pid];
 
 	if (node == NULL || pid == IDLE_PID)
 		return -1;
@@ -339,9 +342,9 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 
 	if (getProcessStatus(process) == READY ||
 		getProcessStatus(process) == RUNNING) {
-		removeNode(scheduler->levels[getProcessPriority(process)], node);
-		scheduler->processes[getProcessId(process)] =
-			appendNode(scheduler->levels[newPriority], node);
+		removeNode(scheduler->readyLevels[getProcessPriority(process)], node);
+		scheduler->processTable[getProcessId(process)] =
+			appendNode(scheduler->readyLevels[newPriority], node);
 	}
 	setProcessPriority(process, newPriority);
 	return newPriority;
@@ -349,7 +352,7 @@ int32_t setPriority(uint16_t pid, uint8_t newPriority) {
 
 int8_t setStatus(uint16_t pid, uint8_t newStatus) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *node			   = scheduler->processes[pid];
+	Node *node			   = scheduler->processTable[pid];
 	if (node == NULL || pid == IDLE_PID)
 		return -1;
 
@@ -364,13 +367,13 @@ int8_t setStatus(uint16_t pid, uint8_t newStatus) {
 
 	setProcessStatus(process, newStatus);
 	if (newStatus == BLOCKED) {
-		removeNode(scheduler->levels[getProcessPriority(process)], node);
+		removeNode(scheduler->readyLevels[getProcessPriority(process)], node);
 		appendNode(scheduler->blockedProcesses, node);
 	}
 	else if (oldStatus == BLOCKED) {
 		removeNode(scheduler->blockedProcesses, node);
 		setProcessPriority(process, MAX_PRIORITY);
-		prependNode(scheduler->levels[getProcessPriority(process)], node);
+		prependNode(scheduler->readyLevels[getProcessPriority(process)], node);
 		scheduler->remainingQuantum = 0;
 	}
 	return newStatus;
@@ -388,7 +391,7 @@ int32_t getZombieRetValue(uint16_t pid) {
 		return -1;
 	}
 
-	Node *zombieNode = scheduler->processes[pid];
+	Node *zombieNode = scheduler->processTable[pid];
 	if (zombieNode == NULL)
 		return -1;
 	ProcessADT zombieProcess = (ProcessADT) zombieNode->data;
@@ -396,7 +399,7 @@ int32_t getZombieRetValue(uint16_t pid) {
 		return -1;
 
 	ProcessADT parent =
-		(ProcessADT) scheduler->processes[scheduler->currentPid]->data;
+		(ProcessADT) scheduler->processTable[scheduler->currentPid]->data;
 	setWaitingForPid(parent, pid);
 
 	if (getProcessStatus(zombieProcess) != ZOMBIE) {
@@ -413,37 +416,39 @@ int32_t getZombieRetValue(uint16_t pid) {
 // ================================
 
 ProcessInfoList *getProcessInfoList() {
-	SchedulerADT scheduler			= getSchedulerADT();
-	ProcessInfoList *snapshotsArray = allocMemory(sizeof(ProcessInfoList));
-	if (snapshotsArray == NULL) {
+	SchedulerADT scheduler			 = getSchedulerADT();
+	ProcessInfoList *processInfoList = allocMemory(sizeof(ProcessInfoList));
+	if (processInfoList == NULL) {
 		return NULL;
 	}
 
-	ProcessInfo *psArray =
-		allocMemory(scheduler->qtyProcesses * sizeof(ProcessInfo));
-	if (psArray == NULL) {
-		freeMemory(snapshotsArray);
+	ProcessInfo *processArray =
+		allocMemory(scheduler->processCount * sizeof(ProcessInfo));
+	if (processArray == NULL) {
+		freeMemory(processInfoList);
 		return NULL;
 	}
 	int processIndex = 0;
-	loadInfo(&psArray[processIndex++],
-			 (ProcessADT) scheduler->processes[IDLE_PID]->data);
-	for (int lvl = QTY_READY_LEVELS; lvl >= 0; lvl--) {
-		begin(scheduler->levels[lvl]);
-		while (hasNext(scheduler->levels[lvl])) {
-			ProcessADT nextProcess = (ProcessADT) next(scheduler->levels[lvl]);
-			loadInfo(&psArray[processIndex], nextProcess);
+	loadInfo(&processArray[processIndex++],
+			 (ProcessADT) scheduler->processTable[IDLE_PID]->data);
+	for (int levelIndex = QTY_READY_LEVELS; levelIndex >= 0; levelIndex--) {
+		begin(scheduler->readyLevels[levelIndex]);
+		while (hasNext(scheduler->readyLevels[levelIndex])) {
+			ProcessADT nextProcess =
+				(ProcessADT) next(scheduler->readyLevels[levelIndex]);
+			loadInfo(&processArray[processIndex], nextProcess);
 			processIndex++;
 			if (getProcessStatus(nextProcess) != ZOMBIE) {
-				collectZombieProcessInfo(processIndex, psArray, nextProcess);
+				collectZombieProcessInfo(processIndex, processArray,
+										 nextProcess);
 				processIndex += getLength(getZombieChildren(nextProcess));
 			}
 		}
 	}
 
-	snapshotsArray->length		 = scheduler->qtyProcesses;
-	snapshotsArray->snapshotList = psArray;
-	return snapshotsArray;
+	processInfoList->length		  = scheduler->processCount;
+	processInfoList->snapshotList = processArray;
+	return processInfoList;
 }
 
 uint16_t getPid() {
@@ -452,23 +457,23 @@ uint16_t getPid() {
 }
 
 int getQtyProcesses(SchedulerADT scheduler) {
-	return scheduler->qtyProcesses;
+	return scheduler->processCount;
 }
 
 int getNextUnusedPid(SchedulerADT scheduler) {
-	return scheduler->nextUnusedPid;
+	return scheduler->nextAvailablePid;
 }
 
 int32_t processIsAlive(uint16_t pid) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *processNode	   = scheduler->processes[pid];
+	Node *processNode	   = scheduler->processTable[pid];
 	return processNode != NULL &&
 		   getProcessStatus((ProcessADT) processNode->data) != ZOMBIE;
 }
 
 ProcessADT getCurrentProcess() {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *currentNode	   = scheduler->processes[scheduler->currentPid];
+	Node *currentNode	   = scheduler->processTable[scheduler->currentPid];
 	if (currentNode == NULL)
 		return NULL;
 	return (ProcessADT) currentNode->data;
@@ -476,7 +481,7 @@ ProcessADT getCurrentProcess() {
 
 int16_t getCurrentProcessFileDescriptor(uint8_t fdIndex) {
 	SchedulerADT scheduler = getSchedulerADT();
-	ProcessADT process	   = scheduler->processes[scheduler->currentPid]->data;
+	ProcessADT process = scheduler->processTable[scheduler->currentPid]->data;
 	return getProcessFileDescriptor(process, fdIndex);
 }
 
@@ -486,7 +491,7 @@ int16_t getCurrentProcessFileDescriptor(uint8_t fdIndex) {
 
 int8_t changeFD(uint16_t pid, uint8_t position, int16_t newFd) {
 	SchedulerADT scheduler = getSchedulerADT();
-	Node *processNode	   = scheduler->processes[pid];
+	Node *processNode	   = scheduler->processTable[pid];
 	if (pid == IDLE_PID || processNode == NULL)
 		return -1;
 	ProcessADT process = (ProcessADT) processNode->data;
@@ -514,76 +519,79 @@ static char *statusToString(ProcessStatus s) {
 }
 
 void printAllProcesses(SchedulerADT scheduler) {
-	Color c = (Color) {0xFF, 0xFF, 0xFF};
-	driver_printStr("\n[Processes]\n", c);
-	driver_printStr("PID   Name      Status   Prio\n", c);
-	driver_printStr("---   ----      ------   ----\n", c);
+	Color whiteColor = (Color) {0xFF, 0xFF, 0xFF};
+	driver_printStr("\n[Processes]\n", whiteColor);
+	driver_printStr("PID   Name      Status   Prio\n", whiteColor);
+	driver_printStr("---   ----      ------   ----\n", whiteColor);
 
 	for (int i = 0; i < MAX_PROCESSES; i++) {
-		Node *n = scheduler->processes[i];
-		if (!n)
+		Node *processNode = scheduler->processTable[i];
+		if (!processNode)
 			continue;
-		ProcessADT p = n->data;
-		if (!p)
+		ProcessADT currentProcess = processNode->data;
+		if (!currentProcess)
 			continue;
 
 		// PID
-		driver_printNum(getProcessId(p), c);
-		driver_printStr("     ", c);
+		driver_printNum(getProcessId(currentProcess), whiteColor);
+		driver_printStr("     ", whiteColor);
 
 		// Nombre (asumimos <=8 chars; si no, ajusta el tabulado)
-		driver_printStr(getName(p), c);
-		driver_printStr("        ", c);
+		driver_printStr(getName(currentProcess), whiteColor);
+		driver_printStr("        ", whiteColor);
 
 		// Estado
-		driver_printStr(statusToString(getProcessStatus(p)), c);
-		driver_printStr("   ", c);
+		driver_printStr(statusToString(getProcessStatus(currentProcess)),
+						whiteColor);
+		driver_printStr("   ", whiteColor);
 
 		// Prioridad
-		driver_printNum(getProcessPriority(p), c);
-		driver_printStr("\n", c);
+		driver_printNum(getProcessPriority(currentProcess), whiteColor);
+		driver_printStr("\n", whiteColor);
 	}
 }
 
 void printLevels(SchedulerADT scheduler) {
-	driver_printStr("\n[Levels]: ", (Color) {0xAA, 0xFF, 0xFF});
+	Color cyanColor = (Color) {0xAA, 0xFF, 0xFF};
+	driver_printStr("\n[Levels]: ", cyanColor);
 	for (int i = 0; i < QTY_READY_LEVELS; i++) {
-		driver_printStr("\nLevel ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printNum(i, (Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr(": ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printNum(getLength(scheduler->levels[i]),
-						(Color) {0xAA, 0xFF, 0xFF});
-		driver_printStr(" Processes: ", (Color) {0xAA, 0xFF, 0xFF});
-		Node *currentNode = getFirst(scheduler->levels[i]);
+		driver_printStr("\nLevel ", cyanColor);
+		driver_printNum(i, cyanColor);
+		driver_printStr(": ", cyanColor);
+		driver_printNum(getLength(scheduler->readyLevels[i]), cyanColor);
+		driver_printStr(" Processes: ", cyanColor);
+		Node *currentNode = getFirst(scheduler->readyLevels[i]);
 		while (currentNode != NULL) {
 			ProcessADT process = currentNode->data;
-			driver_printStr(getName(process), (Color) {0xAA, 0xFF, 0xFF});
+			driver_printStr(getName(process), cyanColor);
 			currentNode = currentNode->next;
 			if (currentNode != NULL)
-				driver_printStr(", ", (Color) {0xAA, 0xFF, 0xFF});
+				driver_printStr(", ", cyanColor);
 		}
-		driver_printStr("\n", (Color) {0xAA, 0xFF, 0xFF});
+		driver_printStr("\n", cyanColor);
 	}
 }
 
 void printCurrentProcess(SchedulerADT scheduler) {
-	driver_printStr("\n[Scheduler Current Process]: ",
-					(Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printNum(scheduler->currentPid, (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr(" \nName: ", (Color) {0xAA, 0xFF, 0xFF});
-	driver_printStr(getName(scheduler->processes[scheduler->currentPid]->data),
-					(Color) {0xAA, 0xFF, 0xFF});
+	Color cyanColor = (Color) {0xAA, 0xFF, 0xFF};
+	driver_printStr("\n[Scheduler Current Process]: ", cyanColor);
+	driver_printStr("\nPID: ", cyanColor);
+	driver_printNum(scheduler->currentPid, cyanColor);
+	driver_printStr(" \nName: ", cyanColor);
+	driver_printStr(
+		getName(scheduler->processTable[scheduler->currentPid]->data),
+		cyanColor);
 }
 
 void printBlockedProcesses() {
 	SchedulerADT scheduler = getSchedulerADT();
-	driver_printStr("\n[Blocked Processes]: ", (Color) {0xAA, 0xFF, 0xFF});
-	Node *node = getFirst(scheduler->blockedProcesses);
-	while (node != NULL) {
-		ProcessADT process = node->data;
-		driver_printStr("\nPID: ", (Color) {0xAA, 0xFF, 0xFF});
-		driver_printNum(getProcessId(process), (Color) {0xAA, 0xFF, 0xFF});
-		node = node->next;
+	Color cyanColor		   = (Color) {0xAA, 0xFF, 0xFF};
+	driver_printStr("\n[Blocked Processes]: ", cyanColor);
+	Node *currentNode = getFirst(scheduler->blockedProcesses);
+	while (currentNode != NULL) {
+		ProcessADT process = currentNode->data;
+		driver_printStr("\nPID: ", cyanColor);
+		driver_printNum(getProcessId(process), cyanColor);
+		currentNode = currentNode->next;
 	}
 }

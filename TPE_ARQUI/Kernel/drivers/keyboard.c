@@ -126,20 +126,20 @@ void keyboard_master(uint8_t keyPressed) {
 	}
 
 	keyboard_buffer_push(retChar);
+	// my_sem_post(KEYBOARD_SEM);
 }
 
 char getCharFromKeyboard() {
+	// my_sem_wait(KEYBOARD_SEM);
 	return keyboard_buffer_pop();
 }
 
 void ctrl_c_handler() {
 	killForegroundProcess();
-	driver_printStr("\nCTRL + C\n", (Color) {0xFF, 0x00, 0x00});
 	return;
 }
 
 void ctrl_d_handler() {
-	driver_printStr("", (Color) {0xFF, 0x00, 0x00});
 	keyboard_buffer_push(EOF);
 	return;
 }

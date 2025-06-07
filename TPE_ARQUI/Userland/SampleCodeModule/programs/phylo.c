@@ -6,7 +6,7 @@
 #include <userLibrary.h>
 #include <phylo.h>
 
-#define MUTEX 30
+#define MUTEX 10
 #define MAX_PHILOSOPHERS 32
 #define MIN_PHILOSOPHERS 3
 
@@ -43,32 +43,36 @@ static char *intToChar(int i) {
 	return buffer;
 }
 
-static int mutex;
-
 void initPhilosophers() {
-	mutex = user_sem_open(MUTEX, 1);
-	for (int i = 0; i < 5; i++) {
+	user_sem_open(MUTEX, 1);
+
+	for (int i = 0; i < numPhilosophers; i++) {
 		states[i]	  = THINKING;
-		semaphores[i] = user_sem_open(i + MUTEX, 0);
-		if (semaphores[i] == -1) {
-			printStr("Error initializing semaphore\n");
+		int semID	  = MUTEX + 1 + i;
+		semaphores[i] = semID;
+		if (user_sem_open(semID, 0) == -1) {
+			printStr("Error initializing semaphore ");
+			printStr(intToChar(semID));
+			printStr("\n");
 			return;
 		}
+	}
 
-		user_sem_wait(MUTEX);
-
-		char *idStr = intToChar(i);
-
+	user_sem_wait(MUTEX);
+	for (int i = 0; i < numPhilosophers; i++) {
+		char *idStr	 = intToChar(i);
 		char *args[] = {"philo", idStr, NULL};
 		int pid =
-			create_process((MainFunction) philosopher, args, "philosopher", 3);
+			create_process((MainFunction) philosopher, args, "philosopher", 0);
 		if (pid == -1) {
-			printStr("Error creating philosopher process\n");
+			printStr("Error creating philosopher process ");
+			printStr(idStr);
+			printStr("\n");
+			user_sem_post(MUTEX);
 			return;
 		}
-
-		user_sem_post(MUTEX);
 	}
+	user_sem_post(MUTEX);
 }
 
 void printTable() {
@@ -91,7 +95,7 @@ void test(int philosopher) {
 		states[(philosopher + 1) % numPhilosophers] != EATING) {
 		states[philosopher] = EATING;
 		user_sem_post(semaphores[philosopher]);
-		printTable();
+		// printTable();
 	}
 }
 
@@ -106,7 +110,7 @@ void takeForks(int philosopher) {
 void putForks(int philosopher) {
 	user_sem_wait(MUTEX);
 	states[philosopher] = THINKING;
-	printTable();
+	// printTable();
 	test((philosopher + numPhilosophers - 1) % numPhilosophers);
 	test((philosopher + 1) % numPhilosophers);
 	user_sem_post(MUTEX);
@@ -115,9 +119,12 @@ void putForks(int philosopher) {
 int philosopher(int argc, char **argv) {
 	int id = atoi(argv[1]);
 	while (1) {
-		sleep_miliseconds(2000);
+		sleep_miliseconds(20);
 		takeForks(id);
-		sleep_miliseconds(3000);
+		user_sem_wait(MUTEX);
+		printTable();
+		user_sem_post(MUTEX);
+		sleep_miliseconds(30);
 		putForks(id);
 	}
 }
@@ -137,7 +144,7 @@ void adjustPhilosophers(char input) {
 			char *idStr	 = intToChar(numPhilosophers - 1);
 			char *args[] = {"philo", idStr, NULL};
 			int pid		 = create_process((MainFunction) philosopher, args,
-										  "philosopher", 3);
+										  "philosopher", 0);
 			if (pid == -1) {
 				printStr("Error creating philosopher process\n");
 			}

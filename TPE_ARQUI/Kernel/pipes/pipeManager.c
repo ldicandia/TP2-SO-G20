@@ -11,9 +11,6 @@
 #include <stdlib.h>
 #include <globals.h>
 
-#define bufferPosition(pipe)                                                   \
-	(((pipe)->startPosition + (pipe)->currentSize) % PIPE_SIZE)
-
 typedef struct Pipe {
 	char buffer[PIPE_SIZE];
 	uint16_t startPosition;
@@ -26,12 +23,17 @@ static int16_t getPipeIndexById(uint16_t id);
 static Pipe *getPipeById(PipeManagerADT pipeManager, uint16_t id);
 static void freePipe(Pipe *pipe);
 static Pipe *createPipe();
+static uint16_t getBufferPosition(Pipe *pipe);
 
 typedef struct PipeManagerCDT {
 	Pipe *pipes[MAX_PIPES];
 	uint16_t lastFreePipe;
 	uint16_t qtyPipes;
 } PipeManagerCDT;
+
+static uint16_t getBufferPosition(Pipe *pipe) {
+	return (pipe->startPosition + pipe->currentSize) % PIPE_SIZE;
+}
 
 static PipeManagerADT getPipeManager() {
 	return (PipeManagerADT) PIPE_MANAGER_ADDRESS;
@@ -148,18 +150,17 @@ int64_t transmitPipeData(uint16_t pid, uint16_t id, char *sourceBuffer,
 
 	uint64_t writtenBytes = 0;
 	while (writtenBytes < len &&
-		   (int) pipe->buffer[bufferPosition(pipe)] != EOF) {
+		   (int) pipe->buffer[getBufferPosition(pipe)] != EOF) {
 		if (pipe->currentSize >= PIPE_SIZE) {
 			pipe->isBlocking = 1;
 			setStatus((uint16_t) pipe->inputPid, BLOCKED);
 			yield();
 		}
-		if (pipe !=
-			getPipeById(pipeManager, id)) // Validar que no haya muerto el pipe
+		if (pipe != getPipeById(pipeManager, id))
 			return -1;
 
 		while (pipe->currentSize < PIPE_SIZE && writtenBytes < len) {
-			pipe->buffer[bufferPosition(pipe)] = sourceBuffer[writtenBytes];
+			pipe->buffer[getBufferPosition(pipe)] = sourceBuffer[writtenBytes];
 			if ((int) sourceBuffer[writtenBytes++] == EOF)
 				break;
 			pipe->currentSize++;

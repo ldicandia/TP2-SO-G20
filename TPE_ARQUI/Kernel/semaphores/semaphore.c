@@ -1,9 +1,10 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <semaphoreManager.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <string.h> // <-- para memset
+#include <string.h>
 #include <videoDriver.h>
 #include <schedule.h>
 #include <linkedListADT.h>
@@ -16,9 +17,8 @@
 
 typedef struct Semaphore {
 	int value;
-	uint8_t lock;
+	uint8_t lock; // Lock por semáforo (cada semáforo tiene su propio spinlock)
 	LinkedListADT waitingQueue;
-	LinkedListADT mutexQueue;
 } Semaphore;
 
 typedef struct SemaphoreCDT {
@@ -27,7 +27,8 @@ typedef struct SemaphoreCDT {
 
 extern void acquire(uint8_t *lock);
 extern void release(uint8_t *lock);
-uint8_t globalSemLock = 0;
+uint8_t globalSemLock =
+	0; // Solo para proteger el array de semáforos al crear/cerrar
 
 void initSemaphores() {
 	SemaphoreCDT *mgr = (SemaphoreCDT *) SEMAPHORE_MANAGER_ADDRESS;
@@ -43,10 +44,10 @@ static SemaphoreCDT *getSemaphoreManager() {
 static void my_sem_init(Semaphore *sem, int initialValue) {
 	sem->value		  = initialValue;
 	sem->waitingQueue = createLinkedListADT();
-	sem->mutexQueue	  = createLinkedListADT();
-	sem->lock		  = 0;
+	sem->lock		  = 0; // el lock propio del semáforo
 }
 
+// Mejora: barrer todos los procesos muertos al reanudar
 static void resumeFirstAvailableProcess(LinkedListADT queue) {
 	Node *n;
 	while ((n = getFirst(queue))) {
@@ -57,31 +58,29 @@ static void resumeFirstAvailableProcess(LinkedListADT queue) {
 			setStatus(getProcessId(p), READY);
 			break;
 		}
+		// Si no está vivo, seguimos al siguiente
 	}
 }
 
 static int down(Semaphore *sem) {
 	acquire(&sem->lock);
-	sem->value--;
-	if (sem->value < 0) {
+	while (sem->value == 0) {
 		ProcessADT cur = getCurrentProcess();
 		appendElement(sem->waitingQueue, cur);
 		setStatus(getProcessId(cur), BLOCKED);
 		release(&sem->lock);
 		yield();
+		acquire(&sem->lock); // re-adquirimos al despertar
 	}
-	else {
-		release(&sem->lock);
-	}
+	sem->value--;
+	release(&sem->lock);
 	return 0;
 }
 
 static int up(Semaphore *sem) {
 	acquire(&sem->lock);
 	sem->value++;
-	if (sem->value <= 0) {
-		resumeFirstAvailableProcess(sem->waitingQueue);
-	}
+	resumeFirstAvailableProcess(sem->waitingQueue);
 	release(&sem->lock);
 	return 0;
 }
