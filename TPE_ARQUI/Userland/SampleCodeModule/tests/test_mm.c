@@ -19,14 +19,16 @@ typedef struct MM_rq {
 } mm_rq;
 
 int test_mm(uint64_t argc, char *argv[]) {
-	printStr("Testing Memory...\n");
+	printStr("\nTesting Memory...\n");
 	mm_rq mm_rqs[MAX_BLOCKS];
 	uint8_t rq;
 	uint32_t total;
 	uint64_t max_memory = 1 << 20; // 1MB
 
-	if (argc != 2)
+	if (argc != 2) {
+		printStr("Usage: testMemory [max_memory]\n");
 		return -1;
+	}
 
 	if ((max_memory = satoi(argv[1])) <= 0)
 		return -1;

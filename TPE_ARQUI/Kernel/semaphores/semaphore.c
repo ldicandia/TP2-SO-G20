@@ -53,12 +53,13 @@ static void resumeFirstAvailableProcess(LinkedListADT queue) {
 	while ((n = getFirst(queue))) {
 		removeNode(queue, n);
 		ProcessADT p = (ProcessADT) n->data;
-		freeMemory(n);
 		if (processIsAlive(getProcessId(p))) {
 			setStatus(getProcessId(p), READY);
+			// freeMemory(n);
 			break;
 		}
 		// Si no está vivo, seguimos al siguiente
+		// freeMemory(n);
 	}
 }
 

@@ -126,11 +126,9 @@ void keyboard_master(uint8_t keyPressed) {
 	}
 
 	keyboard_buffer_push(retChar);
-	// my_sem_post(KEYBOARD_SEM);
 }
 
 char getCharFromKeyboard() {
-	// my_sem_wait(KEYBOARD_SEM);
 	return keyboard_buffer_pop();
 }
 

@@ -10,7 +10,6 @@ void help() {
 				  WHITE);
 	printStrColor("\n time                     shows actual time", WHITE);
 	printStrColor("\n clear                    clears the screen", WHITE);
-	printStrColor("\n snake [qty players]      starts de Snake game", WHITE);
 	printStrColor(
 		"\n inforeg                  after SHIFT + TAB prints regsiter's",
 		WHITE);
@@ -23,12 +22,14 @@ void help() {
 	printStrColor("\n testMemory [size]        tests memory allocation", WHITE);
 	printStrColor("\n testProcesses [size]     tests process creation", WHITE);
 	printStrColor("\n testPrio                 tests process priority", WHITE);
+	printStrColor(
+		"\n testSync [n] [use_sem]   tests synchronization, 0 < n < 50", WHITE);
 	printStrColor("\n ps                       list processes", WHITE);
 	printStrColor("\n mem                      show memory info", WHITE);
-	printStrColor("\n loop <sleep ms>          launch infinite loop", WHITE);
-	printStrColor("\n kill <pid>               terminate a process", WHITE);
-	printStrColor("\n nice <pid> <prio>        change process priority", WHITE);
-	printStrColor("\n block <pid>              block a process", WHITE);
+	printStrColor("\n loop [sleep ms]          launch infinite loop", WHITE);
+	printStrColor("\n kill [pid]               terminate a process", WHITE);
+	printStrColor("\n nice [pid] [prio]        change process priority", WHITE);
+	printStrColor("\n block [pid]              block a process", WHITE);
 	printStrColor("\n filter                   filter vowels from input",
 				  WHITE);
 	printStrColor("\n cat                      prints STDIN", WHITE);

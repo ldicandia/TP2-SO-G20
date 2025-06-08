@@ -77,27 +77,6 @@ static uint16_t getNextPid(SchedulerADT scheduler) {
 	return IDLE_PID;
 }
 
-void applyAging(SchedulerADT scheduler) {
-	for (int levelIndex = 0; levelIndex < MAX_PRIORITY; levelIndex++) {
-		Node *currentNode = getFirst(scheduler->readyLevels[levelIndex]);
-		while (currentNode != NULL) {
-			ProcessADT process = currentNode->data;
-			currentNode		   = currentNode->next;
-
-			incrementWaitingTime(process);
-
-			if (getWaitingTime(process) >= AGING_THRESHOLD) {
-				removeNode(scheduler->readyLevels[levelIndex],
-						   scheduler->processTable[getProcessId(process)]);
-				setProcessPriority(process, levelIndex + 1);
-				appendNode(scheduler->readyLevels[levelIndex + 1],
-						   scheduler->processTable[getProcessId(process)]);
-				setWaitingTime(process, 0);
-			}
-		}
-	}
-}
-
 static int firstTime = 1;
 
 void *schedule(void *prevStackPointer) {
@@ -122,7 +101,6 @@ void *schedule(void *prevStackPointer) {
 			setProcessStatus(currentProcess, READY);
 	}
 
-	// applyAging(scheduler);
 	scheduler->currentPid = getNextPid(scheduler);
 	currentProcess = scheduler->processTable[scheduler->currentPid]->data;
 
