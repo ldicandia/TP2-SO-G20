@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <lib.h>
 #include <linkedListADT.h>
@@ -178,8 +180,7 @@ static void destroyZombie(SchedulerADT scheduler, ProcessADT zombie) {
 		scheduler->nextAvailablePid = 2;
 	}
 
-	else if (zombiePid < scheduler->nextAvailablePid &&
-			 scheduler->processTable[zombiePid] == NULL) {
+	else if (zombiePid < scheduler->nextAvailablePid) {
 		scheduler->nextAvailablePid = zombiePid;
 	}
 
@@ -300,7 +301,7 @@ int32_t unblockProcess(uint16_t pid) {
 // ================================
 
 int checkPriority(uint8_t priority) {
-	return (priority >= QTY_READY_LEVELS || priority < 0);
+	return (priority >= QTY_READY_LEVELS);
 }
 
 int32_t setPriority(uint16_t pid, uint8_t newPriority) {
@@ -406,7 +407,7 @@ ProcessInfoList *getProcessInfoList() {
 	int processIndex = 0;
 	loadInfo(&processArray[processIndex++],
 			 (ProcessADT) scheduler->processTable[IDLE_PID]->data);
-	for (int levelIndex = QTY_READY_LEVELS; levelIndex >= 0; levelIndex--) {
+	for (int levelIndex = QTY_READY_LEVELS - 1; levelIndex >= 0; levelIndex--) {
 		begin(scheduler->readyLevels[levelIndex]);
 		while (hasNext(scheduler->readyLevels[levelIndex])) {
 			ProcessADT nextProcess =

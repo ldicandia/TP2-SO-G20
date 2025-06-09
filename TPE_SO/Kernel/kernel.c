@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <idtLoader.h>
 #include <keyboard.h>
 #include <lib.h>
@@ -18,6 +20,10 @@
 #include <pipeManager.h>
 #include <globals.h>
 
+#define SAMPLE_CODE_MODULE_ADDR 0x400000UL
+#define SAMPLE_DATA_MODULE_ADDR 0x500000UL
+#define MEM_AMOUNT_OFFSET 132UL
+
 extern uint8_t text;
 extern uint8_t rodata;
 extern uint8_t data;
@@ -27,9 +33,12 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-static void *const sampleCodeModuleAddress = (void *) 0x400000;
-static void *const sampleDataModuleAddress = (void *) 0x500000;
-static void *const memAmount			   = (void *) (SYSTEM_VARIABLES + 132);
+static void *const sampleCodeModuleAddress =
+	(void *) (uintptr_t) SAMPLE_CODE_MODULE_ADDR; //-V566
+static void *const sampleDataModuleAddress =
+	(void *) (uintptr_t) SAMPLE_DATA_MODULE_ADDR; //-V566
+static void *const memAmount =
+	(void *) (uintptr_t) (SYSTEM_VARIABLES + MEM_AMOUNT_OFFSET); //-V566
 
 typedef int (*EntryPoint)();
 int idle(int argc, char **argv);

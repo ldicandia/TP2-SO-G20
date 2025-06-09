@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "irqDispatcher.h"
 
 #include <keyboard.h>
@@ -201,9 +203,6 @@ static int16_t syscall_createProcess(MainFunction code, char **args, char *name,
 
 // kill process
 static uint64_t sys_kill_process(uint64_t pid, uint64_t retValue) {
-	if (pid < 0) {
-		return -1;
-	}
 	return killProcess(pid, retValue);
 	// return 0;
 }
@@ -237,16 +236,10 @@ static uint64_t sys_wait_pid(uint16_t pid) {
 }
 
 static uint64_t sys_pipeOpen(uint16_t pid, uint8_t mode) {
-	if (pid < 0) {
-		return -1;
-	}
 	return acquirePipeAccess(pid, mode);
 }
 
 static uint64_t sys_pipeClose(uint16_t pid) {
-	if (pid < 0) {
-		return -1;
-	}
 	return releasePipeAccess(pid);
 }
 
@@ -269,9 +262,6 @@ static uint64_t sys_sem_post(uint16_t sem_id) {
 }
 
 static uint64_t sys_sem_open(uint16_t sem_id, uint64_t initialValue) {
-	if (initialValue < 0) {
-		return -1;
-	}
 	return mySemOpen(sem_id, initialValue);
 }
 

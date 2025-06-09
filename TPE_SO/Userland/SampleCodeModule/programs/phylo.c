@@ -1,5 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,9 +234,8 @@ void adjustPhilosophers(char input) {
 		hungerTime[numPhilosophers]		  = 0;
 
 		if (numPhilosophers > 0) {
-			int leftNeighbor = LEFT(numPhilosophers);
-			int rightNeighbor =
-				(numPhilosophers == 0) ? numPhilosophers - 1 : 0;
+			int leftNeighbor  = LEFT(numPhilosophers);
+			int rightNeighbor = RIGHT(numPhilosophers);
 			test(leftNeighbor);
 			if (rightNeighbor != leftNeighbor) {
 				test(rightNeighbor);

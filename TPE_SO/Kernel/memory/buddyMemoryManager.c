@@ -1,5 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #ifdef BUDDY
 
 #include "memoryManager.h"
@@ -94,11 +96,8 @@ MemoryManagerADT getMemoryManager(void) {
 
 void *allocMemory(const size_t size) {
 	MemoryManagerADT mm = getMemoryManager();
-	if (!mm)
-		return NULL;
-
-	uint8_t exp		   = MIN_EXP;
-	uint64_t blockSize = 1UL << exp;
+	uint8_t exp			= MIN_EXP;
+	uint64_t blockSize	= 1UL << exp;
 	while (blockSize < size + sizeof(MemoryBlock) && exp < mm->maxExp)
 		blockSize <<= 1, exp++;
 

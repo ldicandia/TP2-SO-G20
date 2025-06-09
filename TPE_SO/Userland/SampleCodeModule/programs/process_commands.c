@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <process_commands.h>
 #include <userLibrary.h>
 #include <builtin.h>
@@ -112,7 +114,7 @@ int _block_wrap(int argc, char **argv) {
 }
 int wc(int argc, char **argv) {
 	int lineCount = 0;
-	char c;
+	int c;
 
 	while ((c = getCharInt()) != EOF) {
 		if (c == '\n') {
@@ -128,7 +130,7 @@ int wc(int argc, char **argv) {
 
 int filter(int argc, char **argv) {
 	printStr("\nFilter vowels: ");
-	char c;
+	int c;
 	char lastChar = 0;
 	while ((c = getCharInt()) != EOF) {
 		if (lastChar != c &&
@@ -139,15 +141,13 @@ int filter(int argc, char **argv) {
 		}
 	}
 
-	if (c == '\n') {
-		printStr("Ending Filter");
-		printChar('\n');
-	}
+	printStr("Ending Filter");
+	printChar('\n');
 	return 0;
 }
 
 int cat(int argc, char **argv) {
-	char c;
+	int c;
 	while ((c = getCharInt()) != EOF) {
 		printChar(c);
 	}
@@ -155,7 +155,7 @@ int cat(int argc, char **argv) {
 }
 
 int red(int argc, char **argv) {
-	char c;
+	int c;
 	while ((c = getCharInt()) != EOF) {
 		printCharColor(c, (Color) {0x00, 0x00, 0xFF});
 	}

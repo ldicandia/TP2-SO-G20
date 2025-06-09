@@ -1,5 +1,7 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #ifdef OUR
@@ -122,7 +124,7 @@ void freeMemory(void *ptr) {
 
 void getMemoryInfo(MemoryInfo *info) {
 	MemoryManagerADT mm = getMemoryManager();
-	if (!mm || !info)
+	if (!info)
 		return;
 
 	uint64_t used		 = 0;

@@ -28,7 +28,7 @@ static char last_command[MAX_BUFFER + 1] = {0};
 
 static void copy_command(char *dest, const char *src) {
 	int i = 0;
-	while (src[i] && i < MAX_BUFFER) {
+	while (i < MAX_BUFFER && src[i]) {
 		dest[i] = src[i];
 		i++;
 	}

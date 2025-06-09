@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <defs.h>
 #include <interrupts.h>
 #include <lib.h>
@@ -71,10 +73,12 @@ void processWrapper(MainFunction codeFunction, char **argumentsArray) {
 		driver_printStr("Error: function or args is NULL\n",
 						(Color) {0xFF, 0x00, 0x00});
 		killCurrentProcess(-1);
+		return;
 	}
 	if (argumentsArray[0] == NULL) {
 		driver_printStr("Error: args is NULL\n", (Color) {0xFF, 0x00, 0x00});
 		killCurrentProcess(-1);
+		return;
 	}
 	// driver_printStr(argumentsArray[0], (Color) {0xFF, 0x00, 0x00});
 	int argumentCount	   = stringArrayLen(argumentsArray);

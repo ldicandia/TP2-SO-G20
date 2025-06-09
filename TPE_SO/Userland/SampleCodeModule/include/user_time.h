@@ -1,5 +1,5 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef USER_TIME_H
+#define USER_TIME_H
 
 int getHours();
 
@@ -11,4 +11,4 @@ void sleep(int ms);
 
 void user_time();
 
-#endif // TIME_H
+#endif // USER_TIME_H
