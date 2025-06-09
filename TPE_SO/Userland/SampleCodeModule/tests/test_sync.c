@@ -10,11 +10,11 @@
 #define SEM_ID 20
 #define TOTAL_PAIR_PROCESSES 2
 
-int64_t global; // shared memory
+int64_t global;
 
 void slowInc(int64_t *p, int64_t inc) {
 	uint64_t aux = *p;
-	yield(); // This makes the race condition highly probable
+	yield();
 	aux += inc;
 	*p = aux;
 }
@@ -52,12 +52,9 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 	return 0;
 }
 
-//{"name", "argv[1]", "argv[2]", "argv[3]"}
-
-uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
+uint64_t test_sync(uint64_t argc, char *argv[]) {
 	uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
-	// check params
 	if (argc < 2 || argc > 3) {
 		printStr("\nUsage: test_sync <n> [use_sem]\n");
 		return -1;
@@ -67,8 +64,6 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 		printStr("\nn must be between 1 and 50\n");
 		return -1;
 	}
-
-	// agregado para que funcione con nuestra implementación de semáforos
 	int8_t useSem = satoi(argv[2]);
 	if (useSem) {
 		if (user_sem_open(SEM_ID, 1) == -1) {

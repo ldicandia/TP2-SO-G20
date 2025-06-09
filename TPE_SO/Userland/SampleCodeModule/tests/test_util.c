@@ -71,8 +71,6 @@ void endless_loop() {
 	}
 }
 
-// typedef int (*MainFunction)(int argc, char **args);
-
 void endless_loop_print(uint64_t wait) {
 	printStr("\nENDLESS LOOP PRINT\n");
 
@@ -81,7 +79,6 @@ void endless_loop_print(uint64_t wait) {
 	while (1) {
 		printInteger(pid);
 		printStr(" ");
-		// psPrint();
 		bussy_wait(wait);
 	}
 }

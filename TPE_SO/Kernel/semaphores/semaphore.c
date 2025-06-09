@@ -17,7 +17,7 @@
 
 typedef struct Semaphore {
 	int value;
-	uint8_t lock; // Lock por semáforo (cada semáforo tiene su propio spinlock)
+	uint8_t lock;
 	LinkedListADT waitingQueue;
 } Semaphore;
 
@@ -27,8 +27,7 @@ typedef struct SemaphoreCDT {
 
 extern void acquire(uint8_t *lock);
 extern void release(uint8_t *lock);
-uint8_t globalSemLock =
-	0; // Solo para proteger el array de semáforos al crear/cerrar
+uint8_t globalSemLock = 0;
 
 void initSemaphores() {
 	SemaphoreCDT *mgr = (SemaphoreCDT *) SEMAPHORE_MANAGER_ADDRESS;
@@ -44,10 +43,9 @@ static SemaphoreCDT *getSemaphoreManager() {
 static void my_sem_init(Semaphore *sem, int initialValue) {
 	sem->value		  = initialValue;
 	sem->waitingQueue = createLinkedListADT();
-	sem->lock		  = 0; // el lock propio del semáforo
+	sem->lock		  = 0;
 }
 
-// Mejora: barrer todos los procesos muertos al reanudar
 static void resumeFirstAvailableProcess(LinkedListADT queue) {
 	Node *n;
 	while ((n = getFirst(queue))) {
@@ -55,11 +53,8 @@ static void resumeFirstAvailableProcess(LinkedListADT queue) {
 		ProcessADT p = (ProcessADT) n->data;
 		if (processIsAlive(getProcessId(p))) {
 			setStatus(getProcessId(p), READY);
-			// freeMemory(n);
 			break;
 		}
-		// Si no está vivo, seguimos al siguiente
-		// freeMemory(n);
 	}
 }
 
@@ -71,7 +66,7 @@ static int down(Semaphore *sem) {
 		setStatus(getProcessId(cur), BLOCKED);
 		release(&sem->lock);
 		yield();
-		acquire(&sem->lock); // re-adquirimos al despertar
+		acquire(&sem->lock);
 	}
 	sem->value--;
 	release(&sem->lock);

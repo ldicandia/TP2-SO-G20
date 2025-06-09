@@ -5,6 +5,10 @@
 #include "test_util.h"
 #include <test_processes.h>
 #include <userLibrary.h>
+#define DEV_NULL -1
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
 
 enum State { RUNNING, BLOCKED, KILLED };
 
@@ -13,19 +17,11 @@ typedef struct P_rq {
 	enum State state;
 } p_rq;
 
-// aca funciona, en test_util no, probablemente sea por problema de args
 int endless_loop1(int argc, char **argv) {
 	while (1) {
 		yield();
 	}
 }
-
-// int create_process(void *code, char **args, char *name, uint8_t priority);
-
-#define DEV_NULL -1 // Assuming DEV_NULL is defined as 3 in your system
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
 
 int test_processes(uint64_t argc, char *argv[]) {
 	printStr("\nEntered Testing Processes...\n");
@@ -33,7 +29,7 @@ int test_processes(uint64_t argc, char *argv[]) {
 	uint64_t alive = 0;
 	uint64_t action;
 	int64_t max_processes = 5;
-	int debug_mode		  = 0; // Modo debugging desactivado por defecto
+	int debug_mode		  = 0;
 
 	if (argc < 2) {
 		printStr("ERROR: Not enough arguments, testProcesses <#processes>\n");
@@ -69,12 +65,9 @@ int test_processes(uint64_t argc, char *argv[]) {
 				alive++;
 			}
 		}
-
-		// Manejo de procesos
 		while (alive > 0) {
 			for (rq = 0; rq < max_processes; rq++) {
 				action = GetUniform(100) % 2;
-				// action = 0;
 
 				switch (action) {
 					case 0:
@@ -114,11 +107,9 @@ int test_processes(uint64_t argc, char *argv[]) {
 				}
 			}
 
-			// Desbloquear procesos aleatoriamente
 			for (rq = 0; rq < max_processes; rq++) {
 				if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
-					if (my_unblock(p_rqs[rq].pid) ==
-						-1) { // aca se corta aparentemente
+					if (my_unblock(p_rqs[rq].pid) == -1) {
 						printStr("test_processes: ERROR unblocking process\n");
 						return -1;
 					}

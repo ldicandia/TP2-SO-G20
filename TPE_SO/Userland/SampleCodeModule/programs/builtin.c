@@ -36,7 +36,10 @@ void help() {
 	printStrColor("\n cat                      prints STDIN", WHITE);
 	printStrColor("\n wc                       counts input lines\n", WHITE);
 	printStrColor("\n [process] | [process]    for piping 2 processes", WHITE);
-	printStrColor("\n &[process]               for background process", WHITE);
+	printStrColor("\n &[process]               for background process\n",
+				  WHITE);
+	printStrColor("\n =                        press to repeat last command",
+				  WHITE);
 	printStrColor("\n---------------------------------------------------",
 				  WHITE);
 }

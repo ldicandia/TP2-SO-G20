@@ -15,6 +15,7 @@
     "process.h": "c",
     "irqdispatcher.h": "c",
     "semaphore.h": "c",
-    "videodriver.h": "c"
+    "videodriver.h": "c",
+    "process_commands.h": "c"
   }
 }

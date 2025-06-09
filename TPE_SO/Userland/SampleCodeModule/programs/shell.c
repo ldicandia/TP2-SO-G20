@@ -197,12 +197,12 @@ void readCommand() {
 		int pipeId = getPipe();
 
 		int16_t fileDescriptors1[] = {STDIN, pipeId, STDERR};
-		// spawn left, redirect its stdout → fds[1]
+		// stdout → fds[1]
 		int pid1 = create_process_with_fds(
 			command_func[i1], argv1, command_names[i1], 1, fileDescriptors1);
 
 		int16_t fileDescriptors2[] = {pipeId, STDOUT, STDERR};
-		// spawn right, redirect its stdin ← fds[0]
+		// stdin ← fds[0]
 		int pid2 = create_process_with_fds(
 			command_func[i2], argv2, command_names[i2], 1, fileDescriptors2);
 

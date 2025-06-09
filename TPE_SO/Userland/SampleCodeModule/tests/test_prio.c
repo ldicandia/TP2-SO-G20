@@ -5,29 +5,18 @@
 #include "syscall.h"
 #include "test_util.h"
 
-#define MINOR_WAIT                                                             \
-	"500000000" // TODO: Change this value to prevent a process from flooding
-				// the
-				// screen
-#define WAIT                                                                   \
-	1000000000 // TODO: Change this value to make the wait long enough to see
-// theese processes beeing run at least twice
+#define MINOR_WAIT "500000000"
+#define WAIT 1000000000
 
 #define TOTAL_PROCESSES 3
-#define LOWEST 0  // TODO: Change as required
-#define MEDIUM 1  // TODO: Change as required
-#define HIGHEST 2 // TODO: Change as required
+#define LOWEST 0
+#define MEDIUM 1
+#define HIGHEST 2
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-// char *argsA[] = {"endless_loopA", NULL};
-// char *argsB[] = {"endless_loopB", NULL};
-
-// create_process(endless_A, argsA, "print_A", 2); // prioridad alta
-// create_process(endless_B, argsB, "print_B", 4); // prioridad media
-
 static char *intToChar(int i) {
-	static char buffer[12]; // Enough space for 32-bit integer
+	static char buffer[12];
 	int j = 0;
 
 	if (i < 0) {
@@ -46,7 +35,6 @@ static char *intToChar(int i) {
 
 	buffer[j] = '\0';
 
-	// Reverse the string
 	for (int k = 0; k < j / 2; k++) {
 		char temp		  = buffer[k];
 		buffer[k]		  = buffer[j - k - 1];
@@ -62,11 +50,11 @@ void endless_pid(int argc, char **argv) {
 		printStr("  ");
 		for (int i = 0; i < 100000000; i++)
 			;
-		yield(); // Cede el control manualmente
+		yield();
 	}
 }
 
-#define DEV_NULL -1 // Assuming DEV_NULL is defined as 3 in your system
+#define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -74,8 +62,6 @@ void endless_pid(int argc, char **argv) {
 int test_prio() {
 	int64_t pids[TOTAL_PROCESSES];
 	uint64_t i;
-
-	// char *args_pid[] = {"endless_loopA", "NULL", NULL};
 
 	for (i = 0; i < TOTAL_PROCESSES; i++) {
 		char *args_pid[] = {"endless_loopA", intToChar(i), NULL};

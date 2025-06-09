@@ -241,7 +241,7 @@ void adjustPhilosophers(char input) {
 			}
 		}
 		kill_process(pids[indexPids]);
-		pids[indexPids--] = 0; // Remove the last philosopher's PID
+		pids[indexPids--] = 0;
 
 		printStr("Philosopher removed\n");
 	}

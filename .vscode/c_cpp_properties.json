@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/TPE_ARQUI/Kernel/include",
                 "${workspaceFolder}/TPE_ARQUI/Userland/SampleCodeModule/include",
-                "${workspaceFolder}/TPE_ARQUI/Userland/SampleCodeModule"
+                "${workspaceFolder}/TPE_ARQUI/Userland/SampleCodeModule",
+                "${workspaceFolder}/TPE_SO/Shared"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
