@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <shared.h>
 
-#define MIN_EXP 5 // Minimum block size is 2^5 = 32 bytes
-#define LEVELS 32 // cant de tamanos distintos de bloques, desde 2^5 hasta 2^36
+#define MIN_EXP 5
+#define LEVELS 32
 #define FREE 0
 #define USED 1
 
@@ -37,9 +37,8 @@ static MemoryBlock *createMemoryBlock(void *ptr, uint8_t exp,
 	return block;
 }
 
-static MemoryBlock *
-removeMemoryBlock(MemoryBlock **blocks,
-				  MemoryBlock *block) { // remueve de la lista de libres
+static MemoryBlock *removeMemoryBlock(MemoryBlock **blocks,
+									  MemoryBlock *block) {
 	if (block->prev)
 		block->prev->next = block->next;
 	else
@@ -62,7 +61,7 @@ static void split(MemoryManagerADT mm, uint8_t idx) {
 }
 
 static MemoryBlock *merge(MemoryManagerADT mm, MemoryBlock *block,
-						  MemoryBlock *buddy) { // une dos buddies libres
+						  MemoryBlock *buddy) {
 	removeMemoryBlock(mm->blocks, buddy);
 	MemoryBlock *left = (block < buddy) ? block : buddy;
 	left->exp++;
@@ -72,7 +71,7 @@ static MemoryBlock *merge(MemoryManagerADT mm, MemoryBlock *block,
 MemoryManagerADT createMemoryManager(void *const restrict memoryForManager,
 									 void *const restrict managedMemory,
 									 uint64_t memAmount) {
-	(void) memoryForManager; // no lo uso
+	(void) memoryForManager;
 	MemoryManagerADT mm = (MemoryManagerADT) MEMORY_MANAGER_ADDRESS;
 	mm->firstAddress	= managedMemory;
 	mm->maxExp			= 0;
@@ -113,9 +112,8 @@ void *allocMemory(const size_t size) {
 	if (splitIdx == LEVELS)
 		return NULL;
 
-	while (splitIdx >
-		   idx) { // divide en buddies hasta alcanzar un tamaño adecuado
-		split(mm, splitIdx); // recursiva
+	while (splitIdx > idx) {
+		split(mm, splitIdx);
 		splitIdx--;
 	}
 
@@ -155,17 +153,12 @@ void freeMemory(void *ptr) {
 
 void getMemoryInfo(MemoryInfo *info) {
 	MemoryManagerADT mm = getMemoryManager();
-	// static MemoryInfo *info;
-	// if (!mm || !info) return null;
-
-	uint8_t maxExp = mm->maxExp;
-	uint64_t total = 1UL << maxExp;
+	uint8_t maxExp		= mm->maxExp;
+	uint64_t total		= 1UL << maxExp;
 	uint64_t used = 0, free = 0;
 	uint64_t usedBlocks = 0, freeBlocks = 0, totalBlocks = 0;
-
 	uint8_t *ptr = (uint8_t *) mm->firstAddress;
 	uint8_t *end = ptr + total;
-
 	while (ptr < end) {
 		MemoryBlock *block = (MemoryBlock *) ptr;
 		uint64_t blockSize = 1UL << block->exp;
@@ -180,14 +173,12 @@ void getMemoryInfo(MemoryInfo *info) {
 		}
 		ptr += blockSize;
 	}
-
 	info->totalMemory = total;
 	info->usedMemory  = used;
 	info->freeMemory  = free;
 	info->usedBlocks  = usedBlocks;
 	info->freeBlocks  = freeBlocks;
 	info->totalBlocks = totalBlocks;
-	// return &info;
 	return;
 }
 

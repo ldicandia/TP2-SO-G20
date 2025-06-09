@@ -259,12 +259,12 @@ static ProcessInfoList *sys_ps() {
 }
 
 static uint64_t sys_sem_wait(uint16_t sem_id) {
-	my_sem_wait(sem_id);
+	mySemWait(sem_id);
 	return 1;
 }
 
 static uint64_t sys_sem_post(uint16_t sem_id) {
-	my_sem_post(sem_id);
+	mySemPost(sem_id);
 	return 1;
 }
 
@@ -272,11 +272,11 @@ static uint64_t sys_sem_open(uint16_t sem_id, uint64_t initialValue) {
 	if (initialValue < 0) {
 		return -1;
 	}
-	return my_sem_open(sem_id, initialValue);
+	return mySemOpen(sem_id, initialValue);
 }
 
 static uint64_t sys_sem_close(uint16_t sem_id) {
-	return my_sem_close(sem_id);
+	return mySemClose(sem_id);
 }
 
 static uint64_t sys_get_memory_info(uint64_t userInfoPtr) {

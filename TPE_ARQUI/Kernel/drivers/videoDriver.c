@@ -139,12 +139,12 @@ uint16_t drawCharSemaphore = 0;
 
 void initVideoDriver() {
 	// Inicializar el semáforo con un valor inicial de 1
-	// my_sem_open(drawCharSemaphore, 1);
+	// mySemOpen(drawCharSemaphore, 1);
 }
 
 void drawChar(char letter, Color color) {
 	// Adquirir el semáforo antes de modificar los recursos compartidos
-	// my_sem_wait(drawCharSemaphore);
+	// mySemWait(drawCharSemaphore);
 
 	if (cursorX >=
 		VBE_mode_info->width - (VBE_mode_info->width % (8 * charSize))) {
@@ -172,7 +172,7 @@ void drawChar(char letter, Color color) {
 	cursorX += 8 * charSize;
 
 	// Liberar el semáforo después de modificar los recursos compartidos
-	// my_sem_post(drawCharSemaphore);
+	// mySemPost(drawCharSemaphore);
 }
 
 void driver_newLine() {

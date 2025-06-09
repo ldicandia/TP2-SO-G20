@@ -127,9 +127,6 @@ void yield() {
 // PROCESS CREATION AND DESTRUCTION
 // ================================
 
-void debug() {
-}
-
 uint16_t createProcess(MainFunction code, char **args, char *name,
 					   uint8_t priority, int16_t fileDescriptors[],
 					   uint8_t unkillable) {

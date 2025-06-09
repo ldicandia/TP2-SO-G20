@@ -45,7 +45,7 @@ static const char hexMapPressed[256] = {
 
 // Inicializa el teclado
 void initializeKeyboard() {
-	my_sem_open(KEYBOARD_SEM, 0);
+	mySemOpen(KEYBOARD_SEM, 0);
 }
 
 // Agrega un caracter al buffer

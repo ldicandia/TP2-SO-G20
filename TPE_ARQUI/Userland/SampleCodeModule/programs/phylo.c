@@ -18,7 +18,9 @@
 #define MAX_CONSECUTIVE_MEALS 3
 #define HUNGER_THRESHOLD 5
 
-static int numPhilosophers = 5;
+static int numPhilosophers		  = 5;
+static int pids[MAX_PHILOSOPHERS] = {0};
+static int indexPids			  = 0;
 static State states[MAX_PHILOSOPHERS];
 static int semaphores[MAX_PHILOSOPHERS];
 static int consecutiveMeals[MAX_PHILOSOPHERS] = {0};
@@ -65,6 +67,7 @@ void initPhilosophers() {
 		consecutiveMeals[i] = 0;
 		totalMeals[i]		= 0;
 		hungerTime[i]		= 0;
+		pids[i]				= 0;
 
 		int semID	  = MUTEX + 1 + i;
 		semaphores[i] = semID;
@@ -77,13 +80,13 @@ void initPhilosophers() {
 	}
 
 	for (int i = 0; i < numPhilosophers; i++) {
-		char *idStr	 = intToChar(i);
-		char *args[] = {"philo", idStr, NULL};
-		int pid		 = create_process_with_fds(
-			 (MainFunction) philosopher, args, "philosopher", 4,
-			 (int16_t[]) {DEV_NULL, STDOUT, STDERR});
+		char *idStr		= intToChar(i);
+		char *args[]	= {"philo", idStr, NULL};
+		pids[indexPids] = create_process_with_fds(
+			(MainFunction) philosopher, args, "philosopher", 4,
+			(int16_t[]) {DEV_NULL, STDOUT, STDERR});
 
-		if (pid == -1) {
+		if (pids[indexPids++] == -1) {
 			printStr("Error creating philosopher process ");
 			printStr(idStr);
 			printStr("\n");
@@ -168,14 +171,14 @@ int philosopher(int argc, char **argv) {
 		return -1;
 
 	while (1) {
-		sleep_miliseconds(200 + (id * 10) % 100);
+		sleep_miliseconds(2000 + (id * 10) % 100);
 		takeForks(id);
 
 		user_sem_wait(MUTEX);
 		printTable();
 		user_sem_post(MUTEX);
 
-		sleep_miliseconds(300 + (id * 15) % 100);
+		sleep_miliseconds(3000 + (id * 15) % 100);
 		putForks(id);
 
 		user_sem_wait(MUTEX);
@@ -204,13 +207,13 @@ void adjustPhilosophers(char input) {
 		if (user_sem_open(semID, 0) != -1) {
 			numPhilosophers++;
 
-			char *idStr	 = intToChar(newId);
-			char *args[] = {"philo", idStr, NULL};
-			int pid		 = create_process_with_fds(
-				 (MainFunction) philosopher, args, "philosopher", 4,
-				 (int16_t[]) {DEV_NULL, STDOUT, STDERR});
+			char *idStr		= intToChar(newId);
+			char *args[]	= {"philo", idStr, NULL};
+			pids[indexPids] = create_process_with_fds(
+				(MainFunction) philosopher, args, "philosopher", 4,
+				(int16_t[]) {DEV_NULL, STDOUT, STDERR});
 
-			if (pid == -1) {
+			if (pids[indexPids++] == -1) {
 				printStr("Error creating philosopher process\n");
 				numPhilosophers--;
 				user_sem_close(semID);
@@ -237,6 +240,8 @@ void adjustPhilosophers(char input) {
 				test(rightNeighbor);
 			}
 		}
+		kill_process(pids[indexPids]);
+		pids[indexPids--] = 0; // Remove the last philosopher's PID
 
 		printStr("Philosopher removed\n");
 	}
@@ -249,7 +254,8 @@ void phylo() {
 	initPhilosophers();
 	clear();
 	printStr("Dining Philosophers Problem\n");
-	printStr("Press 'a' to add a philosopher, 'r' to remove one.\n");
+	printStr(
+		"Press 'a' to add a philosopher, 'r' to remove one, 'q' to quit\n");
 	printStr("E = Eating, . = Thinking, . = Hungry\n\n");
 
 	while (1) {
@@ -259,6 +265,13 @@ void phylo() {
 		}
 		else if (input == 'q') {
 			printStr("Exiting...\n");
+			for (int i = 0; i < numPhilosophers; i++) {
+				user_sem_close(semaphores[i]);
+				if (pids[i] != 0) {
+					kill_process(pids[i]);
+				}
+			}
+
 			break;
 		}
 		yield();

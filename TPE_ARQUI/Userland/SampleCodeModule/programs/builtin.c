@@ -18,12 +18,13 @@ void help() {
 	printStrColor(
 		"\n invopcode                tests the invalid operation code", WHITE);
 	printStrColor("\n increment                increase letter size", WHITE);
-	printStrColor("\n decrement                decrease letter size", WHITE);
+	printStrColor("\n decrement                decrease letter size\n", WHITE);
 	printStrColor("\n testMemory [size]        tests memory allocation", WHITE);
 	printStrColor("\n testProcesses [size]     tests process creation", WHITE);
 	printStrColor("\n testPrio                 tests process priority", WHITE);
 	printStrColor(
-		"\n testSync [n] [use_sem]   tests synchronization, 0 < n < 50", WHITE);
+		"\n testSync [n] [use_sem]   tests synchronization, 0 < n < 50\n",
+		WHITE);
 	printStrColor("\n ps                       list processes", WHITE);
 	printStrColor("\n mem                      show memory info", WHITE);
 	printStrColor("\n loop [sleep ms]          launch infinite loop", WHITE);
@@ -33,7 +34,9 @@ void help() {
 	printStrColor("\n filter                   filter vowels from input",
 				  WHITE);
 	printStrColor("\n cat                      prints STDIN", WHITE);
-	printStrColor("\n wc                       counts input lines", WHITE);
+	printStrColor("\n wc                       counts input lines\n", WHITE);
+	printStrColor("\n [process] | [process]    for piping 2 processes", WHITE);
+	printStrColor("\n &[process]               for background process", WHITE);
 	printStrColor("\n---------------------------------------------------",
 				  WHITE);
 }
