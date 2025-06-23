@@ -174,8 +174,8 @@ int secondsToMiliseconds(int seconds) {
 }
 
 void sleep_miliseconds(int miliseconds) {
-	int start = secondsToMiliseconds(getSeconds());
-	while (secondsToMiliseconds(getSeconds()) - start < miliseconds)
+	int i = miliseconds * 10000;
+	while (i--)
 		;
 }
 

@@ -15,10 +15,11 @@
 #include <builtin.h>
 #include <process_commands.h>
 #include <string_lib.h>
+#include <Mvar.h>
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 25
+#define COMMANDS_SIZE 26
 #define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
@@ -50,7 +51,63 @@ char *command_names[]		   = {
 	 "inforeg",	   "zerodiv",		"invopcode", "increment", "decrement",
 	 "testMemory", "testProcesses", "testPrio",	 "testSync",  "ps",
 	 "mem",		   "loop",			"kill",		 "nice",	  "block",
-	 "wc",		   "filter",		"cat",		 "phylo",	  "red"};
+	 "wc",		   "filter",		"cat",		 "phylo",	  "red",
+	 "MVar"};
+
+int redMvar(int argc, char **argv) {
+	while (1) {
+		printCharColor(takeMVar() == 1 ? '1' : '0', (Color) {0x00, 0x00, 0xFF});
+		int i = 10000000;
+		while (i--)
+			;
+	}
+}
+
+int whiteMvar(int argc, char **argv) {
+	int c;
+	while (1) {
+		printCharColor(takeMVar() == 1 ? '1' : '0', (Color) {0xFF, 0xFF, 0xFF});
+		int i = 10000000;
+		while (i--)
+			;
+	}
+}
+
+int oneMvar(int argc, char **argv) {
+	while (1) {
+		putMVar(1);
+		int i = 10000000;
+		while (i--)
+			;
+	}
+}
+
+int zeroMvar(int argc, char **argv) {
+	while (1) {
+		putMVar(0);
+		int i = 10000000;
+		while (i--)
+			;
+	}
+	sleep_miliseconds(1000);
+}
+
+void MVar_wrap(int argc, char **argv) {
+	openMVar();
+
+	putMVar(1);
+	printCharColor(takeMVar() == 1 ? '1' : '0', (Color) {0xFF, 0xFF, 0xFF});
+
+	char *args_oneMVar[]   = {"MVar3", NULL};
+	char *args_redMvar[]   = {"MVar1", NULL};
+	char *args_whiteMvar[] = {"MVar2", NULL};
+	char *args_zeroMvar[]  = {"MVar4", NULL};
+
+	create_process((MainFunction) oneMvar, args_oneMVar, "MVar3", 1);
+	create_process((MainFunction) redMvar, args_redMvar, "MVar1", 1);
+	create_process((MainFunction) whiteMvar, args_whiteMvar, "MVar2", 1);
+	create_process((MainFunction) zeroMvar, args_zeroMvar, "MVar4", 1);
+}
 
 MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help,
 											(MainFunction) user_time,
@@ -76,7 +133,8 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help,
 											(MainFunction) filter,
 											(MainFunction) cat,
 											(MainFunction) phylo_wrap,
-											(MainFunction) red};
+											(MainFunction) red,
+											(MainFunction) MVar_wrap};
 
 void shell() {
 	printStrColor("\nITBA Shell Group 20\n", (Color) {0xFF, 0xFF, 0x00});

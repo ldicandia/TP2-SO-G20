@@ -16,6 +16,14 @@
     "irqdispatcher.h": "c",
     "semaphore.h": "c",
     "videodriver.h": "c",
-    "process_commands.h": "c"
+    "process_commands.h": "c",
+    "optional": "c",
+    "system_error": "c",
+    "array": "c",
+    "functional": "c",
+    "tuple": "c",
+    "type_traits": "c",
+    "utility": "c",
+    "cstdint": "c"
   }
 }
