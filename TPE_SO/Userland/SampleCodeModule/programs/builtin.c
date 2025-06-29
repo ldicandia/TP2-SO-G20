@@ -33,6 +33,7 @@ void help() {
 	printStrColor("\n kill [pid]               terminate a process", WHITE);
 	printStrColor("\n nice [pid] [prio]        change process priority", WHITE);
 	printStrColor("\n block [pid]              block a process", WHITE);
+	printStrColor("\n unblock [pid]            unblock a process", WHITE);
 	printStrColor("\n filter                   filter vowels from input",
 				  WHITE);
 	printStrColor("\n cat                      prints STDIN", WHITE);

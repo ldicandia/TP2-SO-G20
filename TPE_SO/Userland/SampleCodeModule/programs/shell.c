@@ -19,7 +19,7 @@
 
 #include "userLibrary.h"
 #define MAX_BUFFER 254
-#define COMMANDS_SIZE 26
+#define COMMANDS_SIZE 27
 #define DEV_NULL -1
 #define STDIN 0
 #define STDOUT 1
@@ -52,7 +52,7 @@ char *command_names[]		   = {
 	 "testMemory", "testProcesses", "testPrio",	 "testSync",  "ps",
 	 "mem",		   "loop",			"kill",		 "nice",	  "block",
 	 "wc",		   "filter",		"cat",		 "phylo",	  "red",
-	 "MVar"};
+	 "MVar",	   "unblock"};
 
 int redMvar(int argc, char **argv) {
 	while (1) {
@@ -64,7 +64,6 @@ int redMvar(int argc, char **argv) {
 }
 
 int whiteMvar(int argc, char **argv) {
-	int c;
 	while (1) {
 		printCharColor(takeMVar() == 1 ? '1' : '0', (Color) {0xFF, 0xFF, 0xFF});
 		int i = 10000000;
@@ -134,7 +133,8 @@ MainFunction command_func[COMMANDS_SIZE] = {(MainFunction) help,
 											(MainFunction) cat,
 											(MainFunction) phylo_wrap,
 											(MainFunction) red,
-											(MainFunction) MVar_wrap};
+											(MainFunction) MVar_wrap,
+											(MainFunction) _unblock_wrap};
 
 void shell() {
 	printStrColor("\nITBA Shell Group 20\n", (Color) {0xFF, 0xFF, 0x00});

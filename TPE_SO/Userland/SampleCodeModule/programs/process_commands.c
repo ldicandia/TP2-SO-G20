@@ -112,6 +112,16 @@ int _block_wrap(int argc, char **argv) {
 
 	return 0;
 }
+
+int _unblock_wrap(int argc, char **argv) {
+	if (argc < 2) {
+		printStr("\nUsage: unblock <pid>");
+		return -1;
+	}
+	unblock(atoi(argv[1]));
+
+	return 0;
+}
 int wc(int argc, char **argv) {
 	int lineCount = 0;
 	int c;

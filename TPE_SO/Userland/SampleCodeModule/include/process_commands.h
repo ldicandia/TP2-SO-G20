@@ -8,6 +8,7 @@ int _mem_wrap(int argc, char **argv);
 int _kill_wrap(int argc, char **argv);
 int _nice_wrap(int argc, char **argv);
 int _block_wrap(int argc, char **argv);
+int _unblock_wrap(int argc, char **argv);
 
 int loop(int argc, char **argv);
 int wc(int argc, char **argv);
